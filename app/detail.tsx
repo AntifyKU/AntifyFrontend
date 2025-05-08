@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  Image, 
+  ScrollView, 
+  SafeAreaView, 
+  StatusBar,
+  FlatList,
+  Dimensions
+} from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,10 +18,63 @@ type DetailParams = {
   imageUri?: string;
 };
 
+// Get screen dimensions
+const { width } = Dimensions.get('window');
+
+// Sample images for the gallery
+const sampleImages = [
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=300&width=300&query=black+ant+macro+photography",
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=300&width=300&query=red+ant+close+up",
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=300&width=300&query=carpenter+ant+detailed",
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=300&width=300&query=fire+ant+on+leaf",
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=300&width=300&query=ant+colony+worker"
+];
+
 export default function DetailScreen() {
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const params = useLocalSearchParams<DetailParams>();
   const imageUri = params.imageUri;
+  
+  // Create an array of images including the user's image if available
+  const images = imageUri 
+    ? [imageUri, ...sampleImages] 
+    : sampleImages;
+  
+  const flatListRef = useRef<FlatList>(null);
+  
+  const handleClosePress = () => {
+    // Navigate to feedback screen
+    router.push('/feedback');
+  };
+  
+  const renderImage = ({ item, index }: { item: string; index: number }) => {
+    return (
+      <View style={{ width, justifyContent: 'center', alignItems: 'center' }}>
+        <Image 
+          source={{ uri: item }} 
+          className="rounded-lg w-60 h-60"
+          resizeMode="cover"
+        />
+      </View>
+    );
+  };
+  
+  interface ScrollEvent {
+    nativeEvent: {
+      contentOffset: {
+        x: number;
+      };
+    };
+  }
+
+  const handleScroll = (event: ScrollEvent) => {
+    const slideIndex = Math.round(
+      event.nativeEvent.contentOffset.x / width
+    );
+    if (slideIndex !== activeSlide) {
+      setActiveSlide(slideIndex);
+    }
+  };
   
   return (
     <View className="flex-1 bg-[#f5f7e8]">
@@ -21,36 +84,42 @@ export default function DetailScreen() {
       <SafeAreaView>
         <TouchableOpacity 
           className="p-4" 
-          onPress={() => router.back()}
+          onPress={handleClosePress}
         >
           <Ionicons name="close" size={28} color="#000" />
         </TouchableOpacity>
       </SafeAreaView>
       
       <ScrollView className="flex-1">
-        {/* Image Display */}
-        <View className="items-center justify-center py-4">
-          {imageUri ? (
-            <Image 
-              source={{ uri: imageUri }} 
-              className="rounded-lg w-60 h-60"
-              resizeMode="cover"
-            />
-          ) : (
-            <Image 
-              source={{ uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=150&width=150&query=black+ant+macro+photography" }}
-              className="rounded-lg w-60 h-60"
-            />
-          )}
+        {/* Image Gallery */}
+        <View className="py-4">
+          <FlatList
+            ref={flatListRef}
+            data={images}
+            renderItem={renderImage}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            decelerationRate="fast"
+          />
         </View>
         
         {/* Pagination Dots */}
         <View className="flex-row justify-center mb-6">
-          {[0, 1, 2, 3, 4].map((index) => (
-            <View 
+          {images.map((_, index) => (
+            <TouchableOpacity 
               key={index}
-              className={`h-2 w-2 rounded-full mx-1 ${index === activeSlide ? 'bg-green-500' : 'bg-gray-300'}`}
-            />
+              onPress={() => {
+                setActiveSlide(index);
+                flatListRef.current?.scrollToIndex({ index, animated: true });
+              }}
+            >
+              <View 
+                className={`h-2 w-2 rounded-full mx-1 ${index === activeSlide ? 'bg-green-500' : 'bg-gray-300'}`}
+              />
+            </TouchableOpacity>
           ))}
         </View>
         
