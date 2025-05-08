@@ -143,6 +143,13 @@ export default function TabLayout() {
           title: 'Profile',
         }}
       />
+      <Tabs.Screen
+        name="feedback"
+        options={{
+          title: 'Feedback',
+        }}
+      />
     </Tabs>
+    
   );
 }

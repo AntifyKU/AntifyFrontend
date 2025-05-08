@@ -42,7 +42,12 @@ export default function DetailScreen() {
   
   const flatListRef = useRef<FlatList>(null);
   
-  const handleClosePress = () => {
+  const handleBackPress = () => {
+    // Go back to previous screen
+    router.back();
+  };
+  
+  const handleFeedbackPress = () => {
     // Navigate to feedback screen
     router.push('/feedback');
   };
@@ -80,13 +85,13 @@ export default function DetailScreen() {
     <View className="flex-1 bg-[#f5f7e8]">
       <StatusBar barStyle="dark-content" />
       
-      {/* Close Button - Positioned directly at the top without header */}
+      {/* Back Button - Positioned directly at the top without header */}
       <SafeAreaView>
         <TouchableOpacity 
           className="p-4" 
-          onPress={handleClosePress}
+          onPress={handleBackPress}
         >
-          <Ionicons name="close" size={28} color="#000" />
+          <Ionicons name="arrow-back" size={28} color="#000" />
         </TouchableOpacity>
       </SafeAreaView>
       
@@ -153,25 +158,39 @@ export default function DetailScreen() {
           </View>
           
           {/* Buttons */}
-          <View className="flex-row mb-8">
+          <View className="mb-4">
             {/* Add to Collection Button */}
-            <TouchableOpacity className="bg-[#0A9D5C] rounded-lg py-4 flex-1 items-center mr-2">
+            <TouchableOpacity className="bg-[#0A9D5C] rounded-lg py-4 items-center mb-4">
               <View className="flex-row items-center">
                 <Ionicons name="add" size={20} color="#fff" />
                 <Text className="ml-2 font-medium text-white">Add to Collection</Text>
               </View>
             </TouchableOpacity>
             
-            {/* Chat Button */}
-            <TouchableOpacity 
-              className="bg-[#0A9D5C] rounded-lg py-4 flex-1 items-center ml-2"
-              onPress={() => router.push('/chatbot')}
-            >
-              <View className="flex-row items-center">
-                <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
-                <Text className="ml-2 font-medium text-white">Chat with us</Text>
-              </View>
-            </TouchableOpacity>
+            {/* Feedback and Chat Buttons */}
+            <View className="flex-row">
+              {/* Feedback Button */}
+              <TouchableOpacity 
+                className="bg-[#328e6e] rounded-lg py-4 flex-1 items-center mr-2"
+                onPress={handleFeedbackPress}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="star" size={20} color="#fff" />
+                  <Text className="ml-2 font-medium text-white">Feedback</Text>
+                </View>
+              </TouchableOpacity>
+              
+              {/* Chat Button */}
+              <TouchableOpacity 
+                className="bg-[#0A9D5C] rounded-lg py-4 flex-1 items-center ml-2"
+                onPress={() => router.push('/chatbot')}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
+                  <Text className="ml-2 font-medium text-white">Chat with us</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
         
