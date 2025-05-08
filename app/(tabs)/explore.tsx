@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,13 +7,48 @@ import * as ImagePicker from 'expo-image-picker';
 export default function ExploreScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  // Function to take a photo with the camera
+  const takePhoto = async (): Promise<void> => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission needed",
+        "Please grant camera permissions to use this feature."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      // Get the captured image
+      const capturedImage = result.assets[0].uri;
+      setSelectedImage(capturedImage);
+      
+      // Navigate to detail screen with the captured image
+      router.push({
+        pathname: '/detail',
+        params: { imageUri: capturedImage }
+      });
+    }
+  };
+
   // Function to pick an image from the gallery
-  const pickImage = async () => {
+  const pickImage = async (): Promise<void> => {
     // Request permission to access the photo library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {
-      alert('Sorry, we need camera roll permissions to make this work!');
+      Alert.alert(
+        'Permission needed',
+        'Please grant photo library permissions to use this feature.'
+      );
       return;
     }
     
@@ -52,7 +87,7 @@ export default function ExploreScreen() {
         <View className="flex-row px-5 mb-6">
           <TouchableOpacity 
             className="bg-[#8DD3B7] rounded-lg p-4 mr-3 flex-1 items-center"
-            onPress={() => router.push('/camera')}
+            onPress={takePhoto}
           >
             <Ionicons name="camera" size={24} color="#000" />
             <Text className="mt-1 text-lg font-semibold text-black">From Camera</Text>

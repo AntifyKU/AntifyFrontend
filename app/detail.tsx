@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -14,17 +14,22 @@ export default function DetailScreen() {
   const imageUri = params.imageUri;
   
   return (
-    <SafeAreaView className="flex-1 bg-[#f5f7e8]">
-      {/* Header */}
-      <View className="px-4 py-2">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="close" size={24} color="#000" />
+    <View className="flex-1 bg-[#f5f7e8]">
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Close Button - Positioned directly at the top without header */}
+      <SafeAreaView>
+        <TouchableOpacity 
+          className="p-4" 
+          onPress={() => router.back()}
+        >
+          <Ionicons name="close" size={28} color="#000" />
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
       
       <ScrollView className="flex-1">
         {/* Image Display */}
-        <View className="items-center justify-center py-8">
+        <View className="items-center justify-center py-4">
           {imageUri ? (
             <Image 
               source={{ uri: imageUri }} 
@@ -33,8 +38,8 @@ export default function DetailScreen() {
             />
           ) : (
             <Image 
-              source={{ uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=150&width=150&query=image+icon" }}
-              className="w-20 h-20"
+              source={{ uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=150&width=150&query=black+ant+macro+photography" }}
+              className="rounded-lg w-60 h-60"
             />
           )}
         </View>
@@ -51,7 +56,7 @@ export default function DetailScreen() {
         
         {/* Content */}
         <View className="px-5">
-          <Text className="mb-1 text-2xl font-bold text-black">Worem ipsum</Text>
+          <Text className="mb-1 text-3xl font-bold text-black">Worem ipsum</Text>
           
           <View className="mb-4">
             <Text className="text-gray-600">Scientific name:</Text>
@@ -65,14 +70,14 @@ export default function DetailScreen() {
           </View>
           
           <View className="mb-4">
-            <Text className="mb-1 text-lg font-bold text-black">Habitat</Text>
+            <Text className="mb-1 text-xl font-bold text-black">Habitat</Text>
             <Text className="text-gray-600">
               Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
             </Text>
           </View>
           
           <View className="mb-8">
-            <Text className="mb-1 text-lg font-bold text-black">Behavior</Text>
+            <Text className="mb-1 text-xl font-bold text-black">Behavior</Text>
             <Text className="text-gray-600">
               Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu
             </Text>
@@ -100,6 +105,9 @@ export default function DetailScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        
+        {/* Add extra space at the bottom */}
+        <View className="h-20" />
       </ScrollView>
       
       {/* Floating Chat Button */}
@@ -109,6 +117,6 @@ export default function DetailScreen() {
       >
         <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
