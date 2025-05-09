@@ -43,17 +43,19 @@ export default function ExploreScreen() {
   ];
 
   const poisonousAnts = [
-    { id: '1', name: 'Bullet Ant', description: 'Paraponera clavata', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Paraponera_clavata.jpg/500px-Paraponera_clavata.jpg' },
-    { id: '2', name: 'Fire Ant', description: 'Solenopsis invicta', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw' },
-    { id: '3', name: 'Harvester Ant', description: 'Pogonomyrmex', image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Florida_harvester_ant_teamwork%21_%28Pogonomyrmex_badius%29_%286502194585%29.jpg' },
+    { id: '4', name: 'Bullet Ant', description: 'Paraponera clavata', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Paraponera_clavata.jpg/500px-Paraponera_clavata.jpg' },
+    { id: '3', name: 'Fire Ant', description: 'Solenopsis invicta', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw' },
+    { id: '5', name: 'Harvester Ant', description: 'Pogonomyrmex', image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Florida_harvester_ant_teamwork%21_%28Pogonomyrmex_badius%29_%286502194585%29.jpg' },
   ];
 
+  // Update the handleAntPress function in the explore screen
   const handleAntPress = (antId: string) => {
     router.push({
-      pathname: '/detail',
+      pathname: `/detail/[id]`,
       params: { id: antId }
     });
   };
+
 
   const handleNewsPress = async (newsUrl: string) => {
     try {
@@ -71,6 +73,7 @@ export default function ExploreScreen() {
     }
   };
 
+  // Update the handleTakePhoto function
   const handleTakePhoto = async () => {
     try {
       // Request camera permissions
@@ -98,7 +101,7 @@ export default function ExploreScreen() {
         
         // Navigate to detail page with the captured image
         router.push({
-          pathname: '/detail',
+          pathname: '/detail/index',
           params: { imageUri: capturedImage.uri, source: 'camera' }
         });
       }
@@ -111,6 +114,7 @@ export default function ExploreScreen() {
     }
   };
 
+    // Update the handleUploadPhoto function
   const handleUploadPhoto = async () => {
     try {
       // Request media library permissions
@@ -139,7 +143,7 @@ export default function ExploreScreen() {
         
         // Navigate to detail page with the selected image
         router.push({
-          pathname: '/detail',
+          pathname: '/detail/index',
           params: { imageUri: selectedImage.uri, source: 'gallery' }
         });
       }
