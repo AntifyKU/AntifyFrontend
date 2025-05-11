@@ -28,9 +28,9 @@ export default function ChatbotScreen() {
   const [inputText, setInputText] = useState('');
   
   const faqItems: FAQItem[] = [
-    { id: '1', question: 'Does Black Carpenter ant cause allergies or irritations?' },
-    { id: '2', question: 'How to handles with Black Carpenter ant?' },
-    { id: '3', question: 'What is the size of Black Carpenter ant?' },
+    { id: '1', question: 'Does Fire ant cause allergies or irritations?' },
+    { id: '2', question: 'How to handles with Fire ant?' },
+    { id: '3', question: 'What is the size of Fire ant?' },
   ];
   
   const sendMessage = (text: string) => {
@@ -155,8 +155,7 @@ export default function ChatbotScreen() {
       
       {/* Input Area */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View className="flex-row items-center px-4 py-2 border-t border-gray-200">
           <TextInput

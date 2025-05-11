@@ -101,8 +101,8 @@ export default function ExploreScreen() {
         
         // Navigate to detail page with the captured image
         router.push({
-          pathname: '/detail/index',
-          params: { imageUri: capturedImage.uri, source: 'camera' }
+          pathname: '/detail/[id]',
+          params: { id: 'new', imageUri: capturedImage.uri, source: 'camera' }
         });
       }
     } catch (error) {
@@ -143,8 +143,8 @@ export default function ExploreScreen() {
         
         // Navigate to detail page with the selected image
         router.push({
-          pathname: '/detail/index',
-          params: { imageUri: selectedImage.uri, source: 'gallery' }
+          pathname: '/detail/[id]',
+          params: { id: 'new', imageUri: selectedImage.uri, source: 'gallery' }
         });
       }
     } catch (error) {
