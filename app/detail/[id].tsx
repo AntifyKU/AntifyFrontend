@@ -144,11 +144,30 @@ const antData: AntData[] = [
       pattern: "87%",
     },
   },
+  // Add a default ant for new identifications
+  {
+    id: "new",
+    name: "Unknown Ant",
+    scientificName: "Species pending identification",
+    genus: "Unknown",
+    accuracy: "85%",
+    image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg", // Default image
+    habitat: "Habitat information will be provided after identification.",
+    behavior: "Behavior information will be provided after identification.",
+    tags: ["Unidentified"],
+    matchDetails: {
+      shape: "85%",
+      color: "85%",
+      pattern: "85%",
+    },
+  },
 ]
 
 export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>()
   const { id, imageUri, source } = params
+
+  console.log("Detail screen params:", { id, imageUri, source }) // Debug log
 
   // Determine if this is from a photo (camera/gallery) or from collection
   const isFromPhoto = source === "camera" || source === "gallery"
@@ -195,13 +214,29 @@ export default function DetailScreen() {
   }
 
   const handleFeedbackPress = () => {
-    // Navigate to feedback screen
-    router.push("/feedback")
+    // Only pass the uploaded/captured image to the feedback screen
+    // If we're viewing the first slide (user's photo) and it's from camera/gallery
+    if (isFromPhoto && activeSlide === 0 && imageUri) {
+      router.push({
+        pathname: "/feedback",
+        params: {
+          imageUri: imageUri,
+          antName: currentAnt.name,
+          scientificName: currentAnt.scientificName,
+          source: source,
+        },
+      })
+    } else {
+      // If we're not viewing the user's photo, don't allow feedback
+      // This is a fallback, as the button should only be shown for appropriate ants
+      router.push("/feedback")
+    }
   }
 
-  // Check if feedback button should be shown
-  // Don't show feedback button if ant is poisonous or found in user's location
-  const shouldShowFeedbackButton = !currentAnt.isPoisonous && !currentAnt.isFoundInYourLocation
+  // FIXED: Always show feedback button for uploaded photos on the first slide
+  // For photos from camera/gallery, we always want to show the feedback button
+  // when viewing the first slide (the user's uploaded/captured image)
+  const shouldShowFeedbackButton = isFromPhoto && activeSlide === 0
 
   const renderImage = ({ item, index }: { item: AntData; index: number }) => {
     // Make ALL photos circular
@@ -280,14 +315,14 @@ export default function DetailScreen() {
         {/* Content */}
         <View className="px-5">
           {/* Title and Accuracy (only show accuracy if from photo) */}
-          <View className="flex-row justify-between items-center mb-1">
+          <View className="flex-row items-center justify-between mb-1">
             <Text className="text-3xl font-bold text-black">{currentAnt.name}</Text>
 
             {/* Accuracy Indicator - Only show if from photo */}
             {isFromPhoto && (
               <View className="bg-[#0A9D5C] rounded-full px-3 py-1 flex-row items-center">
                 <Ionicons name="checkmark-circle" size={16} color="#fff" />
-                <Text className="text-white font-bold ml-1">{currentAnt.accuracy}</Text>
+                <Text className="ml-1 font-bold text-white">{currentAnt.accuracy}</Text>
               </View>
             )}
           </View>
@@ -297,7 +332,7 @@ export default function DetailScreen() {
             <Text className="text-gray-600">Genus: {currentAnt.genus}</Text>
           </View>
 
-          <View className="mb-4 flex-row flex-wrap">
+          <View className="flex-row flex-wrap mb-4">
             {currentAnt.tags.map((tag, index) => (
               <View key={index} className="bg-[#0A9D5C] rounded-full px-4 py-1 mr-2 mb-2">
                 <Text className="text-xs text-white uppercase">{tag}</Text>
@@ -321,7 +356,7 @@ export default function DetailScreen() {
 
           {/* Detailed Accuracy Section - Only show if from photo */}
           {isFromPhoto && (
-            <View className="mb-4 bg-white rounded-lg p-4 shadow-sm">
+            <View className="p-4 mb-4 bg-white rounded-lg shadow-sm">
               <Text className="mb-2 text-xl font-bold text-black">Identification Accuracy</Text>
 
               <View className="mb-3">
@@ -329,7 +364,7 @@ export default function DetailScreen() {
                   <Text className="text-gray-700">Confidence Level</Text>
                   <Text className="font-bold text-[#0A9D5C]">{currentAnt.accuracy}</Text>
                 </View>
-                <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <View className="h-2 overflow-hidden bg-gray-200 rounded-full">
                   <View
                     className="h-full bg-[#0A9D5C] rounded-full"
                     style={{ width: `${Number.parseFloat(currentAnt.accuracy)}%` }}
@@ -338,13 +373,13 @@ export default function DetailScreen() {
               </View>
 
               <View className="flex-row flex-wrap">
-                <View className="bg-gray-100 rounded-full px-3 py-1 mr-2 mb-2">
+                <View className="px-3 py-1 mb-2 mr-2 bg-gray-100 rounded-full">
                   <Text className="text-xs text-gray-700">Shape Match: {currentAnt.matchDetails.shape}</Text>
                 </View>
-                <View className="bg-gray-100 rounded-full px-3 py-1 mr-2 mb-2">
+                <View className="px-3 py-1 mb-2 mr-2 bg-gray-100 rounded-full">
                   <Text className="text-xs text-gray-700">Color Match: {currentAnt.matchDetails.color}</Text>
                 </View>
-                <View className="bg-gray-100 rounded-full px-3 py-1 mr-2 mb-2">
+                <View className="px-3 py-1 mb-2 mr-2 bg-gray-100 rounded-full">
                   <Text className="text-xs text-gray-700">Pattern Match: {currentAnt.matchDetails.pattern}</Text>
                 </View>
               </View>
@@ -373,7 +408,7 @@ export default function DetailScreen() {
 
             {/* Feedback and Chat Buttons */}
             <View className="flex-row">
-              {/* Feedback Button - Only show if not poisonous and not found in user's location */}
+              {/* Feedback Button - Only show if conditions are met */}
               {shouldShowFeedbackButton && (
                 <TouchableOpacity
                   className="bg-[#328e6e] rounded-lg py-4 flex-1 items-center mr-2"
