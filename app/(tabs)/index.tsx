@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 
 export default function Index() {
-  // Redirect to the explore tab by default
-  return <Redirect href="/(tabs)/explore" />;
+  // Redirect to the Home tab
+  return <Redirect href="/(tabs)/Home" />;
 }
