@@ -1,5 +1,5 @@
-import { Tabs as ExpoTabs } from 'expo-router';
-import Tabs from '@/components/molecule/Tabs';
+import { Tabs as ExpoTabs } from "expo-router";
+import Tabs from "@/components/molecule/Tabs";
 
 export default function TabLayout() {
   return (
