@@ -9,12 +9,16 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { InputField } from "../../components/molecule/InputField";
 import { Button } from "../../components/atom/Button";
 import { GoogleButton } from "@/components/atom/GoogleButton";
+import { useRouter } from "expo-router";
 
-const LoginPage: React.FC = () => {
+const Login: React.FC = () => {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{
@@ -29,21 +33,34 @@ const LoginPage: React.FC = () => {
     } = {};
 
     if (!username.trim()) {
-      newErrors.username = "Please enter username or email";
+      newErrors.username = "Username or email is required";
     }
 
     if (!password.trim()) {
-      newErrors.password = "Please enter password";
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
 
+    // TODO: Connect to backend API for authentication
     console.log("Login pressed", { username, password });
+    // If success, alert and navigate to home
+    // If not success, show error alert
+    Alert.alert("Login Successful", `Welcome back, ${username}!`, [
+      {
+        onPress: () => {
+          router.replace("/(tabs)/Home");
+        },
+      },
+    ]);
   };
 
   const handleGoogleLogin = () => {
+    // TODO: Implement Google login functionality
     console.log("Google login pressed");
   };
 
@@ -52,7 +69,8 @@ const LoginPage: React.FC = () => {
   };
 
   const handleSignUp = () => {
-    console.log("Sign up pressed");
+    // Navigate to Signup page
+    router.push("/(pages)/Signup");
   };
 
   return (
@@ -70,6 +88,7 @@ const LoginPage: React.FC = () => {
         >
           <View style={styles.header} />
 
+          {/* Form */}
           <View style={styles.formContainer}>
             <Text style={styles.welcomeText}>Welcome!</Text>
 
@@ -224,4 +243,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginPage;
+export default Login;

@@ -30,7 +30,7 @@ export default function LandingPage() {
     <View className="flex-1 bg-white items-center justify-center">
       <Animated.View style={{ opacity: fadeAnim }}>
         <Image
-          source={require("@/assets/images/Logo.svg")}
+          source={require("@/assets/images/Logo.png")}
           style={{ width: 200, height: 200 }}
         />
       </Animated.View>
