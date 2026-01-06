@@ -65,7 +65,7 @@ const Login: React.FC = () => {
   };
 
   const handleForgotPassword = () => {
-    console.log("Forgot password pressed");
+    router.push("/(pages)/ForgotPassword");
   };
 
   const handleSignUp = () => {

@@ -248,7 +248,7 @@ const Signup: React.FC = () => {
                 }}
               />
               <Text style={styles.termsText}>
-                I've read and agree with the{" "}
+                I&apos;ve read and agree with the{" "}
                 <Text style={styles.termsLink} onPress={handleTermsPress}>
                   Terms and Conditions
                 </Text>{" "}
@@ -293,19 +293,19 @@ const styles = StyleSheet.create({
     paddingVertical: 36,
   },
   headerContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
     color: "#0F172B",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
     fontWeight: "400",
     color: "#62748E",
-    lineHeight: 22,
+    lineHeight: 24,
   },
   formContainer: {
     gap: 16,
