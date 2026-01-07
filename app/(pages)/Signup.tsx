@@ -15,6 +15,7 @@ import { InputField } from "../../components/molecule/InputField";
 import { Checkbox } from "../../components/atom/Checkbox";
 import { Button } from "../../components/atom/Button";
 import { useRouter } from "expo-router";
+import { signup } from "@/services/auth_api";
 
 const Signup: React.FC = () => {
   const router = useRouter();
@@ -24,6 +25,7 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [errors, setErrors] = useState<{
     username?: string;
@@ -94,32 +96,23 @@ const Signup: React.FC = () => {
     return isValid;
   };
 
-  const handleSignup = () => {
-    console.log("Sign up button pressed");
-    console.log("Current values:", {
-      username,
-      email,
-      password,
-      confirmPassword,
-      agreeTerms,
-    });
+  const handleSignup = async () => {
+    if (!validateForm()) return;
 
-    if (validateForm()) {
-      // TODO: Call signup API here, then show success message and navigate to Login
+    try {
+      setLoading(true);
+
+      await signup(username, email, password);
+
       Alert.alert(
         "Signup Successful",
-        "Your account has been created successfully. Please log in.",
-        [
-          {
-            onPress: () => {
-              router.replace("/(pages)/Login");
-            },
-          },
-        ]
+        "Your account has been created successfully",
       );
-    } else {
-      // TODO: Show error messages or alert
-      console.log("Form validation failed");
+      router.replace("/(pages)/Login");
+    } catch (error: any) {
+      Alert.alert("Signup Failed", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -264,10 +257,11 @@ const Signup: React.FC = () => {
             )}
 
             <Button
-              title="Sign up"
+              title={loading ? "Signing up..." : "Sign up"}
               onPress={handleSignup}
               variant="primary"
               style={styles.signupButton}
+              disabled={loading}
             />
           </View>
         </ScrollView>
