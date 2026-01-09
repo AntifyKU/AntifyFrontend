@@ -15,7 +15,7 @@ import { InputField } from "../../components/molecule/InputField";
 import { Checkbox } from "../../components/atom/Checkbox";
 import { Button } from "../../components/atom/Button";
 import { useRouter } from "expo-router";
-import { signup } from "@/services/auth_api";
+import { signup } from "@/services/authService";
 
 const Signup: React.FC = () => {
   const router = useRouter();
@@ -85,10 +85,6 @@ const Signup: React.FC = () => {
     // Validate terms agreement
     if (!agreeTerms) {
       newErrors.agreeTerms = "You must agree to the terms and privacy policy";
-      //   Alert.alert(
-      //     "Terms Required",
-      //     "Please agree to the Terms and Conditions and Privacy Policy"
-      //   );
       return false;
     }
 
@@ -106,7 +102,7 @@ const Signup: React.FC = () => {
 
       Alert.alert(
         "Signup Successful",
-        "Your account has been created successfully",
+        "Your account has been created successfully"
       );
       router.replace("/(pages)/Login");
     } catch (error: any) {

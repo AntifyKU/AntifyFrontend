@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { InputField } from "../../components/molecule/InputField";
 import { Button } from "../../components/atom/Button";
 import { GoogleButton } from "@/components/atom/GoogleButton";
 import { useRouter } from "expo-router";
+import { login } from "@/services/authService";
 
 const Login: React.FC = () => {
   const router = useRouter();
+  const screenWidth = Dimensions.get("window").width;
+  const slideAnim = useRef(new Animated.Value(-screenWidth)).current;
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -25,8 +30,9 @@ const Login: React.FC = () => {
     username?: string;
     password?: string;
   }>({});
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const newErrors: {
       username?: string;
       password?: string;
@@ -43,20 +49,25 @@ const Login: React.FC = () => {
     }
 
     setErrors(newErrors);
-
     if (Object.keys(newErrors).length > 0) return;
 
-    // TODO: Connect to backend API for authentication
-    console.log("Login pressed", { username, password });
-    // If success, alert and navigate to home
-    // If not success, show error alert
-    Alert.alert("Login Successful", `Welcome back, ${username}!`, [
-      {
-        onPress: () => {
-          router.replace("/(tabs)/Home");
+    try {
+      setLoading(true);
+      const result = await login(username, password);
+      console.log("LOGIN RESULT:", result);
+
+      Alert.alert("Login Successful", "Welcome back!", [
+        {
+          onPress: () => {
+            router.replace("/(tabs)/Home");
+          },
         },
-      },
-    ]);
+      ]);
+    } catch (err: any) {
+      Alert.alert("Login failed", err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -73,89 +84,105 @@ const Login: React.FC = () => {
     router.push("/(pages)/Signup");
   };
 
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ECFCCA" />
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
+      <Animated.View
+        style={{
+          flex: 1,
+          transform: [{ translateX: slideAnim }],
+        }}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+        <StatusBar barStyle="dark-content" backgroundColor="#ECFCCA" />
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
         >
-          <View style={styles.header} />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.header} />
 
-          {/* Form */}
-          <View style={styles.formContainer}>
-            <Text style={styles.welcomeText}>Welcome!</Text>
+            {/* Form */}
+            <View style={styles.formContainer}>
+              <Text style={styles.welcomeText}>Welcome!</Text>
 
-            <View style={styles.inputsContainer}>
-              <InputField
-                title="Username or Email"
-                placeholder="Enter your username or email"
-                value={username}
-                onChangeText={(text) => {
-                  setUsername(text);
-                  setErrors((prev) => ({ ...prev, username: undefined }));
-                }}
-                keyboardType="email-address"
+              <View style={styles.inputsContainer}>
+                <InputField
+                  title="Username or Email"
+                  placeholder="Enter your username or email"
+                  value={username}
+                  onChangeText={(text) => {
+                    setUsername(text);
+                    setErrors((prev) => ({ ...prev, username: undefined }));
+                  }}
+                  keyboardType="email-address"
+                />
+                {errors.username && (
+                  <Text style={styles.errorText}>{errors.username}</Text>
+                )}
+
+                <InputField
+                  title="Password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setErrors((prev) => ({ ...prev, password: undefined }));
+                  }}
+                  secureTextEntry
+                  showPasswordToggle
+                />
+                {errors.password && (
+                  <Text style={styles.errorText}>{errors.password}</Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                onPress={handleForgotPassword}
+                style={styles.forgotPasswordContainer}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+              </TouchableOpacity>
+
+              <Button
+                title={loading ? "Logging in..." : "Log in"}
+                onPress={handleLogin}
+                variant="primary"
+                style={styles.loginButton}
+                disabled={loading}
               />
-              {errors.username && (
-                <Text style={styles.errorText}>{errors.username}</Text>
-              )}
 
-              <InputField
-                title="Password"
-                placeholder="Enter your password"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  setErrors((prev) => ({ ...prev, password: undefined }));
-                }}
-                secureTextEntry
-                showPasswordToggle
-              />
-              {errors.password && (
-                <Text style={styles.errorText}>{errors.password}</Text>
-              )}
-            </View>
+              <View style={styles.signUpContainer}>
+                <Text style={styles.signUpText}>Not a member? </Text>
+                <TouchableOpacity onPress={handleSignUp}>
+                  <Text style={styles.signUpLink}>Sign up now</Text>
+                </TouchableOpacity>
+              </View>
 
-            <TouchableOpacity
-              onPress={handleForgotPassword}
-              style={styles.forgotPasswordContainer}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-            </TouchableOpacity>
+              <View style={styles.dividerContainer}>
+                <View style={styles.divider} />
+                <Text style={styles.dividerText}>Or continue with</Text>
+                <View style={styles.divider} />
+              </View>
 
-            <Button
-              title="Log in"
-              onPress={handleLogin}
-              variant="primary"
-              style={styles.loginButton}
-            />
-
-            <View style={styles.signUpContainer}>
-              <Text style={styles.signUpText}>Not a member? </Text>
-              <TouchableOpacity onPress={handleSignUp}>
-                <Text style={styles.signUpLink}>Sign up now</Text>
+              <TouchableOpacity style={styles.googleButton}>
+                <GoogleButton onPress={handleGoogleLogin} />
               </TouchableOpacity>
             </View>
-
-            <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>Or continue with</Text>
-              <View style={styles.divider} />
-            </View>
-
-            <TouchableOpacity style={styles.googleButton}>
-              <GoogleButton onPress={handleGoogleLogin} />
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Animated.View>
     </SafeAreaView>
   );
 };
