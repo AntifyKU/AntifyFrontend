@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   KeyboardAvoidingView,
@@ -13,16 +12,19 @@ import {
   Animated,
   Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { InputField } from "../../components/molecule/InputField";
 import { Button } from "../../components/atom/Button";
 import { GoogleButton } from "@/components/atom/GoogleButton";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { login } from "@/services/authService";
 
 const Login: React.FC = () => {
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
   const screenWidth = Dimensions.get("window").width;
-  const slideAnim = useRef(new Animated.Value(-screenWidth)).current;
+  const startX = from === "signup" ? -screenWidth : screenWidth;
+  const slideAnim = useRef(new Animated.Value(startX)).current;
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

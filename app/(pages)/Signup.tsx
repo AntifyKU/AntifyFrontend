@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
+  Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Navbar } from "../../components/molecule/Navbar";
 import { InputField } from "../../components/molecule/InputField";
 import { Checkbox } from "../../components/atom/Checkbox";
@@ -27,6 +29,9 @@ const Signup: React.FC = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const screenWidth = Dimensions.get("window").width;
+  const slideAnim = useRef(new Animated.Value(screenWidth)).current;
+
   const [errors, setErrors] = useState<{
     username?: string;
     email?: string;
@@ -36,8 +41,11 @@ const Signup: React.FC = () => {
   }>({});
 
   const handleBack = () => {
-    console.log("Back button pressed");
-    router.back();
+    // back to login page
+    router.push({
+      pathname: "/(pages)/Login",
+      params: { from: "signup" },
+    });
   };
 
   const validateForm = (): boolean => {
@@ -104,7 +112,10 @@ const Signup: React.FC = () => {
         "Signup Successful",
         "Your account has been created successfully"
       );
-      router.replace("/(pages)/Login");
+      router.push({
+        pathname: "/(pages)/Login",
+        params: { from: "signup" },
+      });
     } catch (error: any) {
       Alert.alert("Signup Failed", error.message);
     } finally {
@@ -124,144 +135,161 @@ const Signup: React.FC = () => {
     Alert.alert("Privacy Policy", "View privacy policy page");
   };
 
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
-      <Navbar
-        leftIcon="chevron-back-outline"
-        onLeftPress={handleBack}
-        leftIconColor="#00A63E"
-      />
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
+      <Animated.View
+        style={{
+          flex: 1,
+          transform: [{ translateX: slideAnim }],
+        }}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+        <Navbar
+          leftIcon="chevron-back-outline"
+          onLeftPress={handleBack}
+          leftIconColor="#00A63E"
+        />
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
         >
-          <View style={styles.contentContainer}>
-            {/* Header */}
-            <View style={styles.headerContainer}>
-              <Text style={styles.title}>Sign up</Text>
-              <Text style={styles.subtitle}>
-                Create an account to get started
-              </Text>
-            </View>
-
-            {/* Form */}
-            <View style={styles.formContainer}>
-              <View>
-                <InputField
-                  title="Username"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChangeText={(text) => {
-                    console.log("Username changed:", text);
-                    setUsername(text);
-                    setErrors((prev) => ({ ...prev, username: undefined }));
-                  }}
-                />
-                {errors.username && (
-                  <Text style={styles.errorText}>{errors.username}</Text>
-                )}
-              </View>
-
-              <View>
-                <InputField
-                  title="Email Address"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChangeText={(text) => {
-                    console.log("Email changed:", text);
-                    setEmail(text);
-                    setErrors((prev) => ({ ...prev, email: undefined }));
-                  }}
-                  keyboardType="email-address"
-                />
-                {errors.email && (
-                  <Text style={styles.errorText}>{errors.email}</Text>
-                )}
-              </View>
-
-              <View>
-                <InputField
-                  title="Password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChangeText={(text) => {
-                    console.log("Password changed");
-                    setPassword(text);
-                    setErrors((prev) => ({ ...prev, password: undefined }));
-                  }}
-                  secureTextEntry={true}
-                  showPasswordToggle={true}
-                />
-                {errors.password && (
-                  <Text style={styles.errorText}>{errors.password}</Text>
-                )}
-              </View>
-
-              <View>
-                <InputField
-                  title="Confirm Password"
-                  placeholder="Confirm password"
-                  value={confirmPassword}
-                  onChangeText={(text) => {
-                    console.log("Confirm password changed");
-                    setConfirmPassword(text);
-                    setErrors((prev) => ({
-                      ...prev,
-                      confirmPassword: undefined,
-                    }));
-                  }}
-                  secureTextEntry={true}
-                  showPasswordToggle={true}
-                />
-                {errors.confirmPassword && (
-                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-                )}
-              </View>
-            </View>
-
-            {/* Terms and Conditions */}
-            <View style={styles.termsContainer}>
-              <Checkbox
-                checked={agreeTerms}
-                onToggle={() => {
-                  console.log("Checkbox toggled:", !agreeTerms);
-                  setAgreeTerms(!agreeTerms);
-                }}
-              />
-              <Text style={styles.termsText}>
-                I&apos;ve read and agree with the{" "}
-                <Text style={styles.termsLink} onPress={handleTermsPress}>
-                  Terms and Conditions
-                </Text>{" "}
-                and the{" "}
-                <Text style={styles.termsLink} onPress={handlePrivacyPress}>
-                  Privacy Policy
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.contentContainer}>
+              {/* Header */}
+              <View style={styles.headerContainer}>
+                <Text style={styles.title}>Sign up</Text>
+                <Text style={styles.subtitle}>
+                  Create an account to get started
                 </Text>
-              </Text>
+              </View>
+
+              {/* Form */}
+              <View style={styles.formContainer}>
+                <View>
+                  <InputField
+                    title="Username"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChangeText={(text) => {
+                      console.log("Username changed:", text);
+                      setUsername(text);
+                      setErrors((prev) => ({ ...prev, username: undefined }));
+                    }}
+                  />
+                  {errors.username && (
+                    <Text style={styles.errorText}>{errors.username}</Text>
+                  )}
+                </View>
+
+                <View>
+                  <InputField
+                    title="Email Address"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChangeText={(text) => {
+                      console.log("Email changed:", text);
+                      setEmail(text);
+                      setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                    keyboardType="email-address"
+                  />
+                  {errors.email && (
+                    <Text style={styles.errorText}>{errors.email}</Text>
+                  )}
+                </View>
+
+                <View>
+                  <InputField
+                    title="Password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={(text) => {
+                      console.log("Password changed");
+                      setPassword(text);
+                      setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    secureTextEntry={true}
+                    showPasswordToggle={true}
+                  />
+                  {errors.password && (
+                    <Text style={styles.errorText}>{errors.password}</Text>
+                  )}
+                </View>
+
+                <View>
+                  <InputField
+                    title="Confirm Password"
+                    placeholder="Confirm password"
+                    value={confirmPassword}
+                    onChangeText={(text) => {
+                      console.log("Confirm password changed");
+                      setConfirmPassword(text);
+                      setErrors((prev) => ({
+                        ...prev,
+                        confirmPassword: undefined,
+                      }));
+                    }}
+                    secureTextEntry={true}
+                    showPasswordToggle={true}
+                  />
+                  {errors.confirmPassword && (
+                    <Text style={styles.errorText}>
+                      {errors.confirmPassword}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Terms and Conditions */}
+              <View style={styles.termsContainer}>
+                <Checkbox
+                  checked={agreeTerms}
+                  onToggle={() => {
+                    console.log("Checkbox toggled:", !agreeTerms);
+                    setAgreeTerms(!agreeTerms);
+                  }}
+                />
+                <Text style={styles.termsText}>
+                  I&apos;ve read and agree with the{" "}
+                  <Text style={styles.termsLink} onPress={handleTermsPress}>
+                    Terms and Conditions
+                  </Text>{" "}
+                  and the{" "}
+                  <Text style={styles.termsLink} onPress={handlePrivacyPress}>
+                    Privacy Policy
+                  </Text>
+                </Text>
+              </View>
+
+              {errors.agreeTerms && (
+                <Text style={styles.errorText}>{errors.agreeTerms}</Text>
+              )}
+
+              <Button
+                title={loading ? "Signing up..." : "Sign up"}
+                onPress={handleSignup}
+                variant="primary"
+                style={styles.signupButton}
+                disabled={loading}
+              />
             </View>
-
-            {errors.agreeTerms && (
-              <Text style={styles.errorText}>{errors.agreeTerms}</Text>
-            )}
-
-            <Button
-              title={loading ? "Signing up..." : "Sign up"}
-              onPress={handleSignup}
-              variant="primary"
-              style={styles.signupButton}
-              disabled={loading}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Animated.View>
     </SafeAreaView>
   );
 };
