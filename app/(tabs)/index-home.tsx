@@ -134,8 +134,8 @@ export default function HomeScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const capturedImage = result.assets[0];
         router.push({
-          pathname: '/detail/[id]',
-          params: { id: 'new', imageUri: capturedImage.uri, source: 'camera' }
+          pathname: '/identification-results',
+          params: { imageUri: capturedImage.uri, source: 'camera' }
         });
       }
     } catch (error) {
@@ -167,8 +167,8 @@ export default function HomeScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedImage = result.assets[0];
         router.push({
-          pathname: '/detail/[id]',
-          params: { id: 'new', imageUri: selectedImage.uri, source: 'gallery' }
+          pathname: '/identification-results',
+          params: { imageUri: selectedImage.uri, source: 'gallery' }
         });
       }
     } catch (error) {
