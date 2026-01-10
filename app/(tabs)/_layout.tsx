@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, Text, Dimensions, TouchableOpacity } from 'react-native';
-import { Tabs } from 'expo-router';
+import { View, Text, Dimensions, TouchableOpacity, Alert, ActionSheetIOS, Platform } from 'react-native';
+import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import * as ImagePicker from 'expo-image-picker';
 
 // Get screen dimensions
 const { width } = Dimensions.get('window');
 
 // Custom tab bar component
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
@@ -88,6 +89,101 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     );
   };
 
+  // Handle camera photo
+  const handleTakePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (status !== 'granted') {
+        Alert.alert(
+          "Permission Denied",
+          "You need to grant camera permission to use this feature."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const capturedImage = result.assets[0];
+        router.push({
+          pathname: '/detail/[id]',
+          params: { id: 'new', imageUri: capturedImage.uri, source: 'camera' }
+        });
+      }
+    } catch (error) {
+      console.error("Error taking photo:", error);
+      Alert.alert("Error", "There was a problem taking the photo. Please try again.");
+    }
+  };
+
+  // Handle upload photo from gallery
+  const handleUploadPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        Alert.alert(
+          "Permission Denied",
+          "You need to grant gallery access to use this feature."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        router.push({
+          pathname: '/detail/[id]',
+          params: { id: 'new', imageUri: selectedImage.uri, source: 'gallery' }
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      Alert.alert("Error", "There was a problem selecting the photo. Please try again.");
+    }
+  };
+
+  // Handle camera button press - show action sheet
+  const handleCameraButtonPress = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Gallery'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            handleTakePhoto();
+          } else if (buttonIndex === 2) {
+            handleUploadPhoto();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Identify Ant',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: handleTakePhoto },
+          { text: 'Choose from Gallery', onPress: handleUploadPhoto },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
+
   return (
     <View
       style={{
@@ -107,6 +203,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
       >
         <TouchableOpacity
           activeOpacity={0.8}
+          onPress={handleCameraButtonPress}
           style={{
             width: 70,
             height: 70,
