@@ -14,6 +14,17 @@ export const getUserProfile = async () => {
   return data;
 };
 
+export const logout = async () => {
+  const res = await authFetch("/auth/logout", {
+    method: "POST",
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.detail || "Failed to logout");
+  }
+  return data;
+};
+
 export const updateProfile = async (updateData: {
   username?: string;
   profile_picture?: string;

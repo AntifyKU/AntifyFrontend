@@ -1,4 +1,4 @@
-import { saveToken } from "./tokenService";
+import { saveToken, removeToken, getToken } from "./tokenService";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -23,7 +23,7 @@ export const signup = async (
 
   if (!res.ok) {
     throw new Error(data.detail || "Signup failed");
-  }
+  } 
 
   if (data.id_token) {
     await saveToken(data.id_token);
@@ -55,4 +55,25 @@ export const login = async (usernameOrEmail: string, password: string) => {
   }
 
   return data;
+};
+
+export const logout = async () => {
+  try {
+    const token = await getToken();
+    
+    if (token) {
+      await fetch(`${BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    // Always remove local token, even if backend call fails
+    await removeToken();
+  }
 };
