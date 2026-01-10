@@ -10,7 +10,12 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Create .env from .env.example and update the values in .env to match your environment
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Start the app
 
    ```bash
    npx expo start
