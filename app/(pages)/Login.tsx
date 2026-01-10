@@ -55,9 +55,7 @@ const Login: React.FC = () => {
 
     try {
       setLoading(true);
-      const result = await login(username, password);
-      console.log("LOGIN RESULT:", result);
-
+      await login(username, password);
       Alert.alert("Login Successful", "Welcome back!", [
         {
           onPress: () => {

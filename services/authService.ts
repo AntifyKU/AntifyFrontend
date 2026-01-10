@@ -1,3 +1,5 @@
+import { saveToken } from "./tokenService";
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const signup = async (
@@ -23,6 +25,10 @@ export const signup = async (
     throw new Error(data.detail || "Signup failed");
   }
 
+  if (data.id_token) {
+    await saveToken(data.id_token);
+  }
+
   return data;
 };
 
@@ -42,6 +48,10 @@ export const login = async (usernameOrEmail: string, password: string) => {
 
   if (!res.ok) {
     throw new Error(data.detail || "Login failed");
+  }
+
+  if (data.id_token) {
+    await saveToken(data.id_token);
   }
 
   return data;

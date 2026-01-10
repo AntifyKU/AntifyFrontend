@@ -185,7 +185,6 @@ const Signup: React.FC = () => {
                     placeholder="Enter your username"
                     value={username}
                     onChangeText={(text) => {
-                      console.log("Username changed:", text);
                       setUsername(text);
                       setErrors((prev) => ({ ...prev, username: undefined }));
                     }}
@@ -201,7 +200,6 @@ const Signup: React.FC = () => {
                     placeholder="Enter your email"
                     value={email}
                     onChangeText={(text) => {
-                      console.log("Email changed:", text);
                       setEmail(text);
                       setErrors((prev) => ({ ...prev, email: undefined }));
                     }}
@@ -218,7 +216,6 @@ const Signup: React.FC = () => {
                     placeholder="Enter your password"
                     value={password}
                     onChangeText={(text) => {
-                      console.log("Password changed");
                       setPassword(text);
                       setErrors((prev) => ({ ...prev, password: undefined }));
                     }}
@@ -236,7 +233,6 @@ const Signup: React.FC = () => {
                     placeholder="Confirm password"
                     value={confirmPassword}
                     onChangeText={(text) => {
-                      console.log("Confirm password changed");
                       setConfirmPassword(text);
                       setErrors((prev) => ({
                         ...prev,
@@ -259,7 +255,6 @@ const Signup: React.FC = () => {
                 <Checkbox
                   checked={agreeTerms}
                   onToggle={() => {
-                    console.log("Checkbox toggled:", !agreeTerms);
                     setAgreeTerms(!agreeTerms);
                   }}
                 />
