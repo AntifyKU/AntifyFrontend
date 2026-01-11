@@ -70,9 +70,17 @@ export default function IdentificationResultsScreen() {
     }
 
     const handleConfirmAndViewDetails = (antId: string) => {
+        // Navigate to help-improve-ai page first before going to detail
         router.push({
-            pathname: '/detail/[id]',
-            params: { id: antId, imageUri, source }
+            pathname: '/help-improve-ai',
+            params: {
+                antId: antId,
+                imageUri,
+                source,
+                antName: bestMatch.name,
+                scientificName: bestMatch.scientificName,
+                matchPercentage: bestMatch.matchPercentage.toString()
+            }
         })
     }
 
