@@ -113,70 +113,86 @@ export default function ChatbotScreen() {
         </View>
       </View>
 
-      {/* Chat Messages */}
-      <ScrollView
-        ref={scrollViewRef}
-        className="flex-1 px-4 pt-2"
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-      >
-        {messages.map((message, index) => (
-          <View key={message.id} className="mb-4">
-            {!message.isUser && index === 0 && (
-              <View className="flex-row items-center mb-2">
-                <View className="items-center justify-center w-8 h-8 mr-2 bg-gray-100 rounded-full">
-                  <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
-                </View>
-                <Text className="text-gray-500">Livechat {formatTime(message.timestamp)}</Text>
-              </View>
-            )}
-
-            <View className={`${message.isUser ? 'ml-auto bg-gray-100' : 'mr-auto bg-white border border-gray-200'} rounded-2xl px-4 py-3 max-w-[80%]`}>
-              {message.isStreaming && !message.text ? (
-                <View className="flex-row items-center">
-                  <ActivityIndicator size="small" color="#0A9D5C" />
-                  <Text className="ml-2 text-gray-400">Thinking...</Text>
-                </View>
-              ) : (
-                <Text className="text-base text-gray-600">{message.text}</Text>
-              )}
-            </View>
-
-            {message.isUser && (
-              <Text className="mt-1 text-right text-gray-500">
-                Visitor {formatTime(message.timestamp)}
-              </Text>
-            )}
-          </View>
-        ))}
-
-        {/* FAQ Buttons */}
-        {messages.length === 1 && (
-          <View className="mt-4">
-            {faqItems.map(item => (
-              <TouchableOpacity
-                key={item.id}
-                className="px-4 py-3 mb-3 border border-gray-200 rounded-full"
-                onPress={() => handleFAQPress(item.question)}
-              >
-                <Text className="text-gray-600">{item.question}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-
-      {/* Input Area */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
+        {/* Chat Messages */}
+        <ScrollView
+          ref={scrollViewRef}
+          className="flex-1 px-4 pt-2"
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
+          {messages.map((message, index) => (
+            <View key={message.id} className="mb-4">
+              {!message.isUser && index === 0 && (
+                <View className="flex-row items-center mb-2">
+                  <View className="items-center justify-center w-8 h-8 mr-2 bg-gray-100 rounded-full">
+                    <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
+                  </View>
+                  <Text className="text-gray-500">Livechat {formatTime(message.timestamp)}</Text>
+                </View>
+              )}
+
+              <View className={`${message.isUser ? 'ml-auto bg-gray-100' : 'mr-auto bg-white border border-gray-200'} rounded-2xl px-4 py-3 max-w-[80%]`}>
+                {message.isStreaming && !message.text ? (
+                  <View className="flex-row items-center">
+                    <ActivityIndicator size="small" color="#0A9D5C" />
+                    <Text className="ml-2 text-gray-400">Thinking...</Text>
+                  </View>
+                ) : (
+                  <Text className="text-base text-gray-600">{message.text}</Text>
+                )}
+              </View>
+
+              {message.isUser && (
+                <Text className="mt-1 text-right text-gray-500">
+                  Visitor {formatTime(message.timestamp)}
+                </Text>
+              )}
+            </View>
+          ))}
+
+          {/* FAQ Buttons */}
+          {messages.length === 1 && (
+            <View className="mt-4">
+              {faqItems.map(item => (
+                <TouchableOpacity
+                  key={item.id}
+                  className="px-4 py-3 mb-3 border border-gray-200 rounded-full"
+                  onPress={() => handleFAQPress(item.question)}
+                >
+                  <Text className="text-gray-600">{item.question}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Input Area */}
         <View className="flex-row items-center px-4 py-2 border-t border-gray-200">
           <TextInput
-            className="flex-1 px-4 py-2 text-gray-600 border border-gray-200 rounded-full"
+            style={{
+              flex: 1,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: '#e5e7eb',
+              borderRadius: 9999,
+              fontSize: 16,
+              color: '#4b5563',
+              backgroundColor: '#fff',
+            }}
             placeholder="Write a message"
+            placeholderTextColor="#9ca3af"
             value={inputText}
             onChangeText={setInputText}
             onSubmitEditing={handleSend}
-            editable={isConnected}
+            returnKeyType="send"
+            autoCapitalize="none"
+            autoCorrect={true}
           />
           <TouchableOpacity className="ml-2">
             <Ionicons name="happy-outline" size={24} color="#666" />
