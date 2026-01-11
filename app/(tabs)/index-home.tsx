@@ -4,13 +4,15 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Image,
   SafeAreaView,
   StatusBar,
   Alert,
   ActionSheetIOS,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  StyleSheet
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -222,10 +224,10 @@ export default function HomeScreen() {
         </View>
 
         {/* Your Location Section */}
-        <TouchableOpacity
+        <Pressable
           className="flex-row items-start justify-between px-5 mb-6"
           onPress={handleLocationPress}
-          activeOpacity={0.7}
+          style={({ pressed }) => pressed && styles.pressed}
         >
           <View>
             <Text className="text-xl font-bold text-gray-800">Your Location</Text>
@@ -238,7 +240,7 @@ export default function HomeScreen() {
             </View>
           </View>
           <MaterialIcons name="location-on" size={24} color="#328e6e" />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* Identify Ant Button */}
         <View className="px-5 mb-6">
@@ -328,3 +330,9 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.7,
+  },
+});

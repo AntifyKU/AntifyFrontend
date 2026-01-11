@@ -4,10 +4,12 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   SafeAreaView,
   StatusBar,
   Dimensions,
   Modal,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -136,22 +138,24 @@ export default function ProfileScreen() {
         {/* Tab Switcher */}
         <View className="mx-5 mb-4">
           <View className="flex-row p-1 bg-gray-100 rounded-full">
-            <TouchableOpacity
+            <Pressable
               className={`flex-1 py-3 rounded-full ${activeTab === 'collection' ? 'bg-[#22A45D]' : ''}`}
               onPress={() => setActiveTab('collection')}
+              style={({ pressed }) => pressed && styles.pressed}
             >
               <Text className={`text-center font-medium ${activeTab === 'collection' ? 'text-white' : 'text-gray-500'}`}>
                 Collection
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               className={`flex-1 py-3 rounded-full ${activeTab === 'favorite' ? 'bg-[#22A45D]' : ''}`}
               onPress={() => setActiveTab('favorite')}
+              style={({ pressed }) => pressed && styles.pressed}
             >
               <Text className={`text-center font-medium ${activeTab === 'favorite' ? 'text-white' : 'text-gray-500'}`}>
                 Favorite
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
@@ -215,3 +219,9 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.7,
+  },
+});
