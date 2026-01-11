@@ -14,6 +14,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
+import { speciesListForCorrection } from "@/constants/AntData"
+import StarRating from "@/components/StarRating"
+import PrimaryButton from "@/components/PrimaryButton"
+import SearchBar from "@/components/SearchBar"
 
 // Define the type for route params
 type HelpImproveParams = {
@@ -24,20 +28,6 @@ type HelpImproveParams = {
     matchPercentage?: string
     source?: string
 }
-
-// Sample species list for "No, Incorrect" selection
-type SpeciesItem = {
-    id: string
-    name: string
-    description: string
-}
-
-const speciesList: SpeciesItem[] = [
-    { id: "1", name: "Worem ipsum", description: "Morem ipsum dolor sit amet," },
-    { id: "2", name: "Worem ipsum", description: "Morem ipsum dolor sit amet," },
-    { id: "3", name: "Worem ipsum", description: "Morem ipsum dolor sit amet," },
-    { id: "4", name: "Worem ipsum", description: "Morem ipsum dolor sit amet," },
-]
 
 export default function HelpImproveAIScreen() {
     const params = useLocalSearchParams<HelpImproveParams>()
@@ -90,7 +80,7 @@ export default function HelpImproveAIScreen() {
     }
 
     // Filter species based on search query
-    const filteredSpecies = speciesList.filter(species =>
+    const filteredSpecies = speciesListForCorrection.filter(species =>
         species.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
@@ -132,9 +122,9 @@ export default function HelpImproveAIScreen() {
 
                     {/* Details */}
                     <View className="flex-1">
-                        <Text className="font-bold text-gray-800 text-lg">{antName || "Worem ipsum"}</Text>
-                        <Text className="text-gray-500 text-sm">{scientificName || "Morem ipsum dolor sit amet,"}</Text>
-                        <Text className="text-[#0A9D5C] font-semibold">{matchPercentage || "80"}% Match</Text>
+                        <Text className="font-bold text-gray-800 text-lg">{antName || "Weaver Ant"}</Text>
+                        <Text className="text-gray-500 text-sm italic">{scientificName || "Oecophylla smaragdina"}</Text>
+                        <Text className="text-[#0A9D5C] font-semibold">{matchPercentage || "85"}% Match</Text>
                     </View>
                 </View>
 
@@ -237,14 +227,22 @@ export default function HelpImproveAIScreen() {
                                 style={({ pressed }) => pressed && styles.pressed}
                             >
                                 {/* Thumbnail */}
-                                <View className="w-12 h-12 rounded-lg bg-[#d4e8c7] items-center justify-center mr-3">
-                                    <MaterialCommunityIcons name="image" size={20} color="#328e6e" />
+                                <View className="w-12 h-12 rounded-lg bg-[#d4e8c7] items-center justify-center mr-3 overflow-hidden">
+                                    {species.image ? (
+                                        <Image
+                                            source={{ uri: species.image }}
+                                            className="w-full h-full"
+                                            resizeMode="cover"
+                                        />
+                                    ) : (
+                                        <MaterialCommunityIcons name="image" size={20} color="#328e6e" />
+                                    )}
                                 </View>
 
                                 {/* Details */}
                                 <View className="flex-1">
                                     <Text className="font-bold text-gray-800">{species.name}</Text>
-                                    <Text className="text-gray-500 text-sm">{species.description}</Text>
+                                    <Text className="text-gray-500 text-sm italic">{species.description}</Text>
                                 </View>
                             </Pressable>
                         ))}
@@ -256,22 +254,10 @@ export default function HelpImproveAIScreen() {
                     <Text className="text-lg font-bold text-gray-800 mb-3">
                         Rate this prediction quality:
                     </Text>
-                    <View className="flex-row">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <Pressable
-                                key={star}
-                                onPress={() => setRating(star)}
-                                className="mr-2"
-                                style={({ pressed }) => pressed && styles.pressed}
-                            >
-                                <Ionicons
-                                    name={rating >= star ? "star" : "star-outline"}
-                                    size={36}
-                                    color={rating >= star ? "#FFB800" : "#d4d6dd"}
-                                />
-                            </Pressable>
-                        ))}
-                    </View>
+                    <StarRating
+                        rating={rating}
+                        onRatingChange={setRating}
+                    />
                 </View>
 
                 {/* Additional Notes */}
@@ -292,23 +278,12 @@ export default function HelpImproveAIScreen() {
 
                 {/* Submit Button */}
                 <View className="mx-4 mt-8 mb-4">
-                    <Pressable
-                        className="bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center"
+                    <PrimaryButton
+                        title="Submit Feedback"
+                        icon="send"
                         onPress={handleSubmitFeedback}
-                        style={({ pressed }) => [
-                            {
-                                shadowColor: '#0A9D5C',
-                                shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 8,
-                                elevation: 6,
-                            },
-                            pressed && styles.pressed
-                        ]}
-                    >
-                        <Ionicons name="send" size={20} color="#fff" />
-                        <Text className="ml-2 text-white font-semibold text-base">Submit Feedback</Text>
-                    </Pressable>
+                        size="large"
+                    />
                 </View>
 
                 {/* Footer Note */}

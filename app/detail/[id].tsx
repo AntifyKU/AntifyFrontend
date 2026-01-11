@@ -12,100 +12,20 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
+import { antSpeciesData, getAntById } from "@/constants/AntData"
+import FilterChip from "@/components/FilterChip"
 
 // Define the type for route params
 type DetailParams = {
   id: string
 }
 
-// Define the type for ant data
-type AntData = {
-  id: string
-  name: string
-  scientificName: string
-  classification: {
-    family: string
-    subfamily: string
-    genus: string
-  }
-  tags: string[]
-  about: string
-  characteristics: string
-  colors: string[]
-  habitat: string[]
-  distribution: string[]
-  behavior: string
-  ecologicalRole: string
-  image: string
-}
-
-// Sample ant data with images from database (mock data)
-const antData: AntData[] = [
-  {
-    id: "1",
-    name: "Yellow Crazy Ant",
-    scientificName: "Anoplolepis gracilipes",
-    classification: {
-      family: "Formicidae",
-      subfamily: "Formicidae",
-      genus: "Anoplolepis",
-    },
-    tags: ["Tags", "Tags"],
-    about: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
-    characteristics: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
-    colors: ["Tags", "Tags"],
-    habitat: ["Tags", "Tags"],
-    distribution: ["Tags", "Tags"],
-    behavior: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
-    ecologicalRole: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg",
-  },
-  {
-    id: "2",
-    name: "Carpenter Ant",
-    scientificName: "Camponotus pennsylvanicus",
-    classification: {
-      family: "Formicidae",
-      subfamily: "Formicinae",
-      genus: "Camponotus",
-    },
-    tags: ["Destructive", "Large"],
-    about: "Carpenter ants are large ants that are commonly found in wooded areas and wooden structures. They excavate wood to build nests but don't eat the wood.",
-    characteristics: "Large black ants, 6-13mm in size. Workers have large mandibles and a smooth, rounded thorax. They are polymorphic with major and minor workers.",
-    colors: ["Black", "Dark Brown"],
-    habitat: ["Forests", "Buildings"],
-    distribution: ["North America", "Europe"],
-    behavior: "Unlike termites, carpenter ants don't eat wood but excavate it to build nests. They are primarily nocturnal and feed on insects and honeydew.",
-    ecologicalRole: "Important decomposers that help break down dead wood in forest ecosystems.",
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/fb/Carpenter_ant_Tanzania_crop.jpg",
-  },
-  {
-    id: "3",
-    name: "Fire Ant",
-    scientificName: "Solenopsis invicta",
-    classification: {
-      family: "Formicidae",
-      subfamily: "Myrmicinae",
-      genus: "Solenopsis",
-    },
-    tags: ["Dangerous", "Common"],
-    about: "Fire ants are aggressive stinging ants known for their painful stings and large mound nests. They are considered invasive in many regions.",
-    characteristics: "Small to medium sized ants, 2-6mm. Reddish-brown color with darker abdomen. They have a visible stinger and two-segmented waist.",
-    colors: ["Red", "Brown"],
-    habitat: ["Lawns", "Fields"],
-    distribution: ["South America", "USA", "Australia"],
-    behavior: "Aggressive when disturbed, fire ants will swarm and sting repeatedly. They are omnivorous and feed on plants and other insects.",
-    ecologicalRole: "Predators of many small insects and arthropods. Can be beneficial for pest control but also disruptive to native ecosystems.",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw",
-  },
-]
-
 export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>()
   const { id } = params
 
-  // Find the ant by ID or use the first one as default - always use database image
-  const currentAnt = antData.find((ant) => ant.id === id) || antData[0]
+  // Find the ant by ID or use the first one as default
+  const currentAnt = getAntById(id) || antSpeciesData[0]
 
   const handleBackPress = () => {
     router.back()
@@ -153,15 +73,12 @@ export default function DetailScreen() {
             </View>
           )}
 
-          {/* Pagination Dots - overlaid on image */}
-          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
-            {[0, 1, 2, 3].map((index) => (
-              <View
-                key={index}
-                className={`h-2 w-2 rounded-full mx-1 ${index === 0 ? "bg-[#0A9D5C]" : "bg-white/60"}`}
-              />
-            ))}
-          </View>
+          {/* Pagination Dots - only show if more than 1 image */}
+          {currentAnt.image && (
+            // For now we only have 1 image per ant, so don't show dots
+            // When multiple images are added, this will show the correct number of dots
+            null
+          )}
         </View>
 
         {/* Content */}
@@ -215,9 +132,13 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Color</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.colors.map((color, index) => (
-                <View key={index} className="bg-[#e8f5e0] rounded-full px-4 py-1.5 mr-2 mb-2">
-                  <Text className="text-[#0A9D5C] font-medium text-sm">{color}</Text>
-                </View>
+                <FilterChip
+                  key={index}
+                  label={color}
+                  onPress={() => { }}
+                  size="small"
+                  showCloseIcon={false}
+                />
               ))}
             </View>
           </View>
@@ -227,9 +148,13 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Habitat</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.habitat.map((hab, index) => (
-                <View key={index} className="bg-[#e8f5e0] rounded-full px-4 py-1.5 mr-2 mb-2">
-                  <Text className="text-[#0A9D5C] font-medium text-sm">{hab}</Text>
-                </View>
+                <FilterChip
+                  key={index}
+                  label={hab}
+                  onPress={() => { }}
+                  size="small"
+                  showCloseIcon={false}
+                />
               ))}
             </View>
           </View>
@@ -239,9 +164,13 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Distribution in Thailand</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.distribution.map((dist, index) => (
-                <View key={index} className="bg-[#e8f5e0] rounded-full px-4 py-1.5 mr-2 mb-2">
-                  <Text className="text-[#0A9D5C] font-medium text-sm">{dist}</Text>
-                </View>
+                <FilterChip
+                  key={index}
+                  label={dist}
+                  onPress={() => { }}
+                  size="small"
+                  showCloseIcon={false}
+                />
               ))}
             </View>
           </View>

@@ -14,6 +14,9 @@ import {
 } from "react-native"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
+import StarRating from "@/components/StarRating"
+import FilterChip from "@/components/FilterChip"
+import PrimaryButton from "@/components/PrimaryButton"
 
 // Define the type for route params
 type FeedbackParams = {
@@ -38,19 +41,19 @@ export default function FeedbackScreen() {
 
   // What did you like options
   const [likeOptions, setLikeOptions] = useState<FeedbackOption[]>([
-    { id: "1", label: "EASY TO USE", selected: false },
-    { id: "2", label: "CORRECTNESS", selected: false },
-    { id: "3", label: "HELPFUL", selected: false },
-    { id: "4", label: "CONVENIENT", selected: false },
-    { id: "5", label: "LOOKS GOOD", selected: false },
+    { id: "1", label: "Easy to Use", selected: false },
+    { id: "2", label: "Accurate Results", selected: false },
+    { id: "3", label: "Helpful Information", selected: false },
+    { id: "4", label: "Fast Response", selected: false },
+    { id: "5", label: "Great UI Design", selected: false },
   ])
 
   // What could be improved options
   const [improveOptions, setImproveOptions] = useState<FeedbackOption[]>([
-    { id: "1", label: "COULD HAVE MORE COMPONENTS", selected: false },
-    { id: "2", label: "COMPLEX", selected: false },
-    { id: "3", label: "NOT INTERACTIVE", selected: false },
-    { id: "4", label: "NOT CORRECT", selected: false },
+    { id: "1", label: "More Species Coverage", selected: false },
+    { id: "2", label: "Clearer Instructions", selected: false },
+    { id: "3", label: "Better Image Tips", selected: false },
+    { id: "4", label: "Faster Processing", selected: false },
   ])
 
   const toggleLikeOption = (id: string) => {
@@ -107,7 +110,7 @@ export default function FeedbackScreen() {
       <ScrollView className="flex-1 px-5">
         {/* Title */}
         <View className="mt-6 mb-4">
-          <Text className="text-3xl font-bold text-gray-800">Help us improved our AI.</Text>
+          <Text className="text-3xl font-bold text-gray-800">Help us improve our AI.</Text>
         </View>
 
         {/* Display the uploaded/captured image */}
@@ -118,7 +121,7 @@ export default function FeedbackScreen() {
               <Text className="mt-2 text-base font-medium text-center">
                 {antName}
                 {scientificName && (
-                  <Text className="font-normal text-gray-500">
+                  <Text className="font-normal text-gray-500 italic">
                     {"\n"}
                     {scientificName}
                   </Text>
@@ -131,17 +134,11 @@ export default function FeedbackScreen() {
         {/* Rating */}
         <View className="mb-8">
           <Text className="mb-4 text-xl text-gray-600">How would you rate the result?</Text>
-          <View className="flex-row">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity key={star} onPress={() => setRating(star)} className="mr-2">
-                <Ionicons
-                  name={rating >= star ? "star" : "star-outline"}
-                  size={36}
-                  color={rating >= star ? "#328e6e" : "#d4d6dd"}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
+          <StarRating
+            rating={rating}
+            onRatingChange={setRating}
+            activeColor="#328e6e"
+          />
         </View>
 
         {/* What did you like */}
@@ -149,15 +146,15 @@ export default function FeedbackScreen() {
           <Text className="mb-4 text-xl font-semibold text-gray-800">What did you like about it?</Text>
           <View className="flex-row flex-wrap">
             {likeOptions.map((option) => (
-              <TouchableOpacity
+              <FilterChip
                 key={option.id}
+                label={option.label}
+                isSelected={option.selected}
                 onPress={() => toggleLikeOption(option.id)}
-                className={`mr-2 mb-2 py-2 px-4 rounded-full ${option.selected ? "bg-[#328e6e]" : "bg-[#e1eebc]"}`}
-              >
-                <Text className={`${option.selected ? "text-white" : "text-gray-700"} font-medium`}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
+                selectedBackgroundColor="#328e6e"
+                unselectedBackgroundColor="#e1eebc"
+                showCloseIcon={false}
+              />
             ))}
           </View>
         </View>
@@ -167,15 +164,15 @@ export default function FeedbackScreen() {
           <Text className="mb-4 text-xl font-semibold text-gray-800">What could be improved?</Text>
           <View className="flex-row flex-wrap">
             {improveOptions.map((option) => (
-              <TouchableOpacity
+              <FilterChip
                 key={option.id}
+                label={option.label}
+                isSelected={option.selected}
                 onPress={() => toggleImproveOption(option.id)}
-                className={`mr-2 mb-2 py-2 px-4 rounded-full ${option.selected ? "bg-[#328e6e]" : "bg-[#e1eebc]"}`}
-              >
-                <Text className={`${option.selected ? "text-white" : "text-gray-700"} font-medium`}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
+                selectedBackgroundColor="#328e6e"
+                unselectedBackgroundColor="#e1eebc"
+                showCloseIcon={false}
+              />
             ))}
           </View>
         </View>
@@ -185,7 +182,7 @@ export default function FeedbackScreen() {
           <Text className="mb-4 text-xl font-semibold text-gray-800">Anything else?</Text>
           <TextInput
             className="h-32 p-4 text-gray-700 border border-gray-300 rounded-lg"
-            placeholder="Tell us everything."
+            placeholder="Share your thoughts with us..."
             multiline
             value={additionalFeedback}
             onChangeText={setAdditionalFeedback}
@@ -193,9 +190,14 @@ export default function FeedbackScreen() {
         </View>
 
         {/* Submit button */}
-        <TouchableOpacity className="bg-[#328e6e] rounded-lg py-4 items-center mb-8" onPress={handleSubmit}>
-          <Text className="text-lg font-semibold text-white">Submit</Text>
-        </TouchableOpacity>
+        <View className="mb-8">
+          <TouchableOpacity
+            className="bg-[#328e6e] rounded-lg py-4 items-center"
+            onPress={handleSubmit}
+          >
+            <Text className="text-lg font-semibold text-white">Submit Feedback</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   )
