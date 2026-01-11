@@ -1,25 +1,21 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   Image,
-  SafeAreaView,
   StatusBar,
-  FlatList,
-  Dimensions,
-  Animated,
+  ScrollView,
+  StyleSheet,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
-import { Ionicons } from "@expo/vector-icons"
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
 
 // Define the type for route params
 type DetailParams = {
   id: string
-  imageUri?: string
-  source?: string // 'camera', 'gallery', or undefined (from collection)
 }
 
 // Define the type for ant data
@@ -27,425 +23,298 @@ type AntData = {
   id: string
   name: string
   scientificName: string
-  genus: string
-  accuracy: string
-  image: string
-  habitat: string
-  behavior: string
-  tags: string[]
-  isFoundInYourLocation?: boolean // Added property
-  isPoisonous?: boolean // Added property
-  matchDetails: {
-    shape: string
-    color: string
-    pattern: string
+  classification: {
+    family: string
+    subfamily: string
+    genus: string
   }
+  tags: string[]
+  about: string
+  characteristics: string
+  colors: string[]
+  habitat: string[]
+  distribution: string[]
+  behavior: string
+  ecologicalRole: string
+  image: string
 }
 
-// Get screen dimensions
-const { width } = Dimensions.get("window")
-
-// Sample ant data with images and accuracy
+// Sample ant data with images from database (mock data)
 const antData: AntData[] = [
   {
-    id: "3",
-    name: "Fire Ant",
-    scientificName: "Solenopsis invicta",
-    genus: "Solenopsis",
-    accuracy: "96%",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw",
-    habitat:
-      "Fire ants build mounds in open areas such as lawns, fields, and pastures. They prefer sunny locations and can be found in many soil types.",
-    behavior:
-      "Aggressive when disturbed, fire ants will swarm and sting repeatedly. They are omnivorous and feed on plants and other insects.",
-    tags: ["Dangerous", "Common"],
-    isPoisonous: true, // Marked as poisonous
-    isFoundInYourLocation: true, // Found in user's location
-    matchDetails: {
-      shape: "98%",
-      color: "99%",
-      pattern: "100%",
+    id: "1",
+    name: "Yellow Crazy Ant",
+    scientificName: "Anoplolepis gracilipes",
+    classification: {
+      family: "Formicidae",
+      subfamily: "Formicidae",
+      genus: "Anoplolepis",
     },
+    tags: ["Tags", "Tags"],
+    about: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
+    characteristics: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
+    colors: ["Tags", "Tags"],
+    habitat: ["Tags", "Tags"],
+    distribution: ["Tags", "Tags"],
+    behavior: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
+    ecologicalRole: "Sorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
+    image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg",
   },
   {
     id: "2",
     name: "Carpenter Ant",
     scientificName: "Camponotus pennsylvanicus",
-    genus: "Camponotus",
-    accuracy: "95%",
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/fb/Carpenter_ant_Tanzania_crop.jpg",
-    habitat:
-      "Carpenter ants nest in wood, creating galleries and tunnels. They're commonly found in forests, wooded areas, and wooden structures.",
-    behavior:
-      "Unlike termites, carpenter ants don't eat wood but excavate it to build nests. They are primarily nocturnal and feed on insects and honeydew.",
+    classification: {
+      family: "Formicidae",
+      subfamily: "Formicinae",
+      genus: "Camponotus",
+    },
     tags: ["Destructive", "Large"],
-    isFoundInYourLocation: true, // Found in user's location
-    matchDetails: {
-      shape: "96%",
-      color: "94%",
-      pattern: "95%",
-    },
+    about: "Carpenter ants are large ants that are commonly found in wooded areas and wooden structures. They excavate wood to build nests but don't eat the wood.",
+    characteristics: "Large black ants, 6-13mm in size. Workers have large mandibles and a smooth, rounded thorax. They are polymorphic with major and minor workers.",
+    colors: ["Black", "Dark Brown"],
+    habitat: ["Forests", "Buildings"],
+    distribution: ["North America", "Europe"],
+    behavior: "Unlike termites, carpenter ants don't eat wood but excavate it to build nests. They are primarily nocturnal and feed on insects and honeydew.",
+    ecologicalRole: "Important decomposers that help break down dead wood in forest ecosystems.",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/fb/Carpenter_ant_Tanzania_crop.jpg",
   },
   {
-    id: "5",
-    name: "Harvester Ant",
-    scientificName: "Pogonomyrmex barbatus",
-    genus: "Pogonomyrmex",
-    accuracy: "92%",
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/6/6a/Florida_harvester_ant_teamwork%21_%28Pogonomyrmex_badius%29_%286502194585%29.jpg",
-    habitat:
-      "Harvester ants live in dry, open habitats like deserts and grasslands. They build large, circular nest mounds with a cleared area around them.",
-    behavior:
-      "These ants collect and store seeds as their primary food source. They have a powerful sting and are active during the day.",
-    tags: ["Seed Collector", "Desert"],
-    isPoisonous: true, // Marked as poisonous
-    matchDetails: {
-      shape: "93%",
-      color: "90%",
-      pattern: "94%",
+    id: "3",
+    name: "Fire Ant",
+    scientificName: "Solenopsis invicta",
+    classification: {
+      family: "Formicidae",
+      subfamily: "Myrmicinae",
+      genus: "Solenopsis",
     },
-  },
-  {
-    id: "4",
-    name: "Bullet Ant",
-    scientificName: "Paraponera clavata",
-    genus: "Paraponera",
-    accuracy: "88%",
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Paraponera_clavata.jpg/500px-Paraponera_clavata.jpg",
-    habitat: "Bullet ants inhabit rainforests in Central and South America, nesting at the base of trees.",
-    behavior:
-      "Known for having one of the most painful stings in the insect world, bullet ants are predatory and forage in trees for small arthropods and nectar.",
-    tags: ["Painful Sting", "Tropical"],
-    isPoisonous: true, // Marked as poisonous
-    matchDetails: {
-      shape: "89%",
-      color: "87%",
-      pattern: "90%",
-    },
-  },
-  {
-    id: "1",
-    name: "Weaver Ant",
-    scientificName: "Oecophylla smaragdina",
-    genus: "Oecophylla",
-    accuracy: "85%",
-    image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg",
-    habitat:
-      "Weaver ants are found in tropical forests of Asia and Australia, building nests by weaving leaves together with silk produced by their larvae.",
-    behavior:
-      "These ants are highly territorial and aggressive. They use their strong mandibles to defend their territory and can spray formic acid when threatened.",
-    tags: ["Territorial", "Arboreal"],
-    matchDetails: {
-      shape: "86%",
-      color: "84%",
-      pattern: "87%",
-    },
-  },
-  // Add a default ant for new identifications
-  {
-    id: "new",
-    name: "Unknown Ant",
-    scientificName: "Species pending identification",
-    genus: "Unknown",
-    accuracy: "85%",
-    image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg", // Default image
-    habitat: "Habitat information will be provided after identification.",
-    behavior: "Behavior information will be provided after identification.",
-    tags: ["Unidentified"],
-    matchDetails: {
-      shape: "85%",
-      color: "85%",
-      pattern: "85%",
-    },
+    tags: ["Dangerous", "Common"],
+    about: "Fire ants are aggressive stinging ants known for their painful stings and large mound nests. They are considered invasive in many regions.",
+    characteristics: "Small to medium sized ants, 2-6mm. Reddish-brown color with darker abdomen. They have a visible stinger and two-segmented waist.",
+    colors: ["Red", "Brown"],
+    habitat: ["Lawns", "Fields"],
+    distribution: ["South America", "USA", "Australia"],
+    behavior: "Aggressive when disturbed, fire ants will swarm and sting repeatedly. They are omnivorous and feed on plants and other insects.",
+    ecologicalRole: "Predators of many small insects and arthropods. Can be beneficial for pest control but also disruptive to native ecosystems.",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw",
   },
 ]
 
 export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>()
-  const { id, imageUri, source } = params
+  const { id } = params
 
-  console.log("Detail screen params:", { id, imageUri, source }) // Debug log
-
-  // Determine if this is from a photo (camera/gallery) or from collection
-  const isFromPhoto = source === "camera" || source === "gallery"
-
-  // Find the ant by ID or use the first one as default
-  const selectedAnt = antData.find((ant) => ant.id === id) || antData[0]
-
-  const [activeSlide, setActiveSlide] = useState<number>(0)
-  const [currentAnt, setCurrentAnt] = useState<AntData>(selectedAnt)
-
-  // Prepare the ants array based on the source
-  // If from photo, add the identified ant first with 100% accuracy, then show similar ants
-  // If from collection, just show the selected ant
-  const ants = isFromPhoto
-    ? [
-        {
-          ...selectedAnt,
-          id: "0",
-          accuracy: "100%",
-          image: imageUri || selectedAnt.image,
-          matchDetails: {
-            shape: "98%",
-            color: "99%",
-            pattern: "100%",
-          },
-        },
-        ...antData.filter((ant) => ant.id !== id).slice(0, 3), // Show only 3 similar ants
-      ]
-    : [selectedAnt]
-
-  const flatListRef = useRef<FlatList>(null)
-  const scrollY = useRef(new Animated.Value(0)).current
-
-  // Update current ant when active slide changes
-  useEffect(() => {
-    if (activeSlide < ants.length) {
-      setCurrentAnt(ants[activeSlide])
-    }
-  }, [activeSlide])
+  // Find the ant by ID or use the first one as default - always use database image
+  const currentAnt = antData.find((ant) => ant.id === id) || antData[0]
 
   const handleBackPress = () => {
-    // Go back to previous screen
     router.back()
   }
 
-  const handleFeedbackPress = () => {
-    // Only pass the uploaded/captured image to the feedback screen
-    // If we're viewing the first slide (user's photo) and it's from camera/gallery
-    if (isFromPhoto && activeSlide === 0 && imageUri) {
-      router.push({
-        pathname: "/feedback",
-        params: {
-          imageUri: imageUri,
-          antName: currentAnt.name,
-          scientificName: currentAnt.scientificName,
-          source: source,
-        },
-      })
-    } else {
-      // If we're not viewing the user's photo, don't allow feedback
-      // This is a fallback, as the button should only be shown for appropriate ants
-      router.push("/feedback")
-    }
-  }
-
-  // FIXED: Always show feedback button for uploaded photos on the first slide
-  // For photos from camera/gallery, we always want to show the feedback button
-  // when viewing the first slide (the user's uploaded/captured image)
-  const shouldShowFeedbackButton = isFromPhoto && activeSlide === 0
-
-  const renderImage = ({ item, index }: { item: AntData; index: number }) => {
-    // Make ALL photos circular
-    return (
-      <View style={{ width, justifyContent: "center", alignItems: "center" }}>
-        <Image source={{ uri: item.image }} className="rounded-full w-60 h-60" resizeMode="cover" />
-      </View>
-    )
-  }
-
-  interface ScrollEvent {
-    nativeEvent: {
-      contentOffset: {
-        x: number
-      }
-    }
-  }
-
-  const handleScroll = (event: ScrollEvent) => {
-    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width)
-    if (slideIndex !== activeSlide) {
-      setActiveSlide(slideIndex)
-    }
-  }
-
   return (
-    <View className="flex-1 bg-[#f5f7e8]">
+    <View className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
 
-      {/* Back Button - Positioned directly at the top without header */}
-      <SafeAreaView>
-        <TouchableOpacity className="p-4" onPress={handleBackPress}>
-          <Ionicons name="arrow-back" size={28} color="#000" />
-        </TouchableOpacity>
-      </SafeAreaView>
+      {/* Fixed Header - Back Button Only - Stays on screen when scrolling */}
+      <View className="absolute top-0 left-0 z-20" style={{ zIndex: 20 }}>
+        <SafeAreaView edges={['top']}>
+          <Pressable
+            onPress={handleBackPress}
+            className="m-4 w-10 h-10 rounded-full bg-white/80 items-center justify-center"
+            style={({ pressed }) => [
+              {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              },
+              pressed && styles.pressed
+            ]}
+          >
+            <Ionicons name="chevron-back" size={24} color="#0A9D5C" />
+          </Pressable>
+        </SafeAreaView>
+      </View>
 
-      <Animated.ScrollView
-        className="flex-1"
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
-        scrollEventThrottle={16}
-      >
-        {/* Image Gallery */}
-        <View className="py-4">
-          <FlatList
-            ref={flatListRef}
-            data={ants}
-            renderItem={renderImage}
-            keyExtractor={(item, index) => `${item.id}-${index}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll}
-            decelerationRate="fast"
-          />
-        </View>
-
-        {/* Pagination Dots - Only show if there are multiple images */}
-        {ants.length > 1 && (
-          <View className="flex-row justify-center mb-6">
-            {ants.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  setActiveSlide(index)
-                  flatListRef.current?.scrollToIndex({ index, animated: true })
-                }}
-              >
-                <View
-                  className={`h-2 w-2 rounded-full mx-1 ${index === activeSlide ? "bg-green-500" : "bg-gray-300"}`}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Content */}
-        <View className="px-5">
-          {/* Title and Accuracy (only show accuracy if from photo) */}
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-3xl font-bold text-black">{currentAnt.name}</Text>
-
-            {/* Accuracy Indicator - Only show if from photo */}
-            {isFromPhoto && (
-              <View className="bg-[#0A9D5C] rounded-full px-3 py-1 flex-row items-center">
-                <Ionicons name="checkmark-circle" size={16} color="#fff" />
-                <Text className="ml-1 font-bold text-white">{currentAnt.accuracy}</Text>
-              </View>
-            )}
-          </View>
-
-          <View className="mb-4">
-            <Text className="text-gray-600">Scientific name: {currentAnt.scientificName}</Text>
-            <Text className="text-gray-600">Genus: {currentAnt.genus}</Text>
-          </View>
-
-          <View className="flex-row flex-wrap mb-4">
-            {currentAnt.tags.map((tag, index) => (
-              <View key={index} className="bg-[#0A9D5C] rounded-full px-4 py-1 mr-2 mb-2">
-                <Text className="text-xs text-white uppercase">{tag}</Text>
-              </View>
-            ))}
-
-            {/* Show location tag if found in user's location */}
-            {currentAnt.isFoundInYourLocation && (
-              <View className="bg-[#FF8C00] rounded-full px-4 py-1 mr-2 mb-2">
-                <Text className="text-xs text-white uppercase">Found in your area</Text>
-              </View>
-            )}
-
-            {/* Show poisonous tag if ant is poisonous */}
-            {currentAnt.isPoisonous && (
-              <View className="bg-[#FF3B30] rounded-full px-4 py-1 mr-2 mb-2">
-                <Text className="text-xs text-white uppercase">Poisonous</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Detailed Accuracy Section - Only show if from photo */}
-          {isFromPhoto && (
-            <View className="p-4 mb-4 bg-white rounded-lg shadow-sm">
-              <Text className="mb-2 text-xl font-bold text-black">Identification Accuracy</Text>
-
-              <View className="mb-3">
-                <View className="flex-row justify-between mb-1">
-                  <Text className="text-gray-700">Confidence Level</Text>
-                  <Text className="font-bold text-[#0A9D5C]">{currentAnt.accuracy}</Text>
-                </View>
-                <View className="h-2 overflow-hidden bg-gray-200 rounded-full">
-                  <View
-                    className="h-full bg-[#0A9D5C] rounded-full"
-                    style={{ width: `${Number.parseFloat(currentAnt.accuracy)}%` }}
-                  />
-                </View>
-              </View>
-
-              <View className="flex-row flex-wrap">
-                <View className="px-3 py-1 mb-2 mr-2 bg-gray-100 rounded-full">
-                  <Text className="text-xs text-gray-700">Shape Match: {currentAnt.matchDetails.shape}</Text>
-                </View>
-                <View className="px-3 py-1 mb-2 mr-2 bg-gray-100 rounded-full">
-                  <Text className="text-xs text-gray-700">Color Match: {currentAnt.matchDetails.color}</Text>
-                </View>
-                <View className="px-3 py-1 mb-2 mr-2 bg-gray-100 rounded-full">
-                  <Text className="text-xs text-gray-700">Pattern Match: {currentAnt.matchDetails.pattern}</Text>
-                </View>
-              </View>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Image Header - Full width image that scrolls with content */}
+        <View className="relative">
+          {/* Full width image */}
+          {currentAnt.image ? (
+            <Image
+              source={{ uri: currentAnt.image }}
+              className="w-full h-72"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="w-full h-72 bg-[#e8f5e0] items-center justify-center">
+              <MaterialCommunityIcons name="image" size={64} color="#328e6e" />
             </View>
           )}
 
-          <View className="mb-4">
-            <Text className="mb-1 text-xl font-bold text-black">Habitat</Text>
-            <Text className="text-gray-600">{currentAnt.habitat}</Text>
+          {/* Pagination Dots - overlaid on image */}
+          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
+            {[0, 1, 2, 3].map((index) => (
+              <View
+                key={index}
+                className={`h-2 w-2 rounded-full mx-1 ${index === 0 ? "bg-[#0A9D5C]" : "bg-white/60"}`}
+              />
+            ))}
           </View>
+        </View>
 
-          <View className="mb-8">
-            <Text className="mb-1 text-xl font-bold text-black">Behavior</Text>
-            <Text className="text-gray-600">{currentAnt.behavior}</Text>
-          </View>
+        {/* Content */}
+        <View className="px-5 pt-5">
+          {/* Title */}
+          <Text className="text-2xl font-bold text-gray-800 mb-1">{currentAnt.name}</Text>
+          <Text className="text-gray-500 italic mb-3">{currentAnt.scientificName}</Text>
 
-          {/* Buttons */}
-          <View className="mb-4">
-            {/* Add to Collection Button */}
-            <TouchableOpacity className="bg-[#0A9D5C] rounded-lg py-4 items-center mb-4">
-              <View className="flex-row items-center">
-                <Ionicons name="add" size={20} color="#fff" />
-                <Text className="ml-2 font-medium text-white">Add to Collection</Text>
+          {/* Tags */}
+          <View className="flex-row flex-wrap mb-4">
+            {currentAnt.tags.map((tag, index) => (
+              <View key={index} className="bg-[#0A9D5C] rounded-full px-4 py-1.5 mr-2 mb-2">
+                <Text className="text-sm text-white font-medium">{tag}</Text>
               </View>
-            </TouchableOpacity>
+            ))}
+          </View>
 
-            {/* Feedback and Chat Buttons */}
-            <View className="flex-row">
-              {/* Feedback Button - Only show if conditions are met */}
-              {shouldShowFeedbackButton && (
-                <TouchableOpacity
-                  className="bg-[#328e6e] rounded-lg py-4 flex-1 items-center mr-2"
-                  onPress={handleFeedbackPress}
-                >
-                  <View className="flex-row items-center">
-                    <Ionicons name="star" size={20} color="#fff" />
-                    <Text className="ml-2 font-medium text-white">Feedback</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
+          {/* About Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">About</Text>
+            <Text className="text-gray-600 leading-5">{currentAnt.about}</Text>
+          </View>
 
-              {/* Chat Button - Always show, but adjust width based on feedback button visibility */}
-              <TouchableOpacity
-                className={`bg-[#0A9D5C] rounded-lg py-4 flex-1 items-center ${shouldShowFeedbackButton ? "ml-2" : ""}`}
-                onPress={() => router.push("/chatbot")}
-              >
-                <View className="flex-row items-center">
-                  <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
-                  <Text className="ml-2 font-medium text-white">Chat with us</Text>
+          {/* Classification Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-3">Classification</Text>
+            <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+              <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
+                <Text className="text-gray-600">Family</Text>
+                <Text className="text-gray-800 font-medium">{currentAnt.classification.family}</Text>
+              </View>
+              <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
+                <Text className="text-gray-600">Subfamily</Text>
+                <Text className="text-gray-800 font-medium">{currentAnt.classification.subfamily}</Text>
+              </View>
+              <View className="flex-row justify-between py-3 px-4">
+                <Text className="text-gray-600">Genus</Text>
+                <Text className="text-[#0A9D5C] font-medium italic">{currentAnt.classification.genus}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Characteristics Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Characteristics</Text>
+            <Text className="text-gray-600 leading-5">{currentAnt.characteristics}</Text>
+          </View>
+
+          {/* Color Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Color</Text>
+            <View className="flex-row flex-wrap">
+              {currentAnt.colors.map((color, index) => (
+                <View key={index} className="bg-[#e8f5e0] rounded-full px-4 py-1.5 mr-2 mb-2">
+                  <Text className="text-[#0A9D5C] font-medium text-sm">{color}</Text>
                 </View>
-              </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Habitat Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Habitat</Text>
+            <View className="flex-row flex-wrap">
+              {currentAnt.habitat.map((hab, index) => (
+                <View key={index} className="bg-[#e8f5e0] rounded-full px-4 py-1.5 mr-2 mb-2">
+                  <Text className="text-[#0A9D5C] font-medium text-sm">{hab}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Distribution in Thailand Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Distribution in Thailand</Text>
+            <View className="flex-row flex-wrap">
+              {currentAnt.distribution.map((dist, index) => (
+                <View key={index} className="bg-[#e8f5e0] rounded-full px-4 py-1.5 mr-2 mb-2">
+                  <Text className="text-[#0A9D5C] font-medium text-sm">{dist}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Behavior Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Behavior</Text>
+            <Text className="text-gray-600 leading-5">{currentAnt.behavior}</Text>
+          </View>
+
+          {/* Ecological Role Section */}
+          <View className="mb-5">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Ecological Role</Text>
+            <Text className="text-gray-600 leading-5">{currentAnt.ecologicalRole}</Text>
+          </View>
+
+          {/* Contribute Section */}
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-gray-800 mb-2">Contribute</Text>
+            <View className="flex-row items-center justify-between">
+              <Text className="text-gray-600">Help improve our database</Text>
+              <Pressable
+                className="flex-row items-center border border-[#0A9D5C] rounded-full px-4 py-2"
+                style={({ pressed }) => pressed && styles.pressed}
+              >
+                <Ionicons name="pencil" size={16} color="#0A9D5C" />
+                <Text className="text-[#0A9D5C] font-medium ml-2">Suggest Update</Text>
+              </Pressable>
             </View>
           </View>
         </View>
 
-        {/* Add extra space at the bottom */}
-        <View className="h-20" />
-      </Animated.ScrollView>
+        {/* Add space for bottom buttons */}
+        <View className="h-32" />
+      </ScrollView>
 
-      {/* Floating Chat Button */}
-      <TouchableOpacity
-        className="absolute bottom-6 right-6 bg-[#0A9D5C] w-14 h-14 rounded-full items-center justify-center shadow-lg"
-        onPress={() => router.push("/chatbot")}
-      >
-        <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
-      </TouchableOpacity>
+      {/* Bottom Fixed Buttons */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <SafeAreaView edges={['bottom']}>
+          <View className="flex-row px-4 py-3 gap-3">
+            <Pressable
+              className="flex-1 bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center"
+              style={({ pressed }) => [
+                {
+                  shadowColor: '#0A9D5C',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 6,
+                },
+                pressed && styles.pressed
+              ]}
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text className="text-white font-semibold ml-2">Add to My Collection</Text>
+            </Pressable>
+
+            <Pressable
+              className="bg-white border-2 border-[#0A9D5C] rounded-full px-6 py-4 items-center justify-center"
+              onPress={() => router.push("/chatbot")}
+              style={({ pressed }) => pressed && styles.pressed}
+            >
+              <Text className="text-[#0A9D5C] font-semibold">Ask Chat</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </View>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.7,
+  },
+})
