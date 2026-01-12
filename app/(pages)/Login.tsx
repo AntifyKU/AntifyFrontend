@@ -56,7 +56,7 @@ const Login: React.FC = () => {
     try {
       setLoading(true);
       await login(username, password);
-      router.replace("/(tabs)/Home");
+      router.replace("/(tabs)/index-home");
     } catch (err: any) {
       Alert.alert("Login failed", err.message || "Something went wrong");
     } finally {

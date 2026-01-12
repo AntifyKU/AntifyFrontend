@@ -22,7 +22,7 @@ export default function LandingPage() {
     ]).start(() => {
       // if user is logged in, navigate to Home, else to Login
       // now simply navigate to LoginPage
-      router.replace("/(pages)/Login");
+      router.replace("/(pages)/login");
     });
   }, [fadeAnim, router]);
 
@@ -30,7 +30,7 @@ export default function LandingPage() {
     <View className="flex-1 bg-white items-center justify-center">
       <Animated.View style={{ opacity: fadeAnim }}>
         <Image
-          source={require("@/assets/images/Logo.png")}
+          source={require("../../assets/images/icon.png")}
           style={{ width: 200, height: 200 }}
         />
       </Animated.View>

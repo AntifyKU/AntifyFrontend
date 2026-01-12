@@ -43,7 +43,7 @@ const Signup: React.FC = () => {
   const handleBack = () => {
     // back to login page
     router.push({
-      pathname: "/(pages)/Login",
+      pathname: "/(pages)/login",
       params: { from: "signup" },
     });
   };
@@ -113,7 +113,7 @@ const Signup: React.FC = () => {
         "Your account has been created successfully"
       );
       router.push({
-        pathname: "/(pages)/Login",
+        pathname: "/(pages)/login",
         params: { from: "signup" },
       });
     } catch (error: any) {
