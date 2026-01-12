@@ -56,13 +56,7 @@ const Login: React.FC = () => {
     try {
       setLoading(true);
       await login(username, password);
-      Alert.alert("Login Successful", "Welcome back!", [
-        {
-          onPress: () => {
-            router.replace("/(tabs)/Home");
-          },
-        },
-      ]);
+      router.replace("/(tabs)/Home");
     } catch (err: any) {
       Alert.alert("Login failed", err.message || "Something went wrong");
     } finally {
@@ -70,14 +64,14 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google login functionality
-    console.log("Google login pressed");
-  };
+  // const handleGoogleLogin = () => {
+  //   // TODO: Implement Google login functionality
+  //   console.log("Google login pressed");
+  // };
 
-  const handleForgotPassword = () => {
-    router.push("/(pages)/ForgotPassword");
-  };
+  // const handleForgotPassword = () => {
+  //   router.push("/(pages)/ForgotPassword");
+  // };
 
   const handleSignUp = () => {
     // Navigate to Signup page
@@ -148,12 +142,12 @@ const Login: React.FC = () => {
                 )}
               </View>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={handleForgotPassword}
                 style={styles.forgotPasswordContainer}
               >
                 <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <Button
                 title={loading ? "Logging in..." : "Log in"}
@@ -170,15 +164,15 @@ const Login: React.FC = () => {
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.dividerContainer}>
+              {/* <View style={styles.dividerContainer}>
                 <View style={styles.divider} />
                 <Text style={styles.dividerText}>Or continue with</Text>
                 <View style={styles.divider} />
-              </View>
+              </View> */}
 
-              <TouchableOpacity style={styles.googleButton}>
+              {/* <TouchableOpacity style={styles.googleButton}>
                 <GoogleButton onPress={handleGoogleLogin} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
