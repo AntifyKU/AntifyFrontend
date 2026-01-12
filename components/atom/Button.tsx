@@ -25,8 +25,8 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
 }) => {
   const getButtonStyle = () => {
-    const baseStyle: (ViewStyle | TextStyle)[] = [styles.button];
-
+    const baseStyle: ViewStyle[] = [styles.button];
+  
     switch (variant) {
       case "primary":
         baseStyle.push(styles.primaryButton);
@@ -38,21 +38,22 @@ export const Button: React.FC<ButtonProps> = ({
         baseStyle.push(styles.outlineButton);
         break;
     }
-
+  
     if (disabled) {
       baseStyle.push(styles.disabledButton);
     }
-
+  
     if (style) {
       baseStyle.push(style);
     }
-
+  
     return baseStyle;
   };
+  
 
   const getTextStyle = () => {
-    const baseStyle: (ViewStyle | TextStyle)[] = [styles.text];
-
+    const baseStyle: TextStyle[] = [styles.text];
+  
     switch (variant) {
       case "primary":
         baseStyle.push(styles.primaryText);
@@ -64,17 +65,18 @@ export const Button: React.FC<ButtonProps> = ({
         baseStyle.push(styles.outlineText);
         break;
     }
-
+  
     if (disabled) {
       baseStyle.push(styles.disabledText);
     }
-
+  
     if (textStyle) {
       baseStyle.push(textStyle);
     }
-
+  
     return baseStyle;
   };
+  
 
   return (
     <TouchableOpacity

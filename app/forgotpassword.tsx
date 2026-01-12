@@ -10,9 +10,9 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import { Navbar } from "../../components/molecule/Navbar";
-import { InputField } from "../../components/molecule/InputField";
-import { Button } from "../../components/atom/Button";
+import { Navbar } from "../components/molecule/Navbar";
+import { InputField } from "../components/molecule/InputField";
+import { Button } from "../components/atom/Button";
 import { useRouter } from "expo-router";
 
 const ForgotPassword: React.FC = () => {
