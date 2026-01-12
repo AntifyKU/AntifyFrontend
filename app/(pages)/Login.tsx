@@ -75,7 +75,7 @@ const Login: React.FC = () => {
 
   const handleSignUp = () => {
     // Navigate to Signup page
-    router.push("/(pages)/Signup");
+    router.push("/(pages)/signup");
   };
 
   useEffect(() => {
