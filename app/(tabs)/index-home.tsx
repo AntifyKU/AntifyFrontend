@@ -4,45 +4,32 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Image,
   SafeAreaView,
   StatusBar,
   Alert,
   ActionSheetIOS,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  StyleSheet
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import SectionHeader from '@/components/SectionHeader';
+import AntCard from '@/components/AntCard';
+import PrimaryButton from '@/components/PrimaryButton';
+import {
+  quickDiscoveryCategories,
+  featuredAntOfTheDay,
+  featuredSpeciesList
+} from '@/constants/AntData';
 
 export default function HomeScreen() {
   const [location, setLocation] = useState('Loading...');
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
-
-  // Quick discovery categories
-  const quickDiscoveryTags = [
-    { id: '1', name: 'Venomous', icon: 'alert', color: '#FF6B35' },
-    { id: '2', name: 'Forest', icon: 'leaf', color: '#328e6e' },
-    { id: '3', name: 'Household', icon: 'home', color: '#328e6e' },
-    { id: '4', name: 'Hou', icon: 'sparkles', color: '#328e6e' },
-  ];
-
-  // Ant of the day
-  const antOfTheDay = {
-    id: '1',
-    name: 'Porem ipsum',
-    description: 'Worem ipsum',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg'
-  };
-
-  // Featured species
-  const featuredSpecies = [
-    { id: '1', name: 'Porem ipsum', description: 'Worem ipsum', image: 'https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg' },
-    { id: '2', name: 'Porem ipsun', description: 'Worem ipsum', image: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Carpenter_ant_Tanzania_crop.jpg' },
-    { id: '3', name: 'Porem ipsum', description: 'Worem ipsum', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw' },
-  ];
 
   // Get user's location on mount
   useEffect(() => {
@@ -75,13 +62,6 @@ export default function HomeScreen() {
 
       if (address) {
         // Format the address
-        const locationParts = [];
-        if (address.district) locationParts.push(address.district);
-        if (address.city) locationParts.push(address.city);
-        if (address.region) locationParts.push(address.region);
-        if (address.country) locationParts.push(address.country);
-
-        // Use subregion or city, and country
         const displayLocation = address.city || address.subregion || address.region;
         const displayCountry = address.country;
 
@@ -244,10 +224,10 @@ export default function HomeScreen() {
         </View>
 
         {/* Your Location Section */}
-        <TouchableOpacity
+        <Pressable
           className="flex-row items-start justify-between px-5 mb-6"
           onPress={handleLocationPress}
-          activeOpacity={0.7}
+          style={({ pressed }) => pressed && styles.pressed}
         >
           <View>
             <Text className="text-xl font-bold text-gray-800">Your Location</Text>
@@ -260,35 +240,27 @@ export default function HomeScreen() {
             </View>
           </View>
           <MaterialIcons name="location-on" size={24} color="#328e6e" />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* Identify Ant Button */}
         <View className="px-5 mb-6">
-          <TouchableOpacity
-            className="bg-[#328e6e] rounded-full py-4 flex-row justify-center items-center"
+          <PrimaryButton
+            title="Identify Ant"
+            icon="camera"
             onPress={handleIdentifyAnt}
-            style={{
-              shadowColor: '#328e6e',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
-            }}
-          >
-            <Ionicons name="camera" size={22} color="#fff" />
-            <Text className="ml-3 font-semibold text-white text-base">Identify Ant</Text>
-          </TouchableOpacity>
+            size="large"
+          />
         </View>
 
         {/* Quick Discovery Section */}
         <View className="mb-6">
-          <Text className="px-5 mb-3 text-lg font-bold text-gray-800">Quick Discovery</Text>
+          <SectionHeader title="Quick Discovery" />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
           >
-            {quickDiscoveryTags.map((tag) => (
+            {quickDiscoveryCategories.map((tag) => (
               <TouchableOpacity
                 key={tag.id}
                 className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
@@ -311,58 +283,43 @@ export default function HomeScreen() {
 
         {/* Ant of the Day Section */}
         <View className="mb-6">
-          <Text className="px-5 mb-3 text-lg font-bold text-gray-800">Ant of the Day</Text>
+          <SectionHeader title="Ant of the Day" />
           <View className="px-5">
-            <TouchableOpacity
-              className="bg-[#e8f5e0] rounded-xl overflow-hidden"
-              onPress={() => handleAntPress(antOfTheDay.id)}
-            >
-              <Image
-                source={{ uri: antOfTheDay.image }}
-                className="h-40 w-full"
-                resizeMode="cover"
-              />
-              <View className="p-4">
-                <Text className="text-lg font-semibold text-gray-800">{antOfTheDay.name}</Text>
-                <Text className="text-gray-500">{antOfTheDay.description}</Text>
-              </View>
-            </TouchableOpacity>
+            <AntCard
+              id={featuredAntOfTheDay.id}
+              name={featuredAntOfTheDay.name}
+              description={featuredAntOfTheDay.scientificName}
+              image={featuredAntOfTheDay.image}
+              variant="vertical"
+              onPress={() => handleAntPress(featuredAntOfTheDay.id)}
+            />
           </View>
         </View>
 
         {/* Featured Species Section */}
         <View className="mb-8">
-          <View className="flex-row items-center justify-between px-5 mb-3">
-            <View>
-              <Text className="text-lg font-bold text-gray-800">Featured Species</Text>
-              <Text className="text-gray-500 text-sm">Discover common Thai ants</Text>
-            </View>
-            <TouchableOpacity>
-              <Text className="text-[#328e6e] font-medium">See more</Text>
-            </TouchableOpacity>
-          </View>
+          <SectionHeader
+            title="Featured Species"
+            subtitle="Discover common Thai ants"
+            showSeeMore
+            onSeeMorePress={() => router.push('/(tabs)/explore')}
+          />
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
           >
-            {featuredSpecies.map((species) => (
-              <TouchableOpacity
+            {featuredSpeciesList.map((species) => (
+              <AntCard
                 key={species.id}
-                className="mr-4 w-[160px]"
+                id={species.id}
+                name={species.name}
+                scientificName={species.scientificName}
+                image={species.image}
+                variant="compact"
                 onPress={() => handleAntPress(species.id)}
-              >
-                <View className="bg-[#e8f5e0] rounded-xl overflow-hidden">
-                  <Image
-                    source={{ uri: species.image }}
-                    className="h-28 w-full"
-                    resizeMode="cover"
-                  />
-                </View>
-                <Text className="mt-2 font-semibold text-gray-800">{species.name}</Text>
-                <Text className="text-gray-500 text-sm">{species.description}</Text>
-              </TouchableOpacity>
+              />
             ))}
           </ScrollView>
         </View>
@@ -373,3 +330,9 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.7,
+  },
+});

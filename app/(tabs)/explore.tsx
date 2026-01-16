@@ -6,37 +6,15 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  TextInput,
   Modal,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import ListCard from '@/components/ListCard';
-
-// Sample species data
-const speciesData = [
-  { id: '1', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '2', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '3', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '4', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '5', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '6', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '7', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '8', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-];
-
-// Filter options
-const quickFilters = [
-  { id: 'venomous', label: 'Venomous', icon: 'alert', color: '#F59E0B' },
-  { id: 'forest', label: 'Forest', icon: 'tree', color: '#22A45D' },
-  { id: 'household', label: 'Household', icon: 'home', color: '#3B82F6' },
-  { id: 'rare', label: 'Rare', icon: 'sparkles', color: '#8B5CF6' },
-];
-
-const colorOptions = ['Black', 'Orange', 'Red', 'Yellow'];
-const sizeOptions = ['Tiny', 'Small', 'Medium', 'Large', 'Giant'];
-const habitatOptions = ['Urban', 'Forest', 'Desert'];
-const distributionOptions = ['North', 'South', 'East', 'West', 'Central'];
+import SearchBar from '@/components/SearchBar';
+import SortButton from '@/components/SortButton';
+import FilterChip from '@/components/FilterChip';
+import { exploreSpeciesData, filterOptions, quickDiscoveryCategories } from '@/constants/AntData';
 
 type FilterState = {
   quickFilters: string[];
@@ -54,7 +32,7 @@ export default function ExploreScreen() {
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
     quickFilters: ['venomous'],
     colors: ['Red'],
-    sizes: ['Medium', 'Large'],
+    sizes: ['Medium (5-10mm)', 'Large (10-15mm)'],
     habitats: ['Forest'],
     distributions: ['North', 'South', 'East', 'West', 'Central'],
   });
@@ -75,7 +53,7 @@ export default function ExploreScreen() {
     appliedFilters.habitats.length;
 
   // Filter species based on search query
-  const filteredSpecies = speciesData.filter(item => {
+  const filteredSpecies = exploreSpeciesData.filter(item => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
     return (
@@ -86,7 +64,7 @@ export default function ExploreScreen() {
 
   const handleItemPress = (id: string) => {
     router.push({
-      pathname: '/detail',
+      pathname: '/detail/[id]',
       params: { id }
     });
   };
@@ -129,37 +107,7 @@ export default function ExploreScreen() {
     });
   };
 
-  const renderChip = (
-    label: string,
-    isSelected: boolean,
-    onPress: () => void,
-    icon?: string,
-    iconColor?: string
-  ) => (
-    <TouchableOpacity
-      key={label}
-      onPress={onPress}
-      className={`flex-row items-center px-4 py-2.5 rounded-full mr-2 mb-2 ${isSelected ? 'bg-[#22A45D]' : 'bg-[#e8f5e0]'
-        }`}
-    >
-      {icon && (
-        <MaterialCommunityIcons
-          name={icon as any}
-          size={16}
-          color={isSelected ? '#FFFFFF' : iconColor || '#22A45D'}
-          style={{ marginRight: 6 }}
-        />
-      )}
-      <Text className={`font-medium ${isSelected ? 'text-white' : 'text-[#22A45D]'}`}>
-        {label}
-      </Text>
-      {isSelected && (
-        <Ionicons name="close" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />
-      )}
-    </TouchableOpacity>
-  );
-
-  // Filter Modal - inlined to prevent re-mounting on state change
+  // Filter Modal
   const filterModalContent = (
     <Modal
       visible={showFilter}
@@ -186,29 +134,16 @@ export default function ExploreScreen() {
             <Text className="mb-4 text-lg font-semibold text-gray-800">Quick Filter</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex-row">
-                {quickFilters.map(filter => (
-                  <TouchableOpacity
+                {quickDiscoveryCategories.map(filter => (
+                  <FilterChip
                     key={filter.id}
+                    label={filter.name}
+                    icon={filter.icon}
+                    iconColor={filter.color}
+                    isSelected={tempFilters.quickFilters.includes(filter.id)}
                     onPress={() => toggleFilter('quickFilters', filter.id)}
-                    className={`flex-row items-center px-4 py-2.5 rounded-full mr-2 border ${tempFilters.quickFilters.includes(filter.id)
-                      ? 'bg-[#F59E0B] border-[#F59E0B]'
-                      : 'bg-white border-[#22A45D]'
-                      }`}
-                  >
-                    <MaterialCommunityIcons
-                      name={filter.icon as any}
-                      size={16}
-                      color={tempFilters.quickFilters.includes(filter.id) ? '#FFFFFF' : filter.color}
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text className={`font-medium ${tempFilters.quickFilters.includes(filter.id) ? 'text-white' : 'text-[#22A45D]'
-                      }`}>
-                      {filter.label}
-                    </Text>
-                    {tempFilters.quickFilters.includes(filter.id) && (
-                      <Ionicons name="close" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />
-                    )}
-                  </TouchableOpacity>
+                    selectedBackgroundColor="#F59E0B"
+                  />
                 ))}
               </View>
             </ScrollView>
@@ -218,13 +153,14 @@ export default function ExploreScreen() {
           <View className="mb-6">
             <Text className="mb-4 text-lg font-semibold text-gray-800">Color</Text>
             <View className="flex-row flex-wrap">
-              {colorOptions.map(color =>
-                renderChip(
-                  color,
-                  tempFilters.colors.includes(color),
-                  () => toggleFilter('colors', color)
-                )
-              )}
+              {filterOptions.colors.map(color => (
+                <FilterChip
+                  key={color}
+                  label={color}
+                  isSelected={tempFilters.colors.includes(color)}
+                  onPress={() => toggleFilter('colors', color)}
+                />
+              ))}
             </View>
           </View>
 
@@ -232,13 +168,14 @@ export default function ExploreScreen() {
           <View className="mb-6">
             <Text className="mb-4 text-lg font-semibold text-gray-800">Size</Text>
             <View className="flex-row flex-wrap">
-              {sizeOptions.map(size =>
-                renderChip(
-                  size,
-                  tempFilters.sizes.includes(size),
-                  () => toggleFilter('sizes', size)
-                )
-              )}
+              {filterOptions.sizes.map(size => (
+                <FilterChip
+                  key={size}
+                  label={size}
+                  isSelected={tempFilters.sizes.includes(size)}
+                  onPress={() => toggleFilter('sizes', size)}
+                />
+              ))}
             </View>
           </View>
 
@@ -246,13 +183,14 @@ export default function ExploreScreen() {
           <View className="mb-6">
             <Text className="mb-4 text-lg font-semibold text-gray-800">Habitat</Text>
             <View className="flex-row flex-wrap">
-              {habitatOptions.map(habitat =>
-                renderChip(
-                  habitat,
-                  tempFilters.habitats.includes(habitat),
-                  () => toggleFilter('habitats', habitat)
-                )
-              )}
+              {filterOptions.habitats.map(habitat => (
+                <FilterChip
+                  key={habitat}
+                  label={habitat}
+                  isSelected={tempFilters.habitats.includes(habitat)}
+                  onPress={() => toggleFilter('habitats', habitat)}
+                />
+              ))}
             </View>
           </View>
 
@@ -260,13 +198,14 @@ export default function ExploreScreen() {
           <View className="mb-6">
             <Text className="mb-4 text-lg font-semibold text-gray-800">Distribution in Thailand</Text>
             <View className="flex-row flex-wrap">
-              {distributionOptions.map(dist =>
-                renderChip(
-                  dist,
-                  tempFilters.distributions.includes(dist),
-                  () => toggleFilter('distributions', dist)
-                )
-              )}
+              {filterOptions.distributions.map(dist => (
+                <FilterChip
+                  key={dist}
+                  label={dist}
+                  isSelected={tempFilters.distributions.includes(dist)}
+                  onPress={() => toggleFilter('distributions', dist)}
+                />
+              ))}
             </View>
           </View>
 
@@ -304,27 +243,15 @@ export default function ExploreScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Search Bar */}
-        <View className="px-5 mb-4">
-          <View className="flex-row items-center px-4 py-3 bg-gray-100 border border-gray-200 rounded-full">
-            <Ionicons name="search" size={20} color="#9CA3AF" />
-            <TextInput
-              className="flex-1 ml-3 text-base text-gray-700"
-              placeholder=""
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-        </View>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search ant species..."
+        />
 
         {/* Sort and Filter */}
         <View className="flex-row items-center justify-between px-5 mb-4">
-          {/* Sort Button */}
-          <TouchableOpacity className="flex-row items-center px-4 py-2.5 border border-gray-200 rounded-lg">
-            <Ionicons name="swap-vertical" size={18} color="#333" />
-            <Text className="ml-2 font-medium text-gray-700">Sort</Text>
-            <Ionicons name="chevron-down" size={16} color="#333" style={{ marginLeft: 6 }} />
-          </TouchableOpacity>
+          <SortButton onPress={() => { }} />
 
           {/* Filter Button with Badge */}
           <TouchableOpacity
@@ -354,6 +281,7 @@ export default function ExploreScreen() {
               id={item.id}
               title={item.title}
               description={item.description}
+              image={item.image}
               onPress={() => handleItemPress(item.id)}
             />
           ))}

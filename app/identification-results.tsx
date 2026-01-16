@@ -12,6 +12,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
+import { identificationResultsData } from "@/constants/AntData"
+import AntCard from "@/components/AntCard"
+import PrimaryButton from "@/components/PrimaryButton"
 
 // Define the type for route params
 type IdentificationParams = {
@@ -19,60 +22,30 @@ type IdentificationParams = {
     source?: string // 'camera', 'gallery'
 }
 
-// Define the type for ant data
-type AntData = {
-    id: string
-    name: string
-    scientificName: string
-    matchPercentage: number
-    image: string
-    description: string
-}
-
-// Sample identification results
-const identificationResults: AntData[] = [
-    {
-        id: "1",
-        name: "Porem ipsum",
-        scientificName: "Worem ipsum",
-        matchPercentage: 80,
-        image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Red_Weaver_Ant%2C_Oecophylla_smaragdina.jpg",
-        description: "Morem ipsum dolor sit amet, consectetur adipiscing elit.",
-    },
-    {
-        id: "2",
-        name: "Worem ipsum",
-        scientificName: "Aorem ipsum",
-        matchPercentage: 69,
-        image: "https://upload.wikimedia.org/wikipedia/commons/f/fb/Carpenter_ant_Tanzania_crop.jpg",
-        description: "Morem ipsum dolor sit amet,",
-    },
-    {
-        id: "3",
-        name: "Worem ipsum",
-        scientificName: "Borem ipsum",
-        matchPercentage: 45,
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROxO4D319sBerXRBC58SSvMjWm5SHZEbV2iF7siCvIUqEPyu_DOc_c7GJSNoRoZ7FMj77nL1Hit4D0P9Oeympiaw",
-        description: "Morem ipsum dolor sit amet,",
-    },
-]
-
 export default function IdentificationResultsScreen() {
     const params = useLocalSearchParams<IdentificationParams>()
     const { imageUri, source } = params
 
-    const [bestMatch] = useState(identificationResults[0])
-    const [otherMatches] = useState(identificationResults.slice(1))
-    const totalMatches = identificationResults.length
+    const [bestMatch] = useState(identificationResultsData[0])
+    const [otherMatches] = useState(identificationResultsData.slice(1))
+    const totalMatches = identificationResultsData.length
 
     const handleBackPress = () => {
         router.back()
     }
 
     const handleConfirmAndViewDetails = (antId: string) => {
+        // Navigate to help-improve-ai page first before going to detail
         router.push({
-            pathname: '/detail/[id]',
-            params: { id: antId, imageUri, source }
+            pathname: '/help-improve-ai',
+            params: {
+                antId: antId,
+                imageUri,
+                source,
+                antName: bestMatch.name,
+                scientificName: bestMatch.scientificName,
+                matchPercentage: bestMatch.matchPercentage?.toString()
+            }
         })
     }
 
@@ -93,7 +66,7 @@ export default function IdentificationResultsScreen() {
         router.replace('/(tabs)/index-home')
     }
 
-    const handleOtherMatchPress = (ant: AntData) => {
+    const handleOtherMatchPress = (ant: typeof identificationResultsData[0]) => {
         router.push({
             pathname: '/detail/[id]',
             params: { id: ant.id, imageUri: ant.image, source: 'result' }
@@ -151,7 +124,7 @@ export default function IdentificationResultsScreen() {
                         {/* Best Match Details */}
                         <View className="p-4">
                             <Text className="text-lg font-bold text-gray-800">{bestMatch.name}</Text>
-                            <Text className="text-gray-500 text-sm">{bestMatch.scientificName}</Text>
+                            <Text className="text-gray-500 text-sm italic">{bestMatch.scientificName}</Text>
                             <Text className="text-[#0A9D5C] font-semibold mt-1">{bestMatch.matchPercentage}% Match</Text>
 
                             {/* Confirm Button */}
@@ -183,26 +156,17 @@ export default function IdentificationResultsScreen() {
                     <Text className="text-lg font-bold text-gray-800 mb-3">Other Possibilities</Text>
 
                     {otherMatches.map((ant) => (
-                        <TouchableOpacity
+                        <AntCard
                             key={ant.id}
-                            className="flex-row bg-[#e8f5e0] rounded-xl p-3 mb-3 items-center"
+                            id={ant.id}
+                            name={ant.name}
+                            description={ant.scientificName}
+                            matchPercentage={ant.matchPercentage}
+                            image={ant.image}
+                            variant="horizontal"
+                            showMatchPercentage={true}
                             onPress={() => handleOtherMatchPress(ant)}
-                        >
-                            {/* Thumbnail */}
-                            <View className="w-16 h-16 rounded-lg bg-[#d4e8c7] items-center justify-center mr-3">
-                                <MaterialCommunityIcons name="image" size={28} color="#328e6e" />
-                            </View>
-
-                            {/* Details */}
-                            <View className="flex-1">
-                                <Text className="font-bold text-gray-800">{ant.name}</Text>
-                                <Text className="text-gray-500 text-sm" numberOfLines={1}>{ant.description}</Text>
-                                <Text className="text-[#0A9D5C] font-semibold text-sm">{ant.matchPercentage}% Match</Text>
-                            </View>
-
-                            {/* Arrow */}
-                            <Ionicons name="chevron-forward" size={24} color="#9ca3af" />
-                        </TouchableOpacity>
+                        />
                     ))}
                 </View>
 
@@ -213,20 +177,12 @@ export default function IdentificationResultsScreen() {
             {/* Bottom Button */}
             <View className="absolute bottom-0 left-0 right-0 p-4 bg-white">
                 <SafeAreaView edges={['bottom']}>
-                    <TouchableOpacity
-                        className="bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center"
+                    <PrimaryButton
+                        title="Identify Another Ant"
+                        icon="camera-outline"
                         onPress={handleIdentifyAnother}
-                        style={{
-                            shadowColor: '#0A9D5C',
-                            shadowOffset: { width: 0, height: 4 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 8,
-                            elevation: 6,
-                        }}
-                    >
-                        <Ionicons name="camera-outline" size={22} color="#fff" />
-                        <Text className="ml-2 text-white font-semibold text-base">Identify Another Ant</Text>
-                    </TouchableOpacity>
+                        size="large"
+                    />
                 </SafeAreaView>
             </View>
         </View>

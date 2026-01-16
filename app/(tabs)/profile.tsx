@@ -4,14 +4,19 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   SafeAreaView,
   StatusBar,
   Dimensions,
   Modal,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import ListCard from '@/components/ListCard';
+import CollectionGridItem from '@/components/CollectionGridItem';
+import SortButton from '@/components/SortButton';
+import { collectionItemsData, favoriteItemsData } from '@/constants/AntData';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
@@ -19,23 +24,6 @@ const gap = 12;
 const itemWidth = (width - 40 - gap) / numColumns;
 
 type TabType = 'collection' | 'favorite';
-
-// Sample collection data
-const collectionItems = [
-  { id: '1', title: 'Porem ipsum', subtitle: 'Worem ipsum' },
-  { id: '2', title: 'Porem ipsum', subtitle: 'Worem ipsum' },
-  { id: '3', title: 'Porem ipsum', subtitle: 'Worem ipsum' },
-  { id: '4', title: 'Porem ipsum', subtitle: 'Worem ipsum' },
-  { id: '5', title: 'Porem ipsum', subtitle: 'Worem ipsum' },
-  { id: '6', title: 'Porem ipsum', subtitle: 'Worem ipsum' },
-];
-
-const favoriteItems = [
-  { id: '1', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '2', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '3', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-  { id: '4', title: 'Worem ipsum', description: 'Morem ipsum dolor sit amet, consectetur adipiscing elit.' },
-];
 
 // Settings menu items
 const settingsMenuItems = [
@@ -51,35 +39,10 @@ export default function ProfileScreen() {
 
   const handleItemPress = (id: string) => {
     router.push({
-      pathname: '/detail',
+      pathname: '/detail/[id]',
       params: { id }
     });
   };
-
-  // Render collection grid item
-  const renderCollectionItem = (item: typeof collectionItems[0], index: number) => {
-    const isLeftColumn = index % 2 === 0;
-
-    return (
-      <TouchableOpacity
-        key={item.id}
-        style={{
-          width: itemWidth,
-          marginBottom: 16,
-          marginLeft: isLeftColumn ? 0 : gap,
-        }}
-        onPress={() => handleItemPress(item.id)}
-      >
-        <View className="bg-[#e1eebc] rounded-xl overflow-hidden aspect-square items-center justify-center">
-          <Ionicons name="image" size={48} color="#328e6e" />
-        </View>
-        <Text className="mt-2 text-base font-semibold text-gray-800">{item.title}</Text>
-        <Text className="text-sm text-gray-500">{item.subtitle}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-
 
   // Settings Modal
   const SettingsModal = () => (
@@ -99,7 +62,7 @@ export default function ProfileScreen() {
           >
             <Ionicons name="chevron-back" size={28} color="#22A45D" />
           </TouchableOpacity>
-          <Text className="text-xl font-semibold text-gray-800">Setting</Text>
+          <Text className="text-xl font-semibold text-gray-800">Settings</Text>
         </View>
 
         {/* Profile Section */}
@@ -115,8 +78,8 @@ export default function ProfileScreen() {
               <Ionicons name="pencil" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-          <Text className="mt-4 text-xl font-bold text-gray-800">Username</Text>
-          <Text className="mt-1 text-gray-500">email address</Text>
+          <Text className="mt-4 text-xl font-bold text-gray-800">Ant Enthusiast</Text>
+          <Text className="mt-1 text-gray-500">user@antify.com</Text>
         </View>
 
         {/* Divider */}
@@ -168,29 +131,31 @@ export default function ProfileScreen() {
               <Ionicons name="person" size={40} color="#c5e063" />
             </View>
           </View>
-          <Text className="text-xl font-bold text-gray-800">Username</Text>
-          <Text className="mt-1 text-gray-500">email address</Text>
+          <Text className="text-xl font-bold text-gray-800">Ant Enthusiast</Text>
+          <Text className="mt-1 text-gray-500">user@antify.com</Text>
         </View>
 
         {/* Tab Switcher */}
         <View className="mx-5 mb-4">
           <View className="flex-row p-1 bg-gray-100 rounded-full">
-            <TouchableOpacity
+            <Pressable
               className={`flex-1 py-3 rounded-full ${activeTab === 'collection' ? 'bg-[#22A45D]' : ''}`}
               onPress={() => setActiveTab('collection')}
+              style={({ pressed }) => pressed && styles.pressed}
             >
               <Text className={`text-center font-medium ${activeTab === 'collection' ? 'text-white' : 'text-gray-500'}`}>
                 Collection
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               className={`flex-1 py-3 rounded-full ${activeTab === 'favorite' ? 'bg-[#22A45D]' : ''}`}
               onPress={() => setActiveTab('favorite')}
+              style={({ pressed }) => pressed && styles.pressed}
             >
               <Text className={`text-center font-medium ${activeTab === 'favorite' ? 'text-white' : 'text-gray-500'}`}>
                 Favorite
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
@@ -198,12 +163,7 @@ export default function ProfileScreen() {
         <View className="flex-row items-center justify-between px-5 mb-4">
           {activeTab === 'collection' ? (
             <>
-              {/* Sort on left for Collection */}
-              <TouchableOpacity className="flex-row items-center px-3 py-2 border border-gray-200 rounded-lg">
-                <Ionicons name="swap-vertical" size={16} color="#333" />
-                <Text className="ml-2 text-gray-700">Sort</Text>
-                <Ionicons name="chevron-down" size={16} color="#333" style={{ marginLeft: 4 }} />
-              </TouchableOpacity>
+              <SortButton onPress={() => { }} />
               {/* Edit button */}
               <TouchableOpacity className="px-4 py-2 border border-[#22A45D] rounded-lg">
                 <Text className="text-[#22A45D] font-medium">Edit</Text>
@@ -213,12 +173,7 @@ export default function ProfileScreen() {
             <>
               {/* Empty space for Favorite */}
               <View />
-              {/* Sort on right for Favorite */}
-              <TouchableOpacity className="flex-row items-center px-3 py-2 border border-gray-200 rounded-lg">
-                <Ionicons name="swap-vertical" size={16} color="#333" />
-                <Text className="ml-2 text-gray-700">Sort</Text>
-                <Ionicons name="chevron-down" size={16} color="#333" style={{ marginLeft: 4 }} />
-              </TouchableOpacity>
+              <SortButton onPress={() => { }} />
             </>
           )}
         </View>
@@ -228,17 +183,29 @@ export default function ProfileScreen() {
           {activeTab === 'collection' ? (
             // Collection Grid
             <View className="flex-row flex-wrap">
-              {collectionItems.map((item, index) => renderCollectionItem(item, index))}
+              {collectionItemsData.map((item, index) => (
+                <CollectionGridItem
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  image={item.image}
+                  itemWidth={itemWidth}
+                  isLeftColumn={index % 2 === 0}
+                  onPress={() => handleItemPress(item.id)}
+                />
+              ))}
             </View>
           ) : (
             // Favorite List
             <>
-              {favoriteItems.map(item => (
+              {favoriteItemsData.map(item => (
                 <ListCard
                   key={item.id}
                   id={item.id}
                   title={item.title}
                   description={item.description}
+                  image={item.image}
                   onPress={() => handleItemPress(item.id)}
                 />
               ))}
@@ -252,3 +219,9 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.7,
+  },
+});
