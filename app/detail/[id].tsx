@@ -43,7 +43,7 @@ export default function DetailScreen() {
     distribution: species.distribution,
     behavior: species.behavior,
     ecologicalRole: species.ecological_role,
-    image: species.images?.[0] || '',
+    image: species.image || '',
   } : antSpeciesData[0]
 
   const handleBackPress = () => {

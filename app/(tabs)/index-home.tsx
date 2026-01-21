@@ -45,7 +45,7 @@ export default function HomeScreen() {
         id: species[0].id,
         name: species[0].name,
         scientificName: species[0].scientific_name,
-        image: species[0].images?.[0] || '',
+        image: species[0].image || '',
       };
       
       // Use remaining species as featured list
@@ -53,7 +53,7 @@ export default function HomeScreen() {
         id: s.id,
         name: s.name,
         scientificName: s.scientific_name,
-        image: s.images?.[0] || '',
+        image: s.image || '',
       }));
       
       return { 

@@ -15,7 +15,7 @@ function transformStaticNews(staticData: typeof newsData): NewsItem[] {
     title: item.title,
     description: item.description,
     link: item.link,
-    image_url: item.image,
+    image: item.image,
     source: 'Static Data',
   }));
 }

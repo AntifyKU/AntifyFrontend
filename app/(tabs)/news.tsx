@@ -120,7 +120,7 @@ export default function NewsScreen() {
                                 id={newsItem.id}
                                 title={newsItem.title}
                                 description={newsItem.description}
-                                image={newsItem.image_url || ''}
+                image={newsItem.image || ''}
                                 onPress={() => handleNewsPress(newsItem.link)}
                                 showChevron={false}
                             />

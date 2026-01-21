@@ -26,7 +26,7 @@ export interface Species {
   distribution: string[];
   behavior: string;
   ecological_role: string;
-  images: string[];
+  image: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -57,7 +57,7 @@ export interface NewsItem {
   title: string;
   description: string;
   link: string;
-  image_url?: string;
+  image?: string;
   source: string;
   published_at?: string;
   fetched_at?: string;

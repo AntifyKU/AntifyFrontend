@@ -333,7 +333,7 @@ export default function ExploreScreen() {
                 id={item.id}
                 title={item.name}
                 description={item.about.substring(0, 80) + '...'}
-                image={item.images[0] || ''}
+                image={item.image || ''}
                 onPress={() => handleItemPress(item.id)}
               />
             ))}

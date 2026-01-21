@@ -23,7 +23,7 @@ function transformStaticSpecies(staticAnt: typeof antSpeciesData[0]): Species {
     distribution: staticAnt.distribution,
     behavior: staticAnt.behavior,
     ecological_role: staticAnt.ecologicalRole,
-    images: [staticAnt.image],
+    image: staticAnt.image,
   };
 }
 

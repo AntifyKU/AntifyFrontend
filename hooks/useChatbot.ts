@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { API_BASE_URL } from '@/config/api';
 
-// Change this to your server address
-// For Android emulator use: 'http://10.0.2.2:8000'
-// For iOS simulator/physical device on same network: 'http://YOUR_IP:8000'
-const SOCKET_URL = 'http://localhost:8000';
+// Use the same base URL as the REST API for WebSocket connection
+const SOCKET_URL = API_BASE_URL;
 
 export type ChatMessage = {
     id: string;
