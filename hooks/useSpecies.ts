@@ -50,12 +50,19 @@ export function useSpecies(options: UseSpeciesOptions = {}): UseSpeciesReturn {
   const [total, setTotal] = useState(0);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
 
+  // Serialize filters to a stable string for dependency comparison
+  // This prevents infinite loops when passing inline objects like { limit: 10 }
+  const filtersKey = JSON.stringify(filters ?? {});
+
   const fetchSpecies = useCallback(async () => {
     setLoading(true);
     setError(null);
     
+    // Parse filters back from the serialized key
+    const currentFilters = JSON.parse(filtersKey) as SpeciesFilters | undefined;
+    
     try {
-      const response = await speciesService.getSpecies(filters);
+      const response = await speciesService.getSpecies(currentFilters);
       
       // If API returns empty but we have fallback, use fallback
       if (response.species.length === 0 && useFallback) {
@@ -82,7 +89,7 @@ export function useSpecies(options: UseSpeciesOptions = {}): UseSpeciesReturn {
     } finally {
       setLoading(false);
     }
-  }, [filters, useFallback]);
+  }, [filtersKey, useFallback]);
 
   useEffect(() => {
     fetchSpecies();
