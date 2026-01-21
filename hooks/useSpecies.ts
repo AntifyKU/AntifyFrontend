@@ -3,7 +3,7 @@
  * Fetches species list with optional filters and fallback to static data
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { speciesService } from '@/services/species';
 import { antSpeciesData } from '@/constants/AntData';
 import type { Species, SpeciesFilters } from '@/types/api';
@@ -37,7 +37,7 @@ interface UseSpeciesReturn {
   loading: boolean;
   error: Error | null;
   total: number;
-  refetch: () => Promise<void>;
+  refetch: () => void;
   isUsingFallback: boolean;
 }
 
@@ -49,20 +49,31 @@ export function useSpecies(options: UseSpeciesOptions = {}): UseSpeciesReturn {
   const [error, setError] = useState<Error | null>(null);
   const [total, setTotal] = useState(0);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
-
-  // Serialize filters to a stable string for dependency comparison
-  // This prevents infinite loops when passing inline objects like { limit: 10 }
+  
+  // Use refs to track fetch state and prevent duplicate calls
+  const isFetchingRef = useRef(false);
+  const hasFetchedRef = useRef(false);
+  const filtersKeyRef = useRef<string>('');
+  
+  // Serialize filters for comparison
   const filtersKey = JSON.stringify(filters ?? {});
-
-  const fetchSpecies = useCallback(async () => {
+  
+  // Manual refetch function
+  const refetch = () => {
+    hasFetchedRef.current = false;
+    fetchData();
+  };
+  
+  const fetchData = async () => {
+    // Prevent concurrent fetches
+    if (isFetchingRef.current) return;
+    
+    isFetchingRef.current = true;
     setLoading(true);
     setError(null);
     
-    // Parse filters back from the serialized key
-    const currentFilters = JSON.parse(filtersKey) as SpeciesFilters | undefined;
-    
     try {
-      const response = await speciesService.getSpecies(currentFilters);
+      const response = await speciesService.getSpecies(filters);
       
       // If API returns empty but we have fallback, use fallback
       if (response.species.length === 0 && useFallback) {
@@ -88,19 +99,30 @@ export function useSpecies(options: UseSpeciesOptions = {}): UseSpeciesReturn {
       }
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
+      hasFetchedRef.current = true;
     }
-  }, [filtersKey, useFallback]);
+  };
 
   useEffect(() => {
-    fetchSpecies();
-  }, [fetchSpecies]);
+    // Only fetch if:
+    // 1. We haven't fetched yet, OR
+    // 2. The filters have changed
+    const filtersChanged = filtersKeyRef.current !== filtersKey;
+    
+    if (!hasFetchedRef.current || filtersChanged) {
+      filtersKeyRef.current = filtersKey;
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersKey]);
 
   return {
     species,
     loading,
     error,
     total,
-    refetch: fetchSpecies,
+    refetch,
     isUsingFallback,
   };
 }
