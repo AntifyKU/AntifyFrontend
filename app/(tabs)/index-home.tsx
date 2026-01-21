@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,15 +21,53 @@ import * as Location from 'expo-location';
 import SectionHeader from '@/components/SectionHeader';
 import AntCard from '@/components/AntCard';
 import PrimaryButton from '@/components/PrimaryButton';
+import { useSpecies } from '@/hooks/useSpecies';
 import {
   quickDiscoveryCategories,
-  featuredAntOfTheDay,
-  featuredSpeciesList
+  featuredAntOfTheDay as staticAntOfTheDay,
+  featuredSpeciesList as staticFeaturedList
 } from '@/constants/AntData';
 
 export default function HomeScreen() {
   const [location, setLocation] = useState('Loading...');
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+
+  // Fetch species from API with fallback to static data
+  const { species, loading: speciesLoading, isUsingFallback } = useSpecies({ 
+    filters: { limit: 10 } 
+  });
+
+  // Derive featured species from API data or fallback
+  const { featuredAntOfTheDay, featuredSpeciesList } = useMemo(() => {
+    if (species.length > 0) {
+      // Use first species as "ant of the day"
+      const antOfTheDay = {
+        id: species[0].id,
+        name: species[0].name,
+        scientificName: species[0].scientific_name,
+        image: species[0].images?.[0] || '',
+      };
+      
+      // Use remaining species as featured list
+      const featuredList = species.slice(1, 6).map(s => ({
+        id: s.id,
+        name: s.name,
+        scientificName: s.scientific_name,
+        image: s.images?.[0] || '',
+      }));
+      
+      return { 
+        featuredAntOfTheDay: antOfTheDay, 
+        featuredSpeciesList: featuredList.length > 0 ? featuredList : staticFeaturedList 
+      };
+    }
+    
+    // Fallback to static data
+    return { 
+      featuredAntOfTheDay: staticAntOfTheDay, 
+      featuredSpeciesList: staticFeaturedList 
+    };
+  }, [species]);
 
   // Get user's location on mount
   useEffect(() => {
@@ -285,14 +323,21 @@ export default function HomeScreen() {
         <View className="mb-6">
           <SectionHeader title="Ant of the Day" />
           <View className="px-5">
-            <AntCard
-              id={featuredAntOfTheDay.id}
-              name={featuredAntOfTheDay.name}
-              description={featuredAntOfTheDay.scientificName}
-              image={featuredAntOfTheDay.image}
-              variant="vertical"
-              onPress={() => handleAntPress(featuredAntOfTheDay.id)}
-            />
+            {speciesLoading ? (
+              <View className="h-48 items-center justify-center bg-gray-50 rounded-xl">
+                <ActivityIndicator size="small" color="#328e6e" />
+                <Text className="mt-2 text-gray-500">Loading...</Text>
+              </View>
+            ) : (
+              <AntCard
+                id={featuredAntOfTheDay.id}
+                name={featuredAntOfTheDay.name}
+                description={featuredAntOfTheDay.scientificName}
+                image={featuredAntOfTheDay.image}
+                variant="vertical"
+                onPress={() => handleAntPress(featuredAntOfTheDay.id)}
+              />
+            )}
           </View>
         </View>
 
@@ -305,23 +350,29 @@ export default function HomeScreen() {
             onSeeMorePress={() => router.push('/(tabs)/explore')}
           />
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
-          >
-            {featuredSpeciesList.map((species) => (
-              <AntCard
-                key={species.id}
-                id={species.id}
-                name={species.name}
-                scientificName={species.scientificName}
-                image={species.image}
-                variant="compact"
-                onPress={() => handleAntPress(species.id)}
-              />
-            ))}
-          </ScrollView>
+          {speciesLoading ? (
+            <View className="h-32 items-center justify-center">
+              <ActivityIndicator size="small" color="#328e6e" />
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+            >
+              {featuredSpeciesList.map((species) => (
+                <AntCard
+                  key={species.id}
+                  id={species.id}
+                  name={species.name}
+                  scientificName={species.scientificName}
+                  image={species.image}
+                  variant="compact"
+                  onPress={() => handleAntPress(species.id)}
+                />
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Bottom padding for tab bar */}

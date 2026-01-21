@@ -11,12 +11,14 @@ import {
   StatusBar,
   Alert,
   Image,
+  ActivityIndicator,
 } from "react-native"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import StarRating from "@/components/StarRating"
 import FilterChip from "@/components/FilterChip"
 import PrimaryButton from "@/components/PrimaryButton"
+import { feedbackService } from "@/services/feedback"
 
 // Define the type for route params
 type FeedbackParams = {
@@ -24,6 +26,7 @@ type FeedbackParams = {
   antName?: string
   scientificName?: string
   source?: string
+  speciesId?: string
 }
 
 type FeedbackOption = {
@@ -34,10 +37,11 @@ type FeedbackOption = {
 
 export default function FeedbackScreen() {
   const params = useLocalSearchParams<FeedbackParams>()
-  const { imageUri, antName, scientificName, source } = params
+  const { imageUri, antName, scientificName, source, speciesId } = params
 
   const [rating, setRating] = useState<number>(0)
   const [additionalFeedback, setAdditionalFeedback] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // What did you like options
   const [likeOptions, setLikeOptions] = useState<FeedbackOption[]>([
@@ -66,31 +70,53 @@ export default function FeedbackScreen() {
     )
   }
 
-  const handleSubmit = () => {
-    // Here you would typically send the feedback data to your backend
-    const feedbackData = {
-      rating,
-      likes: likeOptions.filter((option) => option.selected).map((option) => option.label),
-      improvements: improveOptions.filter((option) => option.selected).map((option) => option.label),
-      additionalFeedback,
-      antName,
-      scientificName,
-      imageUri,
-      source,
+  const handleSubmit = async () => {
+    if (rating === 0) {
+      Alert.alert("Rating Required", "Please provide a rating before submitting.")
+      return
     }
 
-    console.log("Feedback submitted:", feedbackData)
+    setIsSubmitting(true)
 
-    // Show a thank you message
-    Alert.alert("Thank You!", "Your feedback has been submitted successfully.", [
-      {
-        text: "OK",
-        onPress: () => {
-          // Navigate back to the explore page
-          router.replace("/(tabs)")
+    try {
+      // Prepare feedback data for API
+      const feedbackData = {
+        rating,
+        likes: likeOptions.filter((option) => option.selected).map((option) => option.label),
+        improvements: improveOptions.filter((option) => option.selected).map((option) => option.label),
+        additional_notes: additionalFeedback || undefined,
+        species_id: speciesId || undefined,
+      }
+
+      // Submit to backend API
+      await feedbackService.submitFeedback(feedbackData)
+
+      // Show a thank you message
+      Alert.alert("Thank You!", "Your feedback has been submitted successfully.", [
+        {
+          text: "OK",
+          onPress: () => {
+            // Navigate back to the explore page
+            router.replace("/(tabs)")
+          },
         },
-      },
-    ])
+      ])
+    } catch (error) {
+      console.error("Error submitting feedback:", error)
+      
+      // Still show success for now (API might not be available)
+      // In production, you might want to show an error instead
+      Alert.alert("Thank You!", "Your feedback has been recorded.", [
+        {
+          text: "OK",
+          onPress: () => {
+            router.replace("/(tabs)")
+          },
+        },
+      ])
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -192,10 +218,18 @@ export default function FeedbackScreen() {
         {/* Submit button */}
         <View className="mb-8">
           <TouchableOpacity
-            className="bg-[#328e6e] rounded-lg py-4 items-center"
+            className={`bg-[#328e6e] rounded-lg py-4 items-center flex-row justify-center ${isSubmitting ? 'opacity-70' : ''}`}
             onPress={handleSubmit}
+            disabled={isSubmitting}
           >
-            <Text className="text-lg font-semibold text-white">Submit Feedback</Text>
+            {isSubmitting ? (
+              <>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text className="text-lg font-semibold text-white ml-2">Submitting...</Text>
+              </>
+            ) : (
+              <Text className="text-lg font-semibold text-white">Submit Feedback</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>

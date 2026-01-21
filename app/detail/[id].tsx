@@ -8,12 +8,14 @@ import {
   StatusBar,
   ScrollView,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { antSpeciesData, getAntById } from "@/constants/AntData"
+import { antSpeciesData } from "@/constants/AntData"
 import FilterChip from "@/components/FilterChip"
+import { useSpeciesDetail } from "@/hooks/useSpeciesDetail"
 
 // Define the type for route params
 type DetailParams = {
@@ -24,11 +26,69 @@ export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>()
   const { id } = params
 
-  // Find the ant by ID or use the first one as default
-  const currentAnt = getAntById(id) || antSpeciesData[0]
+  // Fetch species data from API with fallback to static data
+  const { species, loading, error, isUsingFallback } = useSpeciesDetail(id)
+
+  // Transform API species to display format
+  const currentAnt = species ? {
+    id: species.id,
+    name: species.name,
+    scientificName: species.scientific_name,
+    classification: species.classification,
+    tags: species.tags,
+    about: species.about,
+    characteristics: species.characteristics,
+    colors: species.colors,
+    habitat: species.habitat,
+    distribution: species.distribution,
+    behavior: species.behavior,
+    ecologicalRole: species.ecological_role,
+    image: species.images?.[0] || '',
+  } : antSpeciesData[0]
 
   const handleBackPress = () => {
     router.back()
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <StatusBar barStyle="dark-content" />
+        <ActivityIndicator size="large" color="#0A9D5C" />
+        <Text className="mt-4 text-gray-600">Loading species details...</Text>
+      </View>
+    )
+  }
+
+  // Show error state if no data available
+  if (!species && !loading) {
+    return (
+      <View className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaView edges={['top']}>
+          <Pressable
+            onPress={handleBackPress}
+            className="m-4 w-10 h-10 rounded-full bg-white/80 items-center justify-center"
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <Ionicons name="chevron-back" size={24} color="#0A9D5C" />
+          </Pressable>
+        </SafeAreaView>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialCommunityIcons name="alert-circle-outline" size={64} color="#9CA3AF" />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">Species Not Found</Text>
+          <Text className="mt-2 text-gray-500 text-center">Unable to load species details. Please try again.</Text>
+          <Pressable
+            onPress={handleBackPress}
+            className="mt-6 bg-[#0A9D5C] rounded-full px-6 py-3"
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <Text className="text-white font-semibold">Go Back</Text>
+          </Pressable>
+        </View>
+      </View>
+    )
   }
 
   return (

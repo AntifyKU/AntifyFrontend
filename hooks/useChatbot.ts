@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 // Change this to your server address
-// For Android emulator use: 'http://10.0.2.2:3001'
-// For iOS simulator/physical device on same network: 'http://YOUR_IP:3001'
-const SOCKET_URL = 'http://localhost:3001';
+// For Android emulator use: 'http://10.0.2.2:8000'
+// For iOS simulator/physical device on same network: 'http://YOUR_IP:8000'
+const SOCKET_URL = 'http://localhost:8000';
 
 export type ChatMessage = {
     id: string;

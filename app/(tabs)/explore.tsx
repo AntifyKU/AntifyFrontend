@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,16 @@ import {
   SafeAreaView,
   StatusBar,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import ListCard from '@/components/ListCard';
 import SearchBar from '@/components/SearchBar';
 import SortButton from '@/components/SortButton';
 import FilterChip from '@/components/FilterChip';
-import { exploreSpeciesData, filterOptions, quickDiscoveryCategories } from '@/constants/AntData';
+import { useSpecies } from '@/hooks/useSpecies';
+import { filterOptions, quickDiscoveryCategories } from '@/constants/AntData';
 
 type FilterState = {
   quickFilters: string[];
@@ -28,13 +30,16 @@ export default function ExploreScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
 
+  // Fetch species from API with fallback to static data
+  const { species, loading, error, isUsingFallback, refetch } = useSpecies();
+
   // Applied filters (shown on main screen)
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
-    quickFilters: ['venomous'],
-    colors: ['Red'],
-    sizes: ['Medium (5-10mm)', 'Large (10-15mm)'],
-    habitats: ['Forest'],
-    distributions: ['North', 'South', 'East', 'West', 'Central'],
+    quickFilters: [],
+    colors: [],
+    sizes: [],
+    habitats: [],
+    distributions: [],
   });
 
   // Temporary filters (used in modal)
@@ -52,15 +57,46 @@ export default function ExploreScreen() {
     appliedFilters.sizes.length +
     appliedFilters.habitats.length;
 
-  // Filter species based on search query
-  const filteredSpecies = exploreSpeciesData.filter(item => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return true;
-    return (
-      item.title.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query)
-    );
-  });
+  // Filter species based on search query and filters
+  const filteredSpecies = useMemo(() => {
+    return species.filter(item => {
+      // Search filter
+      const query = searchQuery.toLowerCase().trim();
+      if (query) {
+        const matchesSearch =
+          item.name.toLowerCase().includes(query) ||
+          item.scientific_name.toLowerCase().includes(query) ||
+          item.about.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
+
+      // Color filter
+      if (appliedFilters.colors.length > 0) {
+        const hasColor = item.colors.some(c =>
+          appliedFilters.colors.map(f => f.toLowerCase()).includes(c.toLowerCase())
+        );
+        if (!hasColor) return false;
+      }
+
+      // Habitat filter
+      if (appliedFilters.habitats.length > 0) {
+        const hasHabitat = item.habitat.some(h =>
+          appliedFilters.habitats.map(f => f.toLowerCase()).includes(h.toLowerCase())
+        );
+        if (!hasHabitat) return false;
+      }
+
+      // Distribution filter
+      if (appliedFilters.distributions.length > 0) {
+        const hasDistribution = item.distribution.some(d =>
+          appliedFilters.distributions.map(f => f.toLowerCase()).includes(d.toLowerCase())
+        );
+        if (!hasDistribution) return false;
+      }
+
+      return true;
+    });
+  }, [species, searchQuery, appliedFilters]);
 
   const handleItemPress = (id: string) => {
     router.push({
@@ -268,24 +304,50 @@ export default function ExploreScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Status Banner */}
+        {isUsingFallback && (
+          <View className="mx-5 mb-3 px-4 py-2 bg-yellow-50 rounded-lg">
+            <Text className="text-yellow-700 text-sm">Using offline data. Pull to refresh.</Text>
+          </View>
+        )}
+
         {/* Species Count */}
         <View className="px-5 mb-4">
           <Text className="text-base text-gray-500">{filteredSpecies.length} species found</Text>
         </View>
 
+        {/* Loading State */}
+        {loading && (
+          <View className="py-8 items-center">
+            <ActivityIndicator size="large" color="#22A45D" />
+            <Text className="mt-2 text-gray-500">Loading species...</Text>
+          </View>
+        )}
+
         {/* Species List */}
-        <View className="px-5">
-          {filteredSpecies.map(item => (
-            <ListCard
-              key={item.id}
-              id={item.id}
-              title={item.title}
-              description={item.description}
-              image={item.image}
-              onPress={() => handleItemPress(item.id)}
-            />
-          ))}
-        </View>
+        {!loading && (
+          <View className="px-5">
+            {filteredSpecies.map(item => (
+              <ListCard
+                key={item.id}
+                id={item.id}
+                title={item.name}
+                description={item.about.substring(0, 80) + '...'}
+                image={item.images[0] || ''}
+                onPress={() => handleItemPress(item.id)}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Empty State */}
+        {!loading && filteredSpecies.length === 0 && (
+          <View className="py-8 items-center">
+            <Ionicons name="search-outline" size={48} color="#9CA3AF" />
+            <Text className="mt-2 text-gray-500">No species found</Text>
+            <Text className="text-gray-400 text-sm">Try adjusting your search or filters</Text>
+          </View>
+        )}
 
         {/* Bottom padding for tab bar */}
         <View className="h-28" />
