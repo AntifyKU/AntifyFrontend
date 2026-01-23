@@ -5,11 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useChatbot, ChatMessage } from '@/hooks/useChatbot';
 
-type FAQItem = {
-  id: string;
-  question: string;
-};
-
 export default function ChatbotScreen() {
   const {
     messages,
@@ -17,16 +12,10 @@ export default function ChatbotScreen() {
     isTyping,
     sendMessage,
     sendMessageWithImage,
-  } = useChatbot('Ask me or browse the frequently asked question below for inspiration.');
+  } = useChatbot('Ask me about ants! I can help identify species and answer questions.');
 
   const [inputText, setInputText] = React.useState('');
   const scrollViewRef = useRef<ScrollView>(null);
-
-  const faqItems: FAQItem[] = [
-    { id: '1', question: 'Does Fire ant cause allergies or irritations?' },
-    { id: '2', question: 'How to handles with Fire ant?' },
-    { id: '3', question: 'What is the size of Fire ant?' },
-  ];
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -37,10 +26,6 @@ export default function ChatbotScreen() {
     if (!inputText.trim()) return;
     sendMessage(inputText);
     setInputText('');
-  };
-
-  const handleFAQPress = (question: string) => {
-    sendMessage(question);
   };
 
   const handleImagePick = async () => {
@@ -154,21 +139,6 @@ export default function ChatbotScreen() {
               )}
             </View>
           ))}
-
-          {/* FAQ Buttons */}
-          {messages.length === 1 && (
-            <View className="mt-4">
-              {faqItems.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  className="px-4 py-3 mb-3 border border-gray-200 rounded-full"
-                  onPress={() => handleFAQPress(item.question)}
-                >
-                  <Text className="text-gray-600">{item.question}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
         </ScrollView>
 
         {/* Input Area */}
