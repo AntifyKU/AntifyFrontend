@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Pressable,
   SafeAreaView,
@@ -16,13 +15,14 @@ import {
   Platform,
   ActionSheetIOS,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import ListCard from '@/components/ListCard';
-import SwipeableListCard from '@/components/SwipeableListCard';
+import FavoriteListCard from '@/components/FavoriteListCard';
 import CollectionGridItem from '@/components/CollectionGridItem';
 import SortButton from '@/components/SortButton';
 import { FolderChip, AllChip, AddFolderChip } from '@/components/FolderChip';
@@ -76,14 +76,30 @@ export default function ProfileScreen() {
   const { collection, isLoading: collectionLoading, removeFromCollection, setItemFolders, getItemsByFolder, refresh: refreshCollection } = useCollection();
   const { folders, isLoading: foldersLoading, createFolder, updateFolder, deleteFolder, refresh: refreshFolders } = useFolders();
 
+  // Debug: Log when collection changes
+  useEffect(() => {
+    console.log('[Profile] Collection state changed, length:', collection.length);
+    if (collection.length > 0) {
+      console.log('[Profile] First item:', { 
+        id: collection[0].id, 
+        species_id: collection[0].species_id, 
+        species_name: collection[0].species_name 
+      });
+    }
+  }, [collection]);
+
   // Sorted and filtered collection
   const sortedCollection = useMemo(() => {
+    console.log('[Profile] Computing sortedCollection, collection length:', collection.length);
+    
     // First filter by folder
     const filtered = selectedFolderId === null 
       ? collection 
       : collection.filter(item => item.folder_ids?.includes(selectedFolderId));
     
-    // Then sort
+    console.log('[Profile] After folder filter, filtered length:', filtered.length);
+    
+    // Then sort (with defensive checks for undefined species_name)
     return [...filtered].sort((a, b) => {
       switch (collectionSortOption) {
         case 'newest':
@@ -91,9 +107,9 @@ export default function ProfileScreen() {
         case 'oldest':
           return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
         case 'name-asc':
-          return a.species_name.localeCompare(b.species_name);
+          return (a.species_name || '').localeCompare(b.species_name || '');
         case 'name-desc':
-          return b.species_name.localeCompare(a.species_name);
+          return (b.species_name || '').localeCompare(a.species_name || '');
         default:
           return 0;
       }
@@ -109,9 +125,9 @@ export default function ProfileScreen() {
         case 'oldest':
           return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
         case 'name-asc':
-          return a.species_name.localeCompare(b.species_name);
+          return (a.species_name || '').localeCompare(b.species_name || '');
         case 'name-desc':
-          return b.species_name.localeCompare(a.species_name);
+          return (b.species_name || '').localeCompare(a.species_name || '');
         default:
           return 0;
       }
@@ -144,8 +160,11 @@ export default function ProfileScreen() {
     useCallback(() => {
       if (isAuthenticated) {
         console.log('[Profile] Screen focused, refreshing data...');
+        console.log('[Profile] Current collection length before refresh:', collection.length);
         refreshFavorites();
-        refreshCollection();
+        refreshCollection().then(() => {
+          console.log('[Profile] Collection refreshed, new length:', collection.length);
+        });
         refreshFolders();
       }
     }, [isAuthenticated, refreshFavorites, refreshCollection, refreshFolders])
@@ -1040,28 +1059,46 @@ export default function ProfileScreen() {
           {activeTab === 'collection' ? (
             <>
               <SortButton onPress={() => setShowSort(true)} label={getSortLabel()} isOpen={showSort} />
-              {/* Edit button */}
-              <Pressable
-                onPress={() => {
-                  console.log('[Profile] Edit/Done button pressed, current isEditMode:', isEditMode);
-                  setIsEditMode(!isEditMode);
-                }}
-                style={({ pressed }) => [
-                  {
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: '#22A45D',
-                    backgroundColor: isEditMode ? '#22A45D' : 'transparent',
-                    opacity: pressed ? 0.7 : 1,
-                  },
-                ]}
-              >
-                <Text className={`font-medium ${isEditMode ? 'text-white' : 'text-[#22A45D]'}`}>
-                  {isEditMode ? 'Done' : 'Edit'}
-                </Text>
-              </Pressable>
+              {/* Edit/Done/Cancel buttons */}
+              <View className="flex-row items-center">
+                {isEditMode && (
+                  <Pressable
+                    onPress={() => setIsEditMode(false)}
+                    style={({ pressed }) => [
+                      {
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        marginRight: 8,
+                        opacity: pressed ? 0.7 : 1,
+                      },
+                    ]}
+                  >
+                    <Text className="font-medium text-gray-500">Cancel</Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => {
+                    console.log('[Profile] Edit/Done button pressed, current isEditMode:', isEditMode);
+                    setIsEditMode(!isEditMode);
+                  }}
+                  style={({ pressed }) => [
+                    {
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: '#22A45D',
+                      backgroundColor: isEditMode ? '#22A45D' : 'transparent',
+                      opacity: pressed ? 0.7 : 1,
+                    },
+                  ]}
+                >
+                  <Text className={`font-medium ${isEditMode ? 'text-white' : 'text-[#22A45D]'}`}>
+                    {isEditMode ? 'Done' : 'Edit'}
+                  </Text>
+                </Pressable>
+              </View>
             </>
           ) : (
             <>
@@ -1156,11 +1193,11 @@ export default function ProfileScreen() {
                           </TouchableOpacity>
                         </>
                       )}
-                      {/* Show folder indicator when not in edit mode */}
+                      {/* Show folder indicator when not in edit mode - top right of image */}
                       {!isEditMode && item.folder_ids && item.folder_ids.length > 0 && (
                         <View 
-                          className="absolute bottom-12 left-2 flex-row"
-                          style={{ left: index % 2 === 0 ? 2 : 8 }}
+                          className="absolute top-2 right-2 flex-row"
+                          style={{ right: index % 2 === 0 ? 8 : 2 }}
                         >
                           {item.folder_ids.slice(0, 3).map((folderId) => {
                             const folder = folders.find(f => f.id === folderId);
@@ -1168,13 +1205,13 @@ export default function ProfileScreen() {
                             return (
                               <View 
                                 key={folderId}
-                                className="w-3 h-3 rounded-full mr-1"
+                                className="w-3 h-3 rounded-full ml-1"
                                 style={{ backgroundColor: folder.color }}
                               />
                             );
                           })}
                           {item.folder_ids.length > 3 && (
-                            <Text className="text-xs text-gray-500">+{item.folder_ids.length - 3}</Text>
+                            <Text className="text-xs text-white ml-1">+{item.folder_ids.length - 3}</Text>
                           )}
                         </View>
                       )}
@@ -1196,22 +1233,22 @@ export default function ProfileScreen() {
                 </View>
               )
             ) : (
-              // Favorite List with swipe-to-delete
+              // Favorite List with heart button to remove
               sortedFavorites.length > 0 ? (
                 <View>
                   <Text className="text-gray-400 text-xs mb-3 text-center">
-                    Swipe left to delete
+                    Tap the heart to remove from favorites
                   </Text>
                   {sortedFavorites.map(item => (
-                    <SwipeableListCard
+                    <FavoriteListCard
                       key={item.id}
                       id={item.species_id}
                       title={item.species_name}
                       description={item.species_scientific_name}
                       image={item.species_image}
                       onPress={() => handleItemPress(item.species_id)}
-                      onDelete={() => handleDeleteFavorite(item.species_id)}
-                      isDeleting={deletingItemId === item.species_id}
+                      onRemove={() => handleDeleteFavorite(item.species_id)}
+                      isRemoving={deletingItemId === item.species_id}
                     />
                   ))}
                 </View>
