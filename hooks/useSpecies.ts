@@ -23,7 +23,7 @@ function transformStaticSpecies(staticData: typeof antSpeciesData): Species[] {
     distribution: ant.distribution,
     behavior: ant.behavior,
     ecological_role: ant.ecologicalRole,
-    images: [ant.image],
+    image: ant.image, // Use image directly, not images array
   }));
 }
 

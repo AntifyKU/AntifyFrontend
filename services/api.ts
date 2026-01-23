@@ -5,6 +5,9 @@
 
 import { API_BASE_URL, API_TIMEOUT } from '@/config/api';
 
+// Re-export for other modules to use
+export { API_BASE_URL };
+
 export class ApiError extends Error {
   constructor(
     public status: number,

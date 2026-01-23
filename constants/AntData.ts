@@ -416,10 +416,10 @@ export const getAntById = (id: string): AntSpecies | undefined => {
     return antSpeciesData.find(ant => ant.id === id);
 };
 
-// Filter options
+// Filter options - Updated to match actual species data
 export const filterOptions = {
-    colors: ["Black", "Orange", "Red", "Yellow", "Brown"],
+    colors: ["Black", "Orange", "Red", "Yellow", "Brown", "Green", "Golden"],
     sizes: ["Tiny (< 2mm)", "Small (2-5mm)", "Medium (5-10mm)", "Large (10-15mm)", "Giant (> 15mm)"],
-    habitats: ["Urban", "Forest", "Desert", "Tropical", "Buildings"],
-    distributions: ["North", "South", "East", "West", "Central"],
+    habitats: ["Forest", "Garden", "Urban", "Tree", "Plantation", "Building"],
+    distributions: ["Thailand", "North", "South", "East", "West", "Central"],
 };
