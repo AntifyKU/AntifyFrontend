@@ -1041,14 +1041,27 @@ export default function ProfileScreen() {
             <>
               <SortButton onPress={() => setShowSort(true)} label={getSortLabel()} isOpen={showSort} />
               {/* Edit button */}
-              <TouchableOpacity
-                className={`px-4 py-2 border rounded-lg ${isEditMode ? 'bg-[#22A45D] border-[#22A45D]' : 'border-[#22A45D]'}`}
-                onPress={() => setIsEditMode(!isEditMode)}
+              <Pressable
+                onPress={() => {
+                  console.log('[Profile] Edit/Done button pressed, current isEditMode:', isEditMode);
+                  setIsEditMode(!isEditMode);
+                }}
+                style={({ pressed }) => [
+                  {
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#22A45D',
+                    backgroundColor: isEditMode ? '#22A45D' : 'transparent',
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
               >
                 <Text className={`font-medium ${isEditMode ? 'text-white' : 'text-[#22A45D]'}`}>
                   {isEditMode ? 'Done' : 'Edit'}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </>
           ) : (
             <>
