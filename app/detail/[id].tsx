@@ -8,12 +8,22 @@ import {
   StatusBar,
   ScrollView,
   StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  TouchableOpacity,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { antSpeciesData, getAntById } from "@/constants/AntData"
+import { antSpeciesData } from "@/constants/AntData"
 import FilterChip from "@/components/FilterChip"
+import { useSpeciesDetail } from "@/hooks/useSpeciesDetail"
+import { useAuth } from "@/context/AuthContext"
+import { useFavorites } from "@/hooks/useFavorites"
+import { useCollection } from "@/hooks/useCollection"
+import { useFolders } from "@/hooks/useFolders"
+import { useState } from "react"
 
 // Define the type for route params
 type DetailParams = {
@@ -24,16 +34,246 @@ export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>()
   const { id } = params
 
-  // Find the ant by ID or use the first one as default
-  const currentAnt = getAntById(id) || antSpeciesData[0]
+  // Auth and data hooks
+  const { isAuthenticated } = useAuth()
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const { isInCollection, addToCollection, removeFromCollection } = useCollection()
+  const { folders } = useFolders()
+
+  // Local loading states for buttons
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false)
+  const [showFolderSelect, setShowFolderSelect] = useState(false)
+  const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([])
+
+  // Fetch species data from API with fallback to static data
+  const { species, loading, error, isUsingFallback } = useSpeciesDetail(id)
+
+  // Transform API species to display format
+  const currentAnt = species ? {
+    id: species.id,
+    name: species.name,
+    scientificName: species.scientific_name,
+    classification: species.classification,
+    tags: species.tags,
+    about: species.about,
+    characteristics: species.characteristics,
+    colors: species.colors,
+    habitat: species.habitat,
+    distribution: species.distribution,
+    behavior: species.behavior,
+    ecologicalRole: species.ecological_role,
+    image: species.image || '',
+  } : antSpeciesData[0]
 
   const handleBackPress = () => {
     router.back()
   }
 
+  const handleFavoritePress = async () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please log in to add favorites',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Log In', onPress: () => router.push('/(auth)/login') }
+        ]
+      )
+      return
+    }
+
+    console.log('[Detail] Favorite button pressed for species:', id)
+    console.log('[Detail] Current isFavorite status:', isFavorite(id))
+
+    setIsFavoriteLoading(true)
+    try {
+      await toggleFavorite(id)
+      console.log('[Detail] toggleFavorite completed successfully')
+    } catch (error: any) {
+      console.error('[Detail] toggleFavorite error:', error)
+      Alert.alert('Error', error.message || 'Failed to update favorites')
+    } finally {
+      setIsFavoriteLoading(false)
+    }
+  }
+
+  const handleCollectionPress = async () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please log in to add to your collection',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Log In', onPress: () => router.push('/(auth)/login') }
+        ]
+      )
+      return
+    }
+
+    // If already in collection, remove it
+    if (isInCollection(id)) {
+      setIsCollectionLoading(true)
+      try {
+        await removeFromCollection(id)
+      } catch (error: any) {
+        Alert.alert('Error', error.message || 'Failed to remove from collection')
+      } finally {
+        setIsCollectionLoading(false)
+      }
+      return
+    }
+
+    // If folders exist, show folder selection modal
+    if (folders.length > 0) {
+      setSelectedFolderIds([])
+      setShowFolderSelect(true)
+    } else {
+      // No folders, add directly
+      await addToCollectionWithFolders([])
+    }
+  }
+
+  const addToCollectionWithFolders = async (folderIds: string[]) => {
+    setIsCollectionLoading(true)
+    try {
+      await addToCollection(id, undefined, undefined, folderIds)
+      setShowFolderSelect(false)
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to add to collection')
+    } finally {
+      setIsCollectionLoading(false)
+    }
+  }
+
+  const toggleFolderSelection = (folderId: string) => {
+    setSelectedFolderIds(prev => 
+      prev.includes(folderId)
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    )
+  }
+
+  // Check current status
+  const isCurrentFavorite = isAuthenticated && isFavorite(id)
+  const isCurrentInCollection = isAuthenticated && isInCollection(id)
+
+  // Show loading state
+  if (loading) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <StatusBar barStyle="dark-content" />
+        <ActivityIndicator size="large" color="#0A9D5C" />
+        <Text className="mt-4 text-gray-600">Loading species details...</Text>
+      </View>
+    )
+  }
+
+  // Show error state if no data available
+  if (!species && !loading) {
+    return (
+      <View className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaView edges={['top']}>
+          <Pressable
+            onPress={handleBackPress}
+            className="m-4 w-10 h-10 rounded-full bg-white/80 items-center justify-center"
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <Ionicons name="chevron-back" size={24} color="#0A9D5C" />
+          </Pressable>
+        </SafeAreaView>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialCommunityIcons name="alert-circle-outline" size={64} color="#9CA3AF" />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">Species Not Found</Text>
+          <Text className="mt-2 text-gray-500 text-center">Unable to load species details. Please try again.</Text>
+          <Pressable
+            onPress={handleBackPress}
+            className="mt-6 bg-[#0A9D5C] rounded-full px-6 py-3"
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <Text className="text-white font-semibold">Go Back</Text>
+          </Pressable>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
+
+      {/* Folder Selection Modal */}
+      <Modal
+        visible={showFolderSelect}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowFolderSelect(false)}
+      >
+        <Pressable 
+          className="flex-1 bg-black/30 justify-center items-center"
+          onPress={() => setShowFolderSelect(false)}
+        >
+          <Pressable className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]" onPress={() => {}}>
+            <View className="p-6">
+              <Text className="text-xl font-bold text-center text-gray-800 mb-2">Add to Collection</Text>
+              <Text className="text-sm text-gray-500 text-center mb-4">
+                Select folders to organize this species
+              </Text>
+              
+              {/* Folder list */}
+              <View className="mb-4 max-h-64">
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {folders.map((folder) => {
+                    const isSelected = selectedFolderIds.includes(folder.id)
+                    return (
+                      <TouchableOpacity
+                        key={folder.id}
+                        className={`flex-row items-center p-3 rounded-lg mb-2 ${
+                          isSelected ? 'bg-green-50' : 'bg-gray-50'
+                        }`}
+                        onPress={() => toggleFolderSelection(folder.id)}
+                      >
+                        <View 
+                          className="w-4 h-4 rounded-full mr-3"
+                          style={{ backgroundColor: folder.color }}
+                        />
+                        <Text className="flex-1 text-base text-gray-800">{folder.name}</Text>
+                        {isSelected && (
+                          <Ionicons name="checkmark-circle" size={24} color="#22A45D" />
+                        )}
+                      </TouchableOpacity>
+                    )
+                  })}
+                </ScrollView>
+              </View>
+              
+              {/* Buttons */}
+              <View className="flex-row">
+                <TouchableOpacity
+                  className="flex-1 py-3 rounded-lg border border-gray-300 mr-2"
+                  onPress={() => setShowFolderSelect(false)}
+                >
+                  <Text className="text-center text-gray-600 font-medium">Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="flex-1 py-3 rounded-lg bg-[#22A45D] ml-2"
+                  onPress={() => addToCollectionWithFolders(selectedFolderIds)}
+                  disabled={isCollectionLoading}
+                >
+                  {isCollectionLoading ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text className="text-center text-white font-medium">
+                      {selectedFolderIds.length > 0 ? 'Add to Collection' : 'Skip Folders'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Fixed Header - Back Button Only - Stays on screen when scrolling */}
       <View className="absolute top-0 left-0 z-20" style={{ zIndex: 20 }}>
@@ -211,10 +451,35 @@ export default function DetailScreen() {
       <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
         <SafeAreaView edges={['bottom']}>
           <View className="flex-row px-4 py-3 gap-3">
+            {/* Favorite (Heart) Button */}
             <Pressable
-              className="flex-1 bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center"
+              className={`w-14 h-14 rounded-full items-center justify-center ${
+                isCurrentFavorite ? 'bg-red-50 border-2 border-red-400' : 'bg-gray-50 border-2 border-gray-200'
+              }`}
+              onPress={handleFavoritePress}
+              disabled={isFavoriteLoading}
+              style={({ pressed }) => pressed && styles.pressed}
+            >
+              {isFavoriteLoading ? (
+                <ActivityIndicator size="small" color={isCurrentFavorite ? '#EF4444' : '#9CA3AF'} />
+              ) : (
+                <Ionicons
+                  name={isCurrentFavorite ? 'heart' : 'heart-outline'}
+                  size={24}
+                  color={isCurrentFavorite ? '#EF4444' : '#9CA3AF'}
+                />
+              )}
+            </Pressable>
+
+            {/* Add to Collection Button */}
+            <Pressable
+              className={`flex-1 rounded-full py-4 flex-row items-center justify-center ${
+                isCurrentInCollection ? 'bg-[#0A9D5C]/10 border-2 border-[#0A9D5C]' : 'bg-[#0A9D5C]'
+              }`}
+              onPress={handleCollectionPress}
+              disabled={isCollectionLoading}
               style={({ pressed }) => [
-                {
+                !isCurrentInCollection && {
                   shadowColor: '#0A9D5C',
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.3,
@@ -224,10 +489,23 @@ export default function DetailScreen() {
                 pressed && styles.pressed
               ]}
             >
-              <Ionicons name="add" size={20} color="#fff" />
-              <Text className="text-white font-semibold ml-2">Add to My Collection</Text>
+              {isCollectionLoading ? (
+                <ActivityIndicator size="small" color={isCurrentInCollection ? '#0A9D5C' : '#fff'} />
+              ) : (
+                <>
+                  <Ionicons
+                    name={isCurrentInCollection ? 'checkmark' : 'add'}
+                    size={20}
+                    color={isCurrentInCollection ? '#0A9D5C' : '#fff'}
+                  />
+                  <Text className={`font-semibold ml-2 ${isCurrentInCollection ? 'text-[#0A9D5C]' : 'text-white'}`}>
+                    {isCurrentInCollection ? 'In Collection' : 'Add to My Collection'}
+                  </Text>
+                </>
+              )}
             </Pressable>
 
+            {/* Ask Chat Button */}
             <Pressable
               className="bg-white border-2 border-[#0A9D5C] rounded-full px-6 py-4 items-center justify-center"
               onPress={() => router.push("/chatbot")}

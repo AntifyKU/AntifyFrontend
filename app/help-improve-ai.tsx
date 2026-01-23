@@ -10,6 +10,8 @@ import {
     StatusBar,
     Image,
     StyleSheet,
+    ActivityIndicator,
+    Alert,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
@@ -18,6 +20,7 @@ import { speciesListForCorrection } from "@/constants/AntData"
 import StarRating from "@/components/StarRating"
 import PrimaryButton from "@/components/PrimaryButton"
 import SearchBar from "@/components/SearchBar"
+import { feedbackService } from "@/services/feedback"
 
 // Define the type for route params
 type HelpImproveParams = {
@@ -38,32 +41,58 @@ export default function HelpImproveAIScreen() {
     const [rating, setRating] = useState<number>(0)
     const [additionalNotes, setAdditionalNotes] = useState<string>("")
     const [searchQuery, setSearchQuery] = useState<string>("")
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleBackPress = () => {
         router.back()
     }
 
-    const handleSubmitFeedback = () => {
-        // Collect feedback data
-        const feedbackData = {
-            isCorrect,
-            selectedSpeciesId: isCorrect === false ? selectedSpeciesId : null,
-            rating,
-            additionalNotes,
-            antId,
-            antName,
-            scientificName,
-            imageUri,
-            source,
+    const handleSubmitFeedback = async () => {
+        // Validate that user has made a selection
+        if (isCorrect === null) {
+            Alert.alert("Selection Required", "Please indicate if the identification was correct.")
+            return
         }
 
-        console.log("Feedback submitted:", feedbackData)
+        setIsSubmitting(true)
 
-        // Navigate to detail page after submitting feedback
-        router.push({
-            pathname: '/detail/[id]',
-            params: { id: antId || "1", imageUri, source }
-        })
+        try {
+            if (isCorrect === false && selectedSpeciesId) {
+                // Submit AI correction if identification was wrong
+                const correctionData = {
+                    original_prediction: antName || '',
+                    correct_species_id: selectedSpeciesId,
+                    notes: additionalNotes || undefined,
+                }
+
+                await feedbackService.submitAICorrection(correctionData)
+            } else {
+                // Submit general feedback for correct predictions
+                const feedbackData = {
+                    rating,
+                    additional_notes: additionalNotes || undefined,
+                    species_id: antId || undefined,
+                }
+
+                await feedbackService.submitFeedback(feedbackData)
+            }
+
+            // Navigate to detail page after submitting feedback
+            router.push({
+                pathname: '/detail/[id]',
+                params: { id: antId || "1", imageUri, source }
+            })
+        } catch (error) {
+            console.error("Error submitting feedback:", error)
+            
+            // Still navigate on error (API might not be available)
+            router.push({
+                pathname: '/detail/[id]',
+                params: { id: antId || "1", imageUri, source }
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const handleCorrectPress = () => {
@@ -278,12 +307,24 @@ export default function HelpImproveAIScreen() {
 
                 {/* Submit Button */}
                 <View className="mx-4 mt-8 mb-4">
-                    <PrimaryButton
-                        title="Submit Feedback"
-                        icon="send"
+                    <Pressable
+                        className={`bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center ${isSubmitting ? 'opacity-70' : ''}`}
                         onPress={handleSubmitFeedback}
-                        size="large"
-                    />
+                        disabled={isSubmitting}
+                        style={({ pressed }) => !isSubmitting && pressed && styles.pressed}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <ActivityIndicator size="small" color="#fff" />
+                                <Text className="text-white font-semibold text-lg ml-2">Submitting...</Text>
+                            </>
+                        ) : (
+                            <>
+                                <Ionicons name="send" size={20} color="#fff" />
+                                <Text className="text-white font-semibold text-lg ml-2">Submit Feedback</Text>
+                            </>
+                        )}
+                    </Pressable>
                 </View>
 
                 {/* Footer Note */}
