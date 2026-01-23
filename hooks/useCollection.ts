@@ -55,6 +55,8 @@ export function useCollection(): UseCollectionResult {
 
     try {
       const response = await collectionService.getCollection(token);
+      console.log('[useCollection] Fetched collection, count:', response.items.length);
+      console.log('[useCollection] Items:', response.items.map(i => ({ id: i.id, species_id: i.species_id, species_name: i.species_name })));
       setCollection(response.items);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch collection');
@@ -89,12 +91,19 @@ export function useCollection(): UseCollectionResult {
 
     try {
       const newItem = await collectionService.addToCollection(token, data);
+      console.log('[useCollection] API returned newItem:', JSON.stringify(newItem, null, 2));
+      
       // Ensure folder_ids is always an array
       if (!newItem.folder_ids) {
         newItem.folder_ids = folderIds || [];
       }
-      setCollection(prev => [...prev, newItem]);
-      console.log('[useCollection] Added to collection:', newItem.id);
+      
+      setCollection(prev => {
+        const updated = [...prev, newItem];
+        console.log('[useCollection] Updated collection length:', updated.length);
+        return updated;
+      });
+      console.log('[useCollection] Added to collection:', newItem.id, 'species_name:', newItem.species_name);
       return newItem;
     } catch (err: any) {
       console.error('Error adding to collection:', err);
