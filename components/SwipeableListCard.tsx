@@ -10,15 +10,13 @@ import {
   TouchableOpacity,
   Animated,
   PanResponder,
-  Dimensions,
   ActivityIndicator,
   Image,
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = -80;
+const SWIPE_THRESHOLD = -60;
 const DELETE_BUTTON_WIDTH = 80;
 
 interface SwipeableListCardProps {
@@ -47,15 +45,23 @@ export default function SwipeableListCard({
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to horizontal swipes
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+        // Only respond to horizontal swipes with significant movement
+        const isHorizontalSwipe = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 2);
+        const hasMovedEnough = Math.abs(gestureState.dx) > 15;
+        return isHorizontalSwipe && hasMovedEnough;
+      },
+      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+        // Capture the gesture if it's clearly horizontal
+        const isHorizontalSwipe = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 3);
+        const hasMovedEnough = Math.abs(gestureState.dx) > 20;
+        return isHorizontalSwipe && hasMovedEnough;
       },
       onPanResponderGrant: () => {
         translateX.setOffset(isOpen.current ? -DELETE_BUTTON_WIDTH : 0);
         translateX.setValue(0);
       },
       onPanResponderMove: (_, gestureState) => {
-        // Only allow left swipe (negative dx)
+        // Only allow left swipe (negative dx) and limit the range
         const newValue = Math.min(0, Math.max(-DELETE_BUTTON_WIDTH, gestureState.dx));
         translateX.setValue(newValue);
       },
@@ -80,6 +86,15 @@ export default function SwipeableListCard({
           isOpen.current = false;
         }
       },
+      onPanResponderTerminate: () => {
+        // Reset if gesture is terminated
+        translateX.flattenOffset();
+        Animated.spring(translateX, {
+          toValue: isOpen.current ? -DELETE_BUTTON_WIDTH : 0,
+          useNativeDriver: true,
+          friction: 8,
+        }).start();
+      },
     })
   ).current;
 
@@ -102,6 +117,7 @@ export default function SwipeableListCard({
 
   const handleDelete = () => {
     console.log('[SwipeableListCard] Delete pressed for id:', id);
+    closeSwipe();
     onDelete();
   };
 
