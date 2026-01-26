@@ -18,7 +18,7 @@ import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
 import { speciesListForCorrection } from "@/constants/AntData"
 import StarRating from "@/components/StarRating"
-import PrimaryButton from "@/components/PrimaryButton"
+import PrimaryButton from "@/components/atom/PrimaryButton"
 import SearchBar from "@/components/SearchBar"
 import { feedbackService } from "@/services/feedback"
 

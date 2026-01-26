@@ -17,7 +17,7 @@ import { identificationResultsData, antSpeciesData } from "@/constants/AntData"
 import { useIdentification } from "@/hooks/useIdentification"
 import { useSpecies } from "@/hooks/useSpecies"
 import AntCard from "@/components/AntCard"
-import PrimaryButton from "@/components/PrimaryButton"
+import PrimaryButton from "@/components/atom/PrimaryButton"
 
 // Define the type for route params
 type IdentificationParams = {
