@@ -32,7 +32,7 @@ export const ScreenHeader: React.FC<HeaderProps> = ({
 
       {/* Title */}
       {title && (
-        <Text className="flex-1 text-center text-gray-800 text-lg font-bold">
+        <Text className="flex-1 text-center text-gray-800 text-xl font-bold">
           {title}
         </Text>
       )}
@@ -41,7 +41,7 @@ export const ScreenHeader: React.FC<HeaderProps> = ({
       <View className="w-6 items-center justify-center">
         {rightIcon && onRightPress ? (
           <TouchableOpacity onPress={onRightPress} activeOpacity={0.7}>
-            <Ionicons name={rightIcon} size={24} color="#1F2937" />
+            <Ionicons name={rightIcon} size={24} color="#333" />
           </TouchableOpacity>
         ) : (
           <View className="w-6 h-6" />

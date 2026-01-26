@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,35 +6,44 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
-  SafeAreaView,
   StatusBar,
   Alert,
   ActionSheetIOS,
   Platform,
   ActivityIndicator,
-  StyleSheet
-} from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
-import SectionHeader from '@/components/SectionHeader';
-import AntCard from '@/components/AntCard';
-import PrimaryButton from '@/components/atom/PrimaryButton';
-import { useSpecies } from '@/hooks/useSpecies';
+  StyleSheet,
+} from "react-native";
+import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  Ionicons,
+  MaterialIcons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
+import SectionHeader from "@/components/molecule/SectionHeader";
+import AntCard from "@/components/AntCard";
+import PrimaryButton from "@/components/atom/PrimaryButton";
+import { useSpecies } from "@/hooks/useSpecies";
 import {
   quickDiscoveryCategories,
   featuredAntOfTheDay as staticAntOfTheDay,
-  featuredSpeciesList as staticFeaturedList
-} from '@/constants/AntData';
+  featuredSpeciesList as staticFeaturedList,
+} from "@/constants/AntData";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState('Loading...');
+  const [location, setLocation] = useState("Loading...");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
 
   // Fetch species from API with fallback to static data
-  const { species, loading: speciesLoading, isUsingFallback } = useSpecies({ 
-    filters: { limit: 10 } 
+  const {
+    species,
+    loading: speciesLoading,
+    isUsingFallback,
+  } = useSpecies({
+    filters: { limit: 10 },
   });
 
   // Derive featured species from API data or fallback
@@ -45,27 +54,28 @@ export default function HomeScreen() {
         id: species[0].id,
         name: species[0].name,
         scientificName: species[0].scientific_name,
-        image: species[0].image || '',
+        image: species[0].image || "",
       };
-      
+
       // Use remaining species as featured list
-      const featuredList = species.slice(1, 6).map(s => ({
+      const featuredList = species.slice(1, 6).map((s) => ({
         id: s.id,
         name: s.name,
         scientificName: s.scientific_name,
-        image: s.image || '',
+        image: s.image || "",
       }));
-      
-      return { 
-        featuredAntOfTheDay: antOfTheDay, 
-        featuredSpeciesList: featuredList.length > 0 ? featuredList : staticFeaturedList 
+
+      return {
+        featuredAntOfTheDay: antOfTheDay,
+        featuredSpeciesList:
+          featuredList.length > 0 ? featuredList : staticFeaturedList,
       };
     }
-    
+
     // Fallback to static data
-    return { 
-      featuredAntOfTheDay: staticAntOfTheDay, 
-      featuredSpeciesList: staticFeaturedList 
+    return {
+      featuredAntOfTheDay: staticAntOfTheDay,
+      featuredSpeciesList: staticFeaturedList,
     };
   }, [species]);
 
@@ -81,8 +91,8 @@ export default function HomeScreen() {
       // Request location permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
 
-      if (status !== 'granted') {
-        setLocation('Location permission denied');
+      if (status !== "granted") {
+        setLocation("Location permission denied");
         setIsLoadingLocation(false);
         return;
       }
@@ -100,7 +110,8 @@ export default function HomeScreen() {
 
       if (address) {
         // Format the address
-        const displayLocation = address.city || address.subregion || address.region;
+        const displayLocation =
+          address.city || address.subregion || address.region;
         const displayCountry = address.country;
 
         if (displayLocation && displayCountry) {
@@ -110,14 +121,14 @@ export default function HomeScreen() {
         } else if (address.formattedAddress) {
           setLocation(address.formattedAddress);
         } else {
-          setLocation('Unknown location');
+          setLocation("Unknown location");
         }
       } else {
-        setLocation('Unknown location');
+        setLocation("Unknown location");
       }
     } catch (error) {
-      console.error('Error getting location:', error);
-      setLocation('Unable to get location');
+      console.error("Error getting location:", error);
+      setLocation("Unable to get location");
     } finally {
       setIsLoadingLocation(false);
     }
@@ -126,7 +137,7 @@ export default function HomeScreen() {
   const handleAntPress = (antId: string) => {
     router.push({
       pathname: `/detail/[id]`,
-      params: { id: antId }
+      params: { id: antId },
     });
   };
 
@@ -135,10 +146,10 @@ export default function HomeScreen() {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
-      if (status !== 'granted') {
+      if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
-          "You need to grant camera permission to use this feature."
+          "You need to grant camera permission to use this feature.",
         );
         return;
       }
@@ -152,25 +163,29 @@ export default function HomeScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const capturedImage = result.assets[0];
         router.push({
-          pathname: '/identification-results',
-          params: { imageUri: capturedImage.uri, source: 'camera' }
+          pathname: "/identification-results",
+          params: { imageUri: capturedImage.uri, source: "camera" },
         });
       }
     } catch (error) {
       console.error("Error taking photo:", error);
-      Alert.alert("Error", "There was a problem taking the photo. Please try again.");
+      Alert.alert(
+        "Error",
+        "There was a problem taking the photo. Please try again.",
+      );
     }
   };
 
   // Handle upload photo from gallery
   const handleUploadPhoto = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      if (status !== 'granted') {
+      if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
-          "You need to grant gallery access to use this feature."
+          "You need to grant gallery access to use this feature.",
         );
         return;
       }
@@ -185,22 +200,25 @@ export default function HomeScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedImage = result.assets[0];
         router.push({
-          pathname: '/identification-results',
-          params: { imageUri: selectedImage.uri, source: 'gallery' }
+          pathname: "/identification-results",
+          params: { imageUri: selectedImage.uri, source: "gallery" },
         });
       }
     } catch (error) {
       console.error("Error uploading photo:", error);
-      Alert.alert("Error", "There was a problem selecting the photo. Please try again.");
+      Alert.alert(
+        "Error",
+        "There was a problem selecting the photo. Please try again.",
+      );
     }
   };
 
   // Handle Identify Ant button - show action sheet to choose camera or gallery
   const handleIdentifyAnt = () => {
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancel', 'Take Photo', 'Choose from Gallery'],
+          options: ["Cancel", "Take Photo", "Choose from Gallery"],
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
@@ -209,39 +227,39 @@ export default function HomeScreen() {
           } else if (buttonIndex === 2) {
             handleUploadPhoto();
           }
-        }
+        },
       );
     } else {
       Alert.alert(
-        'Identify Ant',
-        'Choose an option',
+        "Identify Ant",
+        "Choose an option",
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Take Photo', onPress: handleTakePhoto },
-          { text: 'Choose from Gallery', onPress: handleUploadPhoto },
+          { text: "Cancel", style: "cancel" },
+          { text: "Take Photo", onPress: handleTakePhoto },
+          { text: "Choose from Gallery", onPress: handleUploadPhoto },
         ],
-        { cancelable: true }
+        { cancelable: true },
       );
     }
   };
 
   const handleCategoryPress = (categoryName: string) => {
     router.push({
-      pathname: '/(tabs)/explore',
-      params: { category: categoryName }
+      pathname: "/(tabs)/explore",
+      params: { category: categoryName },
     });
   };
 
   // Handle location press - refresh or open settings
   const handleLocationPress = () => {
-    if (location === 'Location permission denied') {
+    if (location === "Location permission denied") {
       Alert.alert(
-        'Location Permission',
-        'Please enable location permission in your device settings to see your current location.',
+        "Location Permission",
+        "Please enable location permission in your device settings to see your current location.",
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Retry', onPress: getLocation },
-        ]
+          { text: "Cancel", style: "cancel" },
+          { text: "Retry", onPress: getLocation },
+        ],
       );
     } else {
       // Refresh location
@@ -254,12 +272,14 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header with notification */}
-        <View className="flex-row items-center justify-end px-5 pt-2 pb-2">
-          <TouchableOpacity>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
+        {/* Header */}
+        <View className="pt-4 pb-5">
+          <ScreenHeader
+            rightIcon="notifications-outline"
+            onRightPress={() => {}}
+          />
         </View>
+
 
         {/* Your Location Section */}
         <Pressable
@@ -268,7 +288,9 @@ export default function HomeScreen() {
           style={({ pressed }) => pressed && styles.pressed}
         >
           <View>
-            <Text className="text-xl font-bold text-gray-800">Your Location</Text>
+            <Text className="text-xl font-bold text-gray-800">
+              Your Location
+            </Text>
             <View className="flex-row items-center mt-1">
               {isLoadingLocation ? (
                 <ActivityIndicator size="small" color="#328e6e" />
@@ -304,16 +326,26 @@ export default function HomeScreen() {
                 className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
                 onPress={() => handleCategoryPress(tag.name)}
               >
-                {tag.name === 'Venomous' ? (
-                  <MaterialCommunityIcons name="alert" size={16} color={tag.color} />
-                ) : tag.name === 'Forest' ? (
-                  <MaterialCommunityIcons name="tree" size={16} color={tag.color} />
-                ) : tag.name === 'Household' ? (
+                {tag.name === "Venomous" ? (
+                  <MaterialCommunityIcons
+                    name="alert"
+                    size={16}
+                    color={tag.color}
+                  />
+                ) : tag.name === "Forest" ? (
+                  <MaterialCommunityIcons
+                    name="tree"
+                    size={16}
+                    color={tag.color}
+                  />
+                ) : tag.name === "Household" ? (
                   <Ionicons name="home" size={16} color={tag.color} />
                 ) : (
                   <Ionicons name="sparkles" size={16} color={tag.color} />
                 )}
-                <Text className="ml-2 text-gray-700 font-medium">{tag.name}</Text>
+                <Text className="ml-2 text-gray-700 font-medium">
+                  {tag.name}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -347,7 +379,7 @@ export default function HomeScreen() {
             title="Featured Species"
             subtitle="Discover common Thai ants"
             showSeeMore
-            onSeeMorePress={() => router.push('/(tabs)/explore')}
+            onSeeMorePress={() => router.push("/(tabs)/explore")}
           />
 
           {speciesLoading ? (
