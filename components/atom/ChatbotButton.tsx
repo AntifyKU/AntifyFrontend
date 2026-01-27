@@ -2,10 +2,12 @@ import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, usePathname } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ChatbotButton() {
   const router = useRouter();
   const pathname = usePathname();
+  const { isLoading } = useAuth();
 
   const hiddenRoutes = [
     "/landingpage",
@@ -16,9 +18,15 @@ export default function ChatbotButton() {
     "/login",
     "/signup",
     "/forgotpassword",
+    "/chatbot",
   ];
 
-  if (hiddenRoutes.includes(pathname) || pathname.startsWith("/detail"))
+  if (
+    isLoading ||
+    hiddenRoutes.includes(pathname) ||
+    pathname.startsWith("/detail") ||
+    pathname.startsWith("/settings")
+  )
     return null;
 
   return (

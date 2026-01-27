@@ -8,7 +8,7 @@ import ChatbotButton from "@/components/atom/ChatbotButton";
 
 function RootLayoutNav() {
   const { isLoading } = useAuth();
-  // useNotifications();
+  useNotifications();
 
   if (isLoading) {
     return (
