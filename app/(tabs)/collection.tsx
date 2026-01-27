@@ -11,7 +11,7 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SearchBar from '@/components/SearchBar';
-import SortButton from '@/components/SortButton';
+import SortButton from '@/components/atom/SortButton';
 import CollectionGridItem from '@/components/CollectionGridItem';
 import { collectionItemsData } from '@/constants/AntData';
 

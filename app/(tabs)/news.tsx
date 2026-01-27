@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import ListCard from "@/components/ListCard";
 import SearchBar from "@/components/SearchBar";
-import SortButton from "@/components/SortButton";
+import SortButton from "@/components/atom/SortButton";
 import { useNews } from "@/hooks/useNews";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";

@@ -23,7 +23,7 @@ import * as ImagePicker from "expo-image-picker";
 import ListCard from "@/components/ListCard";
 import FavoriteListCard from "@/components/FavoriteListCard";
 import CollectionGridItem from "@/components/CollectionGridItem";
-import SortButton from "@/components/SortButton";
+import SortButton from "@/components/atom/SortButton";
 import { FolderChip, AllChip, AddFolderChip } from "@/components/FolderChip";
 import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";

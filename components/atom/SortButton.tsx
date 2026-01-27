@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, Text, View } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface SortButtonProps {
@@ -17,7 +17,7 @@ export default function SortButton({
 }: SortButtonProps) {
   return (
     <TouchableOpacity
-      className="flex-row items-center px-4 py-2.5 border border-gray-200 rounded-lg bg-white"
+      className="flex-row items-center px-4 py-2.5 border border-gray-200 rounded-xl bg-white"
       onPress={onPress}
       activeOpacity={0.7}
     >
