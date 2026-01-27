@@ -177,14 +177,14 @@ export default function ExploreScreen() {
         />
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Search */}
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search ant species..."
-        />
+      {/* Search */}
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Search ant species..."
+      />
 
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Actions */}
         <View className="flex-row justify-between px-5 mb-4">
           <ActionButton
@@ -209,7 +209,6 @@ export default function ExploreScreen() {
             <Text className="text-yellow-700 text-sm">Using offline data</Text>
           </View>
         )}
-
         {/* Count */}
         <View className="px-5 mb-4">
           <Text className="text-base text-gray-500">
@@ -249,6 +248,7 @@ export default function ExploreScreen() {
             <Text className="text-gray-500">Try adjusting your search</Text>
           </View>
         )}
+        <View className="h-24" />
       </ScrollView>
     </SafeAreaView>
   );

@@ -50,7 +50,7 @@ export default function SortModal({
             {renderItem("Newest First", "newest")}
             {renderItem("Oldest First", "oldest")}
 
-            <View className="h-8" />
+            <View className="h-4" />
           </View>
         </View>
       </Pressable>
