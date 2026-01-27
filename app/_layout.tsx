@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import React from "react";
+import { Stack } from "expo-router";
 import { View, ActivityIndicator } from "react-native";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -24,7 +24,13 @@ function RootLayoutNav() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="detail" />
-      <Stack.Screen name="chatbot" />
+      <Stack.Screen
+        name="chatbot"
+        options={{
+          presentation: "modal",
+          animation: "slide_from_bottom",
+        }}
+      />
       <Stack.Screen name="settings" />
       <Stack.Screen name="feedback" />
     </Stack>

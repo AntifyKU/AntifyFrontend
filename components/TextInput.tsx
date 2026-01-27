@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TextInputProps,
   ViewStyle,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 

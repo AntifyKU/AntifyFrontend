@@ -1,182 +1,293 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { useChatbot, ChatMessage } from '@/hooks/useChatbot';
+import React, { useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Image,
+  TextInput,
+  Animated,
+  Easing,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import { useChatbot } from "@/hooks/useChatbot";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import MessageBubble from "@/components/atom/MessageBubble";
 
 export default function ChatbotScreen() {
-  const {
-    messages,
-    isConnected,
-    isTyping,
-    sendMessage,
-    sendMessageWithImage,
-  } = useChatbot('Ask me about ants! I can help identify species and answer questions.');
+  const { messages, isConnected, isTyping, sendMessage, sendMessageWithImage } =
+    useChatbot(
+      "Ask me about ants! I can help identify species and answer questions.",
+    );
 
-  const [inputText, setInputText] = React.useState('');
+  const [inputText, setInputText] = React.useState("");
   const scrollViewRef = useRef<ScrollView>(null);
+  const rotateAnim = useRef(new Animated.Value(0)).current;
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
+  useEffect(() => {
+    const startAnimation = () => {
+      rotateAnim.setValue(0);
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 3000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ).start();
+    };
+
+    startAnimation();
+  }, [rotateAnim]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   const handleSend = () => {
     if (!inputText.trim()) return;
     sendMessage(inputText);
-    setInputText('');
+    setInputText("");
   };
 
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
+      mediaTypes: ["images"],
       quality: 0.8,
       base64: true,
     });
 
     if (!result.canceled && result.assets[0].base64) {
       const asset = result.assets[0];
-      const base64 = asset.base64!; // TypeScript now knows this is string (checked on line 54)
-      const mimeType = asset.mimeType || 'image/jpeg';
+      const message =
+        inputText.trim() || "What can you tell me about this image?";
 
-      // Prompt user for message about the image
-      const message = inputText.trim() || 'What can you tell me about this image?';
-      sendMessageWithImage(message, base64, mimeType);
-      setInputText('');
+      sendMessageWithImage(
+        message,
+        asset.base64!,
+        asset.mimeType || "image/jpeg",
+      );
+      setInputText("");
     }
   };
 
-  const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
-        <View className="flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()} className="mr-3">
-            <Ionicons name="ellipsis-horizontal" size={24} color="#666" />
-          </TouchableOpacity>
-          <Text className="text-xl font-medium text-gray-500">Chat with us!</Text>
-        </View>
-        <View className="flex-row">
-          <TouchableOpacity className="mr-4">
-            <Ionicons name="remove" size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="close" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <View style={{ paddingTop: 24, paddingBottom: 16 }}>
+        <ScreenHeader title="Live Chat" />
       </View>
 
-      {/* Agent Info */}
-      <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200">
-        <View className="flex-row items-center">
-          <View className="items-center justify-center w-12 h-12 mr-3 bg-white border-2 border-gray-200 rounded-full">
-            <View className="w-8 h-8 bg-[#0A9D5C] rounded-md items-center justify-center">
-              <Ionicons name="chatbubble-ellipses" size={16} color="white" />
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderColor: "#E5E7EB",
+        }}
+      >
+        <View
+          style={{
+            width: 60,
+            height: 60,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 54,
+              height: 54,
+              borderRadius: 27,
+              overflow: "hidden",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#E5E7EB",
+            }}
+          >
+            <Animated.View
+              style={{
+                width: 90,
+                height: 90,
+                transform: [{ rotate }],
+              }}
+            >
+              <LinearGradient
+                colors={["#BEF264", "#22D3EE", "#8B5CF6", "#BEF264"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ flex: 1 }}
+              />
+            </Animated.View>
+
+            <View
+              style={{
+                position: "absolute",
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                source={require("@/assets/images/chat-logo.png")}
+                style={{ width: 44, height: 44, borderRadius: 22 }}
+              />
             </View>
-            <View className={`absolute bottom-0 right-0 w-3 h-3 ${isConnected ? 'bg-green-500' : 'bg-red-500'} border border-white rounded-full`} />
           </View>
-          <View>
-            <Text className="text-xl font-medium text-gray-700">Antify</Text>
-            <Text className="text-gray-400">
-              {isConnected ? 'Support Agent' : 'Connecting...'}
-            </Text>
-          </View>
+
+          <View
+            style={{
+              position: "absolute",
+              bottom: 4,
+              right: 4,
+              width: 14,
+              height: 14,
+              borderRadius: 7,
+              backgroundColor: isConnected ? "#22C55E" : "#EF4444",
+              borderWidth: 2,
+              borderColor: "white",
+              zIndex: 20,
+            }}
+          />
         </View>
-        <View className="flex-row">
-          <TouchableOpacity className="mr-4">
-            <Ionicons name="thumbs-up-outline" size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Ionicons name="thumbs-down-outline" size={24} color="#666" />
-          </TouchableOpacity>
+
+        <View style={{ marginLeft: 12 }}>
+          <Text style={{ fontSize: 18, fontWeight: "600" }}>Antify</Text>
+          <Text style={{ color: "#9CA3AF" }}>
+            {isConnected ? "Support Agent" : "Connecting..."}
+          </Text>
         </View>
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Chat Messages */}
         <ScrollView
           ref={scrollViewRef}
-          className="flex-1 px-4 pt-2"
+          style={{ flex: 1, padding: 16 }}
           keyboardShouldPersistTaps="handled"
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
-          {messages.map((message, index) => (
-            <View key={message.id} className="mb-4">
-              {!message.isUser && index === 0 && (
-                <View className="flex-row items-center mb-2">
-                  <View className="items-center justify-center w-8 h-8 mr-2 bg-gray-100 rounded-full">
-                    <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
+          {messages.map((msg, index) => (
+            <View key={msg.id} style={{ marginBottom: 12 }}>
+              {!msg.isUser && index === 0 && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      backgroundColor: "#F3F4F6",
+                      borderRadius: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name="chatbubble-ellipses"
+                      size={16}
+                      color="#666"
+                    />
                   </View>
-                  <Text className="text-gray-500">Livechat {formatTime(message.timestamp)}</Text>
+                  <Text style={{ color: "#6B7280" }}>
+                    Livechat {formatTime(msg.timestamp)}
+                  </Text>
                 </View>
               )}
 
-              <View className={`${message.isUser ? 'ml-auto bg-gray-100' : 'mr-auto bg-white border border-gray-200'} rounded-2xl px-4 py-3 max-w-[80%]`}>
-                {message.isStreaming && !message.text ? (
-                  <View className="flex-row items-center">
-                    <ActivityIndicator size="small" color="#0A9D5C" />
-                    <Text className="ml-2 text-gray-400">Thinking...</Text>
-                  </View>
-                ) : (
-                  <Text className="text-base text-gray-600">{message.text}</Text>
-                )}
-              </View>
+              <MessageBubble
+                text={msg.text}
+                isUser={msg.isUser}
+                isStreaming={msg.isStreaming}
+              />
 
-              {message.isUser && (
-                <Text className="mt-1 text-right text-gray-500">
-                  Visitor {formatTime(message.timestamp)}
+              {msg.isUser && (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "#9CA3AF",
+                    alignSelf: "flex-end",
+                    marginTop: 4,
+                  }}
+                >
+                  {formatTime(msg.timestamp)}
                 </Text>
               )}
             </View>
           ))}
         </ScrollView>
 
-        {/* Input Area */}
-        <View className="flex-row items-center px-4 py-2 border-t border-gray-200">
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 12,
+            gap: 12,
+            borderTopWidth: 1,
+            borderColor: "#F3F4F6",
+            backgroundColor: "white",
+          }}
+        >
+          <TouchableOpacity onPress={handleImagePick}>
+            <Ionicons name="add" size={30} color="#666" />
+          </TouchableOpacity>
+
           <TextInput
             style={{
               flex: 1,
               paddingHorizontal: 16,
               paddingVertical: 12,
               borderWidth: 1,
-              borderColor: '#e5e7eb',
-              borderRadius: 9999,
+              borderColor: "#E5E7EB",
+              borderRadius: 999,
               fontSize: 16,
-              color: '#4b5563',
-              backgroundColor: '#fff',
+              backgroundColor: "#FFFFFF",
             }}
             placeholder="Write a message"
-            placeholderTextColor="#9ca3af"
             value={inputText}
             onChangeText={setInputText}
             onSubmitEditing={handleSend}
             returnKeyType="send"
-            autoCapitalize="none"
-            autoCorrect={true}
           />
-          <TouchableOpacity className="ml-2">
-            <Ionicons name="happy-outline" size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity className="ml-2" onPress={handleImagePick}>
-            <Ionicons name="attach" size={24} color="#666" />
-          </TouchableOpacity>
+
           <TouchableOpacity
-            className={`ml-2 w-10 h-10 ${isConnected ? 'bg-[#0A9D5C]' : 'bg-gray-300'} rounded-full items-center justify-center`}
             onPress={handleSend}
             disabled={!isConnected || isTyping}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: isConnected ? "#0A9D5C" : "#D1D5DB",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             {isTyping ? (
-              <ActivityIndicator size="small" color="white" />
+              <ActivityIndicator color="white" />
             ) : (
               <Ionicons name="send" size={18} color="white" />
             )}
