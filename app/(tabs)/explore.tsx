@@ -170,7 +170,11 @@ export default function ExploreScreen() {
 
       {/* Header */}
       <View className="pt-4 pb-5">
-        <ScreenHeader title="Explore" />
+        <ScreenHeader
+          title="Explore"
+          rightIcon="notifications-outline"
+          onRightPress={() => {}}
+        />
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
