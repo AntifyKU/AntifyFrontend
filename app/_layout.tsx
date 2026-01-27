@@ -4,10 +4,11 @@ import { View, ActivityIndicator } from "react-native";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import "../global.css";
+import ChatbotButton from "@/components/atom/ChatbotButton";
 
 function RootLayoutNav() {
   const { isLoading } = useAuth();
-  useNotifications();
+  // useNotifications();
 
   if (isLoading) {
     return (
@@ -41,6 +42,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <RootLayoutNav />
+      <ChatbotButton />
     </AuthProvider>
   );
 }
