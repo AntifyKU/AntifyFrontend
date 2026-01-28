@@ -184,7 +184,7 @@ export default function ExploreScreen() {
         placeholder="Search ant species..."
       />
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator>
         {/* Actions */}
         <View className="flex-row justify-between px-5 mb-4">
           <ActionButton

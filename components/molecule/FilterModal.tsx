@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StatusBar,
   Modal,
 } from "react-native";
@@ -48,7 +47,7 @@ export default function FilterModal({
         <StatusBar barStyle="dark-content" />
         <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
         {/* Header */}
-        <View className="py-4">
+        <View className="py-6 border-b border-gray-200">
           <ScreenHeader
             title="Filter"
             leftText="Cancel"
@@ -134,20 +133,13 @@ export default function FilterModal({
               ))}
             </View>
           </View>
-
-          <View className="h-24" />
         </ScrollView>
 
-        {/* Apply */}
-        <View className="px-5 pt-4 pb-8 bg-white border-t border-gray-100">
-          <TouchableOpacity
-            className="bg-[#22A45D] py-4 rounded-full"
+        <View className="px-6 pt-4">
+          <PrimaryButton
+            title="Apply Filters"
             onPress={onApply}
-          >
-            <Text className="text-lg font-semibold text-center text-white">
-              Apply Filters
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     </Modal>

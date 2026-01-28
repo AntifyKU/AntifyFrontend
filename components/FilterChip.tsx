@@ -75,7 +75,7 @@ export default function FilterChip({
     <TouchableOpacity
       onPress={onPress}
       className={`flex-row items-center rounded-full mr-2 mb-2 ${sizeClasses[size]}`}
-      style={{ backgroundColor }}
+      style={{ backgroundColor, minHeight: icon ? 32 : 28 }}
       activeOpacity={0.7}
     >
       {renderIcon()}
