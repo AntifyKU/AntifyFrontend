@@ -184,7 +184,13 @@ export default function ExploreScreen() {
         placeholder="Search ant species..."
       />
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator
+        contentContainerStyle={{
+          flexGrow: filteredAndSortedSpecies.length === 0 ? 1 : 0,
+        }}
+      >
         {/* Actions */}
         <View className="flex-row justify-between px-5 mb-4">
           <ActionButton
@@ -240,9 +246,9 @@ export default function ExploreScreen() {
           </View>
         )}
 
-        {/* Empty */}
+        {/* Empty state */}
         {!loading && filteredAndSortedSpecies.length === 0 && (
-          <View className="flex-1 items-center justify-center py-20">
+          <View className="flex-1 items-center justify-center">
             <Ionicons name="search-outline" size={48} color="#9CA3AF" />
             <Text className="mt-2 text-gray-600 text-lg">No species found</Text>
             <Text className="text-gray-500">Try adjusting your search</Text>
