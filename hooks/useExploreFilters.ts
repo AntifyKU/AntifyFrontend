@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FilterState } from "@/components/molecule/FilterModal";
+import { FilterState } from "@/components/organism/FilterModal";
 
 export function useExploreFilters() {
   const [appliedFilters, setApplied] = useState<FilterState>({

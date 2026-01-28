@@ -16,7 +16,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import StarRating from "@/components/StarRating"
-import FilterChip from "@/components/FilterChip"
+import Badge from "@/components/atom/Badge"
 import PrimaryButton from "@/components/atom/PrimaryButton"
 import { feedbackService } from "@/services/feedback"
 
@@ -172,7 +172,7 @@ export default function FeedbackScreen() {
           <Text className="mb-4 text-xl font-semibold text-gray-800">What did you like about it?</Text>
           <View className="flex-row flex-wrap">
             {likeOptions.map((option) => (
-              <FilterChip
+              <Badge
                 key={option.id}
                 label={option.label}
                 isSelected={option.selected}
@@ -190,7 +190,7 @@ export default function FeedbackScreen() {
           <Text className="mb-4 text-xl font-semibold text-gray-800">What could be improved?</Text>
           <View className="flex-row flex-wrap">
             {improveOptions.map((option) => (
-              <FilterChip
+              <Badge
                 key={option.id}
                 label={option.label}
                 isSelected={option.selected}

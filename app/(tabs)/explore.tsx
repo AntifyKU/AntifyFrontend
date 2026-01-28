@@ -16,7 +16,7 @@ import ActionButton from "@/components/atom/ActionButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
 import SortModal, { SortOption } from "@/components/molecule/SortModal";
-import FilterModal from "@/components/molecule/FilterModal";
+import FilterModal from "@/components/organism/FilterModal";
 import { useExploreFilters } from "@/hooks/useExploreFilters";
 import { useSpecies } from "@/hooks/useSpecies";
 

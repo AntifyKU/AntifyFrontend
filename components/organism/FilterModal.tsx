@@ -1,16 +1,11 @@
 import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StatusBar,
-  Modal,
-} from "react-native";
+import { View, Text, ScrollView, StatusBar, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import FilterChip from "@/components/FilterChip";
+import Badge from "@/components/atom/Badge";
 import { filterOptions, quickDiscoveryCategories } from "@/constants/AntData";
 import PrimaryButton from "@/components/atom/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import FilterSection from "@/components/molecule/FilterSection";
 
 export type FilterState = {
   quickFilters: string[];
@@ -58,7 +53,7 @@ export default function FilterModal({
         </View>
 
         <ScrollView
-          className="flex-1 px-5"
+          className="flex-1 px-6"
           showsVerticalScrollIndicator={false}
         >
           {/* Quick Filter */}
@@ -69,7 +64,7 @@ export default function FilterModal({
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex-row">
                 {quickDiscoveryCategories.map((filter) => (
-                  <FilterChip
+                  <Badge
                     key={filter.id}
                     label={filter.name}
                     icon={filter.icon}
@@ -84,62 +79,32 @@ export default function FilterModal({
           </View>
 
           {/* Color */}
-          <View className="mb-6">
-            <Text className="mb-4 text-lg font-semibold text-gray-800">
-              Color
-            </Text>
-            <View className="flex-row flex-wrap">
-              {filterOptions.colors.map((color) => (
-                <FilterChip
-                  key={color}
-                  label={color}
-                  isSelected={tempFilters.colors.includes(color)}
-                  onPress={() => onToggle("colors", color)}
-                />
-              ))}
-            </View>
-          </View>
+          <FilterSection
+            title="Color"
+            options={filterOptions.colors}
+            selected={tempFilters.colors}
+            onToggle={(v) => onToggle("colors", v)}
+          />
 
           {/* Habitat */}
-          <View className="mb-6">
-            <Text className="mb-4 text-lg font-semibold text-gray-800">
-              Habitat
-            </Text>
-            <View className="flex-row flex-wrap">
-              {filterOptions.habitats.map((habitat) => (
-                <FilterChip
-                  key={habitat}
-                  label={habitat}
-                  isSelected={tempFilters.habitats.includes(habitat)}
-                  onPress={() => onToggle("habitats", habitat)}
-                />
-              ))}
-            </View>
-          </View>
+          <FilterSection
+            title="Habitat"
+            options={filterOptions.habitats}
+            selected={tempFilters.habitats}
+            onToggle={(v) => onToggle("habitats", v)}
+          />
 
           {/* Distribution */}
-          <View className="mb-6">
-            <Text className="mb-4 text-lg font-semibold text-gray-800">
-              Distribution
-            </Text>
-            <View className="flex-row flex-wrap">
-              {filterOptions.distributions.map((dist) => (
-                <FilterChip
-                  key={dist}
-                  label={dist}
-                  isSelected={tempFilters.distributions.includes(dist)}
-                  onPress={() => onToggle("distributions", dist)}
-                />
-              ))}
-            </View>
-          </View>
+          <FilterSection
+            title="Distribution"
+            options={filterOptions.distributions}
+            selected={tempFilters.distributions}
+            onToggle={(v) => onToggle("distributions", v)}
+          />
         </ScrollView>
 
         <View className="px-6 pt-4">
-          <PrimaryButton
-            title="Apply Filters"
-            onPress={onApply}
-          />
+          <PrimaryButton title="Apply Filters" onPress={onApply} />
         </View>
       </SafeAreaView>
     </Modal>

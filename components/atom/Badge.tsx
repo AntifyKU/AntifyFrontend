@@ -2,7 +2,7 @@ import React from "react";
 import { TouchableOpacity, Text } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-interface FilterChipProps {
+interface BadgeProps {
   label: string;
   isSelected?: boolean;
   onPress: () => void;
@@ -15,7 +15,7 @@ interface FilterChipProps {
   size?: "small" | "medium" | "large";
 }
 
-export default function FilterChip({
+export default function Badge({
   label,
   isSelected = false,
   onPress,
@@ -26,7 +26,7 @@ export default function FilterChip({
   unselectedBackgroundColor = "#e8f5e0",
   showCloseIcon = true,
   size = "medium",
-}: FilterChipProps) {
+}: BadgeProps) {
   const sizeClasses = {
     small: "px-4 py-2",
     medium: "px-5 py-2.5",

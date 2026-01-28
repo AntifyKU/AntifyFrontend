@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
 import { antSpeciesData } from "@/constants/AntData"
-import FilterChip from "@/components/FilterChip"
+import Badge from "@/components/atom/Badge"
 import { useSpeciesDetail } from "@/hooks/useSpeciesDetail"
 import { useAuth } from "@/context/AuthContext"
 import { useFavorites } from "@/hooks/useFavorites"
@@ -372,7 +372,7 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Color</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.colors.map((color, index) => (
-                <FilterChip
+                <Badge
                   key={index}
                   label={color}
                   onPress={() => { }}
@@ -388,7 +388,7 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Habitat</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.habitat.map((hab, index) => (
-                <FilterChip
+                <Badge
                   key={index}
                   label={hab}
                   onPress={() => { }}
@@ -404,7 +404,7 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Distribution in Thailand</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.distribution.map((dist, index) => (
-                <FilterChip
+                <Badge
                   key={index}
                   label={dist}
                   onPress={() => { }}
