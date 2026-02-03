@@ -33,6 +33,7 @@ import { authService } from "@/services/auth";
 import { FOLDER_COLORS, Folder } from "@/services/folders";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import SettingsModal from "@/components/organism/SettingModal";
 
 const { width } = Dimensions.get("window");
 const numColumns = 2;
@@ -41,34 +42,6 @@ const itemWidth = (width - 40 - gap) / numColumns;
 
 type TabType = "collection" | "favorite";
 type SortOption = "newest" | "oldest" | "name-asc" | "name-desc";
-
-// Settings menu items
-const settingsMenuItems = [
-  {
-    id: "1",
-    title: "Account",
-    icon: "person-outline" as const,
-    route: "/settings/account" as const,
-  },
-  {
-    id: "2",
-    title: "App Preferences",
-    icon: "globe-outline" as const,
-    route: "/settings/preferences" as const,
-  },
-  {
-    id: "3",
-    title: "Privacy & Security",
-    icon: "shield-outline" as const,
-    route: null,
-  },
-  {
-    id: "4",
-    title: "Support & Info",
-    icon: "help-circle-outline" as const,
-    route: "/settings/support" as const,
-  },
-];
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("collection");
@@ -83,7 +56,7 @@ export default function ProfileScreen() {
     useState<SortOption>("newest");
 
   // Folder-related state
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null); // null = "All"
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
@@ -149,7 +122,6 @@ export default function ProfileScreen() {
       collection.length,
     );
 
-    // First filter by folder
     const filtered =
       selectedFolderId === null
         ? collection
@@ -162,7 +134,6 @@ export default function ProfileScreen() {
       filtered.length,
     );
 
-    // Then sort (with defensive checks for undefined species_name)
     return [...filtered].sort((a, b) => {
       switch (collectionSortOption) {
         case "newest":
@@ -205,7 +176,6 @@ export default function ProfileScreen() {
     });
   }, [favorites, favoritesSortOption]);
 
-  // Get current sort option based on active tab
   const currentSortOption =
     activeTab === "collection" ? collectionSortOption : favoritesSortOption;
   const setCurrentSortOption =
@@ -213,7 +183,6 @@ export default function ProfileScreen() {
       ? setCollectionSortOption
       : setFavoritesSortOption;
 
-  // Get sort label
   const getSortLabel = () => {
     switch (currentSortOption) {
       case "newest":
@@ -229,7 +198,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // Handle sort selection
   const handleSortSelect = (option: SortOption) => {
     setCurrentSortOption(option);
     setShowSort(false);
@@ -256,7 +224,7 @@ export default function ProfileScreen() {
     }, [isAuthenticated, refreshFavorites, refreshCollection, refreshFolders]),
   );
 
-  // Handle profile picture upload
+  // Profile picture handlers
   const handleProfilePicturePress = () => {
     if (!isAuthenticated) return;
 
@@ -273,13 +241,10 @@ export default function ProfileScreen() {
           cancelButtonIndex: 0,
         },
         async (buttonIndex) => {
-          if (buttonIndex === 1) {
-            await handleTakePhoto();
-          } else if (buttonIndex === 2) {
-            await handleChooseFromLibrary();
-          } else if (buttonIndex === 3 && user?.profile_picture) {
+          if (buttonIndex === 1) await handleTakePhoto();
+          else if (buttonIndex === 2) await handleChooseFromLibrary();
+          else if (buttonIndex === 3 && user?.profile_picture)
             await handleRemovePhoto();
-          }
         },
       );
     } else {
@@ -310,13 +275,11 @@ export default function ProfileScreen() {
         );
         return;
       }
-
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
-
       if (!result.canceled && result.assets[0]) {
         await uploadProfilePicture(
           result.assets[0].uri,
@@ -340,14 +303,12 @@ export default function ProfileScreen() {
         );
         return;
       }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
-
       if (!result.canceled && result.assets[0]) {
         await uploadProfilePicture(
           result.assets[0].uri,
@@ -365,7 +326,6 @@ export default function ProfileScreen() {
     mimeType?: string | null,
   ) => {
     if (!token) return;
-
     setIsUploadingPhoto(true);
     try {
       await authService.uploadProfilePicture(
@@ -385,7 +345,6 @@ export default function ProfileScreen() {
 
   const handleRemovePhoto = async () => {
     if (!token) return;
-
     Alert.alert(
       "Remove Photo",
       "Are you sure you want to remove your profile picture?",
@@ -414,12 +373,10 @@ export default function ProfileScreen() {
     );
   };
 
+  // Collection / Favorite handlers
   const handleItemPress = (id: string) => {
-    if (isEditMode) return; // Don't navigate in edit mode
-    router.push({
-      pathname: "/detail/[id]",
-      params: { id },
-    });
+    if (isEditMode) return;
+    router.push({ pathname: "/detail/[id]", params: { id } });
   };
 
   const handleDeleteCollection = async (speciesId: string) => {
@@ -479,14 +436,12 @@ export default function ProfileScreen() {
     ]);
   };
 
-  // ============== FOLDER HANDLERS ==============
-
+  // Folder handlers
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) {
       Alert.alert("Error", "Please enter a folder name");
       return;
     }
-
     setIsSavingFolder(true);
     try {
       await createFolder(newFolderName.trim(), newFolderColor, "folder");
@@ -506,7 +461,6 @@ export default function ProfileScreen() {
       Alert.alert("Error", "Please enter a folder name");
       return;
     }
-
     setIsSavingFolder(true);
     try {
       await updateFolder(editingFolder.id, {
@@ -526,7 +480,7 @@ export default function ProfileScreen() {
 
   const handleDeleteFolder = (folder: Folder) => {
     Alert.alert(
-      "Delete Folder",
+      `Delete Folder`,
       `Are you sure you want to delete "${folder.name}"?`,
       [
         { text: "Cancel", style: "cancel" },
@@ -535,9 +489,7 @@ export default function ProfileScreen() {
           onPress: async () => {
             try {
               const result = await deleteFolder(folder.id, false);
-              if (selectedFolderId === folder.id) {
-                setSelectedFolderId(null);
-              }
+              if (selectedFolderId === folder.id) setSelectedFolderId(null);
               Alert.alert(
                 "Deleted",
                 `Folder deleted. ${result.items_affected} items kept in collection.`,
@@ -553,9 +505,7 @@ export default function ProfileScreen() {
           onPress: async () => {
             try {
               const result = await deleteFolder(folder.id, true);
-              if (selectedFolderId === folder.id) {
-                setSelectedFolderId(null);
-              }
+              if (selectedFolderId === folder.id) setSelectedFolderId(null);
               await refreshCollection();
               Alert.alert(
                 "Deleted",
@@ -625,129 +575,30 @@ export default function ProfileScreen() {
     if (!item) return;
 
     const currentFolderIds = item.folder_ids || [];
-    let newFolderIds: string[];
-
-    if (isCurrentlyIn) {
-      newFolderIds = currentFolderIds.filter((id) => id !== folderId);
-    } else {
-      newFolderIds = [...currentFolderIds, folderId];
-    }
+    const newFolderIds = isCurrentlyIn
+      ? currentFolderIds.filter((id) => id !== folderId)
+      : [...currentFolderIds, folderId];
 
     try {
       await setItemFolders(speciesId, newFolderIds);
-      await refreshFolders(); // Refresh folder counts
+      await refreshFolders();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to update folders");
     }
   };
 
-  // Settings Modal
-  const SettingsModal = () => (
-    <Modal
-      visible={showSettings}
-      animationType="slide"
-      presentationStyle="pageSheet"
-    >
-      <SafeAreaView className="flex-1 bg-white">
-        <StatusBar barStyle="dark-content" />
+  const guestHeaderActions = [
+    { icon: "notifications-outline" as const, onPress: () => {} },
+  ];
 
-        {/* Header */}
-        <View className="flex-row items-center justify-center px-5 py-4">
-          <TouchableOpacity
-            className="absolute left-5"
-            onPress={() => setShowSettings(false)}
-          >
-            <Ionicons name="chevron-back" size={28} color="#22A45D" />
-          </TouchableOpacity>
-          <Text className="text-xl font-semibold text-gray-800">Settings</Text>
-        </View>
+  const authHeaderActions = [
+    { icon: "notifications-outline" as const, onPress: () => {} },
+    { icon: "settings-outline" as const, onPress: () => setShowSettings(true) },
+  ];
 
-        {/* Profile Section */}
-        <View className="items-center py-8">
-          <TouchableOpacity
-            className="relative"
-            onPress={handleProfilePicturePress}
-            disabled={isUploadingPhoto}
-          >
-            {user?.profile_picture ? (
-              <Image
-                source={{ uri: user.profile_picture }}
-                className="w-28 h-28 rounded-full"
-                style={{ backgroundColor: "#c5e063" }}
-              />
-            ) : (
-              <View className="w-28 h-28 rounded-full bg-[#c5e063] items-center justify-center">
-                <View className="w-20 h-20 rounded-full bg-[#328e6e] items-center justify-center">
-                  <Ionicons name="person" size={40} color="#c5e063" />
-                </View>
-              </View>
-            )}
-            {/* Edit button overlay */}
-            <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#22A45D] items-center justify-center">
-              {isUploadingPhoto ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Ionicons name="camera" size={16} color="#FFFFFF" />
-              )}
-            </View>
-          </TouchableOpacity>
-          <Text className="mt-4 text-xl font-bold text-gray-800">
-            {user?.username || "Ant Enthusiast"}
-          </Text>
-          <Text className="mt-1 text-gray-500">
-            {user?.email || "user@antify.com"}
-          </Text>
-        </View>
-
-        {/* Divider */}
-        <View className="h-px mx-5 bg-gray-200" />
-
-        {/* Menu Items */}
-        <View className="px-5 mt-4">
-          {settingsMenuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              className="flex-row items-center py-4 border-b border-gray-100"
-              onPress={() => {
-                if (item.route) {
-                  setShowSettings(false);
-                  router.push(item.route);
-                } else {
-                  Alert.alert(
-                    "Coming Soon",
-                    `${item.title} will be available in a future update.`,
-                  );
-                }
-              }}
-            >
-              <Ionicons name={item.icon} size={24} color="#6B7280" />
-              <Text className="flex-1 ml-4 text-base text-gray-800">
-                {item.title}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Logout Button */}
-        {isAuthenticated && (
-          <View className="px-5 mt-8">
-            <TouchableOpacity
-              className="flex-row items-center justify-center py-4 bg-red-50 rounded-xl"
-              onPress={handleLogout}
-            >
-              <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-              <Text className="ml-2 text-base font-medium text-red-500">
-                Log Out
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </SafeAreaView>
-    </Modal>
-  );
-
+  // ---------------------------------------------------------------------------
   // Sort Modal
+  // ---------------------------------------------------------------------------
   const SortModal = () => (
     <Modal
       visible={showSort}
@@ -766,61 +617,35 @@ export default function ProfileScreen() {
               Sort By
             </Text>
 
-            <TouchableOpacity
-              className={`flex-row items-center justify-between px-6 py-4 border-b border-gray-100 ${currentSortOption === "newest" ? "bg-green-50" : ""}`}
-              onPress={() => handleSortSelect("newest")}
-            >
-              <Text
-                className={`text-base ${currentSortOption === "newest" ? "text-[#22A45D] font-semibold" : "text-gray-700"}`}
-              >
-                Newest First
-              </Text>
-              {currentSortOption === "newest" && (
-                <Ionicons name="checkmark" size={24} color="#22A45D" />
-              )}
-            </TouchableOpacity>
+            {(
+              ["newest", "oldest", "name-asc", "name-desc"] as SortOption[]
+            ).map((option) => {
+              const labels: Record<SortOption, string> = {
+                newest: "Newest First",
+                oldest: "Oldest First",
+                "name-asc": "Name (A-Z)",
+                "name-desc": "Name (Z-A)",
+              };
+              const isActive = currentSortOption === option;
+              const isLast = option === "name-desc";
 
-            <TouchableOpacity
-              className={`flex-row items-center justify-between px-6 py-4 border-b border-gray-100 ${currentSortOption === "oldest" ? "bg-green-50" : ""}`}
-              onPress={() => handleSortSelect("oldest")}
-            >
-              <Text
-                className={`text-base ${currentSortOption === "oldest" ? "text-[#22A45D] font-semibold" : "text-gray-700"}`}
-              >
-                Oldest First
-              </Text>
-              {currentSortOption === "oldest" && (
-                <Ionicons name="checkmark" size={24} color="#22A45D" />
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className={`flex-row items-center justify-between px-6 py-4 border-b border-gray-100 ${currentSortOption === "name-asc" ? "bg-green-50" : ""}`}
-              onPress={() => handleSortSelect("name-asc")}
-            >
-              <Text
-                className={`text-base ${currentSortOption === "name-asc" ? "text-[#22A45D] font-semibold" : "text-gray-700"}`}
-              >
-                Name (A-Z)
-              </Text>
-              {currentSortOption === "name-asc" && (
-                <Ionicons name="checkmark" size={24} color="#22A45D" />
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className={`flex-row items-center justify-between px-6 py-4 ${currentSortOption === "name-desc" ? "bg-green-50" : ""}`}
-              onPress={() => handleSortSelect("name-desc")}
-            >
-              <Text
-                className={`text-base ${currentSortOption === "name-desc" ? "text-[#22A45D] font-semibold" : "text-gray-700"}`}
-              >
-                Name (Z-A)
-              </Text>
-              {currentSortOption === "name-desc" && (
-                <Ionicons name="checkmark" size={24} color="#22A45D" />
-              )}
-            </TouchableOpacity>
+              return (
+                <TouchableOpacity
+                  key={option}
+                  className={`flex-row items-center justify-between px-6 py-4 ${isLast ? "" : "border-b border-gray-100"} ${isActive ? "bg-green-50" : ""}`}
+                  onPress={() => handleSortSelect(option)}
+                >
+                  <Text
+                    className={`text-base ${isActive ? "text-[#22A45D] font-semibold" : "text-gray-700"}`}
+                  >
+                    {labels[option]}
+                  </Text>
+                  {isActive && (
+                    <Ionicons name="checkmark" size={24} color="#22A45D" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
 
             <View className="h-8" />
           </View>
@@ -829,33 +654,25 @@ export default function ProfileScreen() {
     </Modal>
   );
 
-  // Create Folder Modal - defined inline in render to avoid re-creation issues
-  // Edit Folder Modal - defined inline in render to avoid re-creation issues
-  // Add to Folder Modal - defined inline in render to avoid re-creation issues
-
-  // Guest view (not logged in)
+  // Guest view
   if (!isAuthenticated) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
 
-        {/* Header */}
         <View className="pt-4 pb-5">
-          <ScreenHeader
-            title="Profile"
-            rightIcon="settings-outline"
-            onRightPress={() => setShowSettings(true)}
-          />
+          <ScreenHeader title="Profile" rightActions={guestHeaderActions} />
         </View>
-        {/* <View className="flex-row items-center justify-between px-5 py-4">
-          <View className="w-10" />
-          <Text className="text-xl font-semibold text-gray-800">Profile</Text>
-          <TouchableOpacity onPress={() => setShowSettings(true)}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
-        </View> */}
 
-        <SettingsModal />
+        <SettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+          user={user}
+          isAuthenticated={isAuthenticated}
+          isUploadingPhoto={isUploadingPhoto}
+          onProfilePicturePress={handleProfilePicturePress}
+          onLogout={handleLogout}
+        />
 
         <View className="flex-1 items-center justify-center px-8">
           <View className="w-24 h-24 rounded-full bg-[#c5e063] items-center justify-center mb-6">
@@ -890,9 +707,8 @@ export default function ProfileScreen() {
     );
   }
 
+  // Authenticated view
   const isLoading = favoritesLoading || collectionLoading || foldersLoading;
-
-  // Get item for AddToFolder modal
   const addToFolderItem = collection.find(
     (c) => c.species_id === addToFolderItemId,
   );
@@ -902,10 +718,17 @@ export default function ProfileScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
 
-      {/* Settings Modal */}
-      <SettingsModal />
+      {/* ── Modals ── */}
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        user={user}
+        isAuthenticated={isAuthenticated}
+        isUploadingPhoto={isUploadingPhoto}
+        onProfilePicturePress={handleProfilePicturePress}
+        onLogout={handleLogout}
+      />
 
-      {/* Sort Modal */}
       <SortModal />
 
       {/* Create Folder Modal */}
@@ -922,7 +745,6 @@ export default function ProfileScreen() {
                 New Folder
               </Text>
 
-              {/* Folder Name Input */}
               <Text className="text-sm font-medium text-gray-600 mb-2">
                 Folder Name
               </Text>
@@ -935,7 +757,6 @@ export default function ProfileScreen() {
                 maxLength={50}
               />
 
-              {/* Color Picker */}
               <Text className="text-sm font-medium text-gray-600 mb-2">
                 Color
               </Text>
@@ -947,11 +768,7 @@ export default function ProfileScreen() {
                     className="mr-2 mb-2"
                   >
                     <View
-                      className={`w-10 h-10 rounded-full items-center justify-center ${
-                        newFolderColor === color.hex
-                          ? "border-2 border-gray-800"
-                          : ""
-                      }`}
+                      className={`w-10 h-10 rounded-full items-center justify-center ${newFolderColor === color.hex ? "border-2 border-gray-800" : ""}`}
                       style={{ backgroundColor: color.hex }}
                     >
                       {newFolderColor === color.hex && (
@@ -962,7 +779,6 @@ export default function ProfileScreen() {
                 ))}
               </View>
 
-              {/* Buttons */}
               <View className="flex-row">
                 <TouchableOpacity
                   className="flex-1 py-3 rounded-lg border border-gray-300 mr-2"
@@ -1012,7 +828,6 @@ export default function ProfileScreen() {
                 Edit Folder
               </Text>
 
-              {/* Folder Name Input */}
               <Text className="text-sm font-medium text-gray-600 mb-2">
                 Folder Name
               </Text>
@@ -1025,7 +840,6 @@ export default function ProfileScreen() {
                 maxLength={50}
               />
 
-              {/* Color Picker */}
               <Text className="text-sm font-medium text-gray-600 mb-2">
                 Color
               </Text>
@@ -1037,11 +851,7 @@ export default function ProfileScreen() {
                     className="mr-2 mb-2"
                   >
                     <View
-                      className={`w-10 h-10 rounded-full items-center justify-center ${
-                        newFolderColor === color.hex
-                          ? "border-2 border-gray-800"
-                          : ""
-                      }`}
+                      className={`w-10 h-10 rounded-full items-center justify-center ${newFolderColor === color.hex ? "border-2 border-gray-800" : ""}`}
                       style={{ backgroundColor: color.hex }}
                     >
                       {newFolderColor === color.hex && (
@@ -1052,7 +862,6 @@ export default function ProfileScreen() {
                 ))}
               </View>
 
-              {/* Buttons */}
               <View className="flex-row">
                 <TouchableOpacity
                   className="flex-1 py-3 rounded-lg border border-gray-300 mr-2"
@@ -1133,9 +942,7 @@ export default function ProfileScreen() {
                     return (
                       <TouchableOpacity
                         key={folder.id}
-                        className={`flex-row items-center p-3 rounded-lg mb-2 ${
-                          isInFolder ? "bg-green-50" : "bg-gray-50"
-                        }`}
+                        className={`flex-row items-center p-3 rounded-lg mb-2 ${isInFolder ? "bg-green-50" : "bg-gray-50"}`}
                         onPress={() => {
                           if (addToFolderItemId) {
                             handleToggleItemFolder(
@@ -1182,13 +989,9 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {/* Header */}
+      {/* ── Header ── */}
       <View className="pt-4 pb-5">
-        <ScreenHeader
-          title="Profile"
-          rightIcon="settings-outline"
-          onRightPress={() => setShowSettings(true)}
-        />
+        <ScreenHeader title="Profile" rightActions={authHeaderActions} />
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -1212,7 +1015,6 @@ export default function ProfileScreen() {
                 </View>
               </View>
             )}
-            {/* Edit button overlay */}
             <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#22A45D] items-center justify-center">
               {isUploadingPhoto ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
@@ -1263,7 +1065,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Sort and Edit Buttons */}
+        {/* Sort & Edit row */}
         <View className="flex-row items-center justify-between px-5 mb-4">
           {activeTab === "collection" ? (
             <>
@@ -1272,7 +1074,6 @@ export default function ProfileScreen() {
                 label={getSortLabel()}
                 isOpen={showSort}
               />
-              {/* Edit/Done/Cancel buttons */}
               <View className="flex-row items-center">
                 {isEditMode && (
                   <Pressable
@@ -1320,7 +1121,6 @@ export default function ProfileScreen() {
             </>
           ) : (
             <>
-              {/* Empty space for Favorite */}
               <View />
               <SortButton
                 onPress={() => setShowSort(true)}
@@ -1331,7 +1131,7 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Folder Row - Only show for Collection tab */}
+        {/* Folder Row – Collection tab only */}
         {activeTab === "collection" && (
           <View className="mb-4">
             <ScrollView
@@ -1339,14 +1139,11 @@ export default function ProfileScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 20 }}
             >
-              {/* All chip */}
               <AllChip
                 isSelected={selectedFolderId === null}
                 onPress={() => setSelectedFolderId(null)}
                 itemCount={collection.length}
               />
-
-              {/* Folder chips */}
               {folders.map((folder) => (
                 <FolderChip
                   key={folder.id}
@@ -1356,14 +1153,12 @@ export default function ProfileScreen() {
                   onLongPress={() => handleFolderLongPress(folder)}
                 />
               ))}
-
-              {/* Add folder button */}
               <AddFolderChip onPress={() => setShowCreateFolder(true)} />
             </ScrollView>
           </View>
         )}
 
-        {/* Loading State */}
+        {/* Loading */}
         {isLoading && (
           <View className="items-center py-8">
             <ActivityIndicator size="large" color="#0A9D5C" />
@@ -1371,11 +1166,10 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Content based on active tab */}
+        {/* Content */}
         {!isLoading && (
           <View className="px-5">
             {activeTab === "collection" ? (
-              // Collection Grid
               sortedCollection.length > 0 ? (
                 <View className="flex-row flex-wrap">
                   {sortedCollection.map((item, index) => (
@@ -1389,10 +1183,10 @@ export default function ProfileScreen() {
                         isLeftColumn={index % 2 === 0}
                         onPress={() => handleItemPress(item.species_id)}
                       />
-                      {/* Edit mode overlays */}
+
+                      {/* Edit-mode overlays */}
                       {isEditMode && (
                         <>
-                          {/* Folder button */}
                           <TouchableOpacity
                             className="absolute top-2 left-2 w-8 h-8 bg-blue-500 rounded-full items-center justify-center"
                             style={{
@@ -1409,7 +1203,6 @@ export default function ProfileScreen() {
                               color="#fff"
                             />
                           </TouchableOpacity>
-                          {/* Delete button */}
                           <TouchableOpacity
                             className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full items-center justify-center"
                             style={{
@@ -1433,7 +1226,8 @@ export default function ProfileScreen() {
                           </TouchableOpacity>
                         </>
                       )}
-                      {/* Show folder indicator when not in edit mode - top right of image */}
+
+                      {/* Folder-color dots (non-edit mode) */}
                       {!isEditMode &&
                         item.folder_ids &&
                         item.folder_ids.length > 0 && (
@@ -1481,8 +1275,7 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 </View>
               )
-            ) : // Favorite List with heart button to remove
-            sortedFavorites.length > 0 ? (
+            ) : sortedFavorites.length > 0 ? (
               <View>
                 <Text className="text-gray-400 text-xs mb-3 text-center">
                   Tap the heart to remove from favorites
