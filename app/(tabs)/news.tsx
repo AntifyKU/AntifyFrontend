@@ -28,7 +28,7 @@ export default function NewsScreen() {
     limit: 20,
   });
 
-  // Filter news based on search query
+  // filter news based on search query
   const filteredNews = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return news;
@@ -72,53 +72,39 @@ export default function NewsScreen() {
         />
       </View>
 
+      {/* Search Bar */}
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Search news..."
+      />
+
       <ScrollView
         className="flex-1"
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#328e6e"]}
-            tintColor="#328e6e"
+            colors={["#22A45D"]}
+            tintColor="#22A45D"
           />
         }
       >
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search news..."
-          containerClassName="px-5 mb-3"
-          showBorder={false}
-        />
-
         {/* Sort Button */}
         <View className="flex-row justify-end px-5 mb-4">
           <SortButton onPress={() => {}} />
         </View>
 
-        {/* Loading State */}
+        {/* Loading */}
         {loading && !refreshing && (
-          <View className="py-12 items-center">
-            <ActivityIndicator size="large" color="#328e6e" />
+          <View className="py-10 items-center">
+            <ActivityIndicator size="large" color="#22A45D" />
             <Text className="mt-4 text-gray-500">Loading news...</Text>
           </View>
         )}
 
-        {/* Empty State */}
-        {!loading && filteredNews.length === 0 && (
-          <View className="py-12 items-center px-5">
-            <Ionicons name="newspaper-outline" size={48} color="#9CA3AF" />
-            <Text className="mt-4 text-gray-500 text-center">
-              {searchQuery
-                ? "No news found matching your search"
-                : "No news available"}
-            </Text>
-          </View>
-        )}
-
-        {/* News List */}
+        {/* List */}
         {!loading && (
           <View className="px-5">
             {filteredNews.map((newsItem) => (
@@ -135,7 +121,17 @@ export default function NewsScreen() {
           </View>
         )}
 
-        {/* Bottom padding for tab bar */}
+        {/* Empty State */}
+        {!loading && filteredNews.length === 0 && (
+          <View className="py-12 items-center px-5">
+            <Ionicons name="newspaper-outline" size={48} color="#9CA3AF" />
+            <Text className="mt-4 text-gray-500 text-center">
+              {searchQuery
+                ? "No news found matching your search"
+                : "No news available"}
+            </Text>
+          </View>
+        )}
         <View className="h-24" />
       </ScrollView>
     </SafeAreaView>

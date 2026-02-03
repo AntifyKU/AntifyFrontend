@@ -226,7 +226,7 @@ export default function ExploreScreen() {
         {loading && (
           <View className="py-10 items-center">
             <ActivityIndicator size="large" color="#22A45D" />
-            <Text className="mt-2 text-gray-500">Loading species...</Text>
+            <Text className="mt-4 text-gray-500">Loading species...</Text>
           </View>
         )}
 
