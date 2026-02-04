@@ -2,8 +2,7 @@ import React from "react";
 import { Modal, View, Text, TouchableOpacity, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
-
-export type SortOption = "name-asc" | "name-desc" | "newest" | "oldest";
+import { SortOption } from "@/utils/sort";
 
 interface Props {
   visible: boolean;

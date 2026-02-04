@@ -7,18 +7,17 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
 import ListCard from "@/components/ListCard";
 import SearchBar from "@/components/SearchBar";
-import ActionButton from "@/components/atom/ActionButton";
+import ActionButton from "@/components/atom/button/ActionButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
-
-import SortModal, { SortOption } from "@/components/molecule/SortModal";
-import FilterModal from "@/components/organism/FilterModal";
+import SortModal from "@/components/molecule/SortModal";
+import { SortOption, getSortLabel } from "@/utils/sort";
+import FilterModal from "@/components/organism/modal/FilterModal";
 import { useExploreFilters } from "@/hooks/useExploreFilters";
 import { useSpecies } from "@/hooks/useSpecies";
+import EmptyState from "@/components/molecule/EmptyState";
 
 export default function ExploreScreen() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,21 +113,6 @@ export default function ExploreScreen() {
     return result;
   }, [species, searchQuery, appliedFilters, sortOption]);
 
-  const getSortLabel = () => {
-    switch (sortOption) {
-      case "name-asc":
-        return "A-Z";
-      case "name-desc":
-        return "Z-A";
-      case "newest":
-        return "Newest";
-      case "oldest":
-        return "Oldest";
-      default:
-        return "Sort";
-    }
-  };
-
   const handleItemPress = (id: string) => {
     router.push({ pathname: "/detail/[id]", params: { id } });
   };
@@ -195,7 +179,7 @@ export default function ExploreScreen() {
         <View className="flex-row justify-between px-5 mb-4">
           <ActionButton
             type="sort"
-            label={getSortLabel()}
+            label={getSortLabel(sortOption)}
             onPress={() => setShowSort(true)}
           />
           <ActionButton
@@ -249,9 +233,12 @@ export default function ExploreScreen() {
         {/* Empty state */}
         {!loading && filteredAndSortedSpecies.length === 0 && (
           <View className="flex-1 items-center justify-center">
-            <Ionicons name="search-outline" size={48} color="#9CA3AF" />
-            <Text className="mt-2 text-gray-600 text-lg">No species found</Text>
-            <Text className="text-gray-500">Try adjusting your search</Text>
+            <EmptyState
+              icon="search-outline"
+              iconSize={48}
+              title="No species found"
+              description="Try adjusting your search"
+            />
           </View>
         )}
         <View className="h-24" />

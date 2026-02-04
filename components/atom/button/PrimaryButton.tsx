@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, ViewStyle } from "react-native";
+import { Pressable, Text, ViewStyle, TextStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface PrimaryButtonProps {
@@ -12,6 +12,8 @@ interface PrimaryButtonProps {
   fullWidth?: boolean;
   size?: "small" | "medium" | "large";
   style?: ViewStyle;
+  textStyle?: TextStyle;
+  iconColor?: string;
 }
 
 export default function PrimaryButton({
@@ -24,6 +26,8 @@ export default function PrimaryButton({
   fullWidth = true,
   size = "medium",
   style,
+  textStyle,
+  iconColor,
 }: PrimaryButtonProps) {
   const sizeClasses = {
     small: "py-2 px-4",
@@ -39,9 +43,11 @@ export default function PrimaryButton({
 
   const iconSize = size === "small" ? 16 : size === "medium" ? 20 : 24;
   const isFilled = variant === "filled";
+
   const backgroundColor = isFilled ? "#0A9D5C" : "transparent";
   const textColor = isFilled ? "#FFFFFF" : "#0A9D5C";
   const borderColor = isFilled ? "transparent" : "#0A9D5C";
+
   const shadowStyle = isFilled
     ? {
         shadowColor: "#0A9D5C",
@@ -56,7 +62,9 @@ export default function PrimaryButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      className={`flex-row items-center justify-center rounded-full ${sizeClasses[size]} ${fullWidth ? "w-full" : ""}`}
+      className={`flex-row items-center justify-center rounded-full ${sizeClasses[size]} ${
+        fullWidth ? "w-full" : ""
+      }`}
       style={[
         {
           backgroundColor,
@@ -65,21 +73,21 @@ export default function PrimaryButton({
         },
         shadowStyle,
         style,
-        disabled ? { opacity: 0.5 } : { opacity: 1 },
+        { opacity: disabled ? 0.5 : 1 },
       ]}
     >
       {icon && iconPosition === "left" && (
         <Ionicons
           name={icon}
           size={iconSize}
-          color={isFilled ? "#FFFFFF" : "#0A9D5C"}
+          color={iconColor || textColor}
           style={{ marginRight: 8 }}
         />
       )}
 
       <Text
         className={`font-semibold ${textSizeClasses[size]}`}
-        style={{ color: textColor }}
+        style={[{ color: textColor }, textStyle]}
       >
         {title}
       </Text>
@@ -88,7 +96,7 @@ export default function PrimaryButton({
         <Ionicons
           name={icon}
           size={iconSize}
-          color={isFilled ? "#FFFFFF" : "#0A9D5C"}
+          color={iconColor || textColor}
           style={{ marginLeft: 8 }}
         />
       )}
