@@ -1,11 +1,14 @@
 import React from "react";
 import { Pressable, Text, ViewStyle, TextStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, AntDesign } from "@expo/vector-icons";
+
+type IconType = "ion" | "ant";
 
 interface PrimaryButtonProps {
   title: string;
   onPress: () => void;
-  icon?: keyof typeof Ionicons.glyphMap;
+  icon?: string;
+  iconType?: IconType;
   iconPosition?: "left" | "right";
   variant?: "filled" | "outlined";
   disabled?: boolean;
@@ -20,6 +23,7 @@ export default function PrimaryButton({
   title,
   onPress,
   icon,
+  iconType = "ion",
   iconPosition = "left",
   variant = "filled",
   disabled = false,
@@ -58,6 +62,30 @@ export default function PrimaryButton({
       }
     : {};
 
+  const renderIcon = (marginStyle: object) => {
+    if (!icon) return null;
+
+    if (iconType === "ant") {
+      return (
+        <AntDesign
+          name={icon as any}
+          size={iconSize}
+          color={iconColor || textColor}
+          style={marginStyle}
+        />
+      );
+    }
+
+    return (
+      <Ionicons
+        name={icon as any}
+        size={iconSize}
+        color={iconColor || textColor}
+        style={marginStyle}
+      />
+    );
+  };
+
   return (
     <Pressable
       onPress={onPress}
@@ -76,30 +104,14 @@ export default function PrimaryButton({
         { opacity: disabled ? 0.5 : 1 },
       ]}
     >
-      {icon && iconPosition === "left" && (
-        <Ionicons
-          name={icon}
-          size={iconSize}
-          color={iconColor || textColor}
-          style={{ marginRight: 8 }}
-        />
-      )}
-
+      {icon && iconPosition === "left" && renderIcon({ marginRight: 8 })}
       <Text
         className={`font-semibold ${textSizeClasses[size]}`}
         style={[{ color: textColor }, textStyle]}
       >
         {title}
       </Text>
-
-      {icon && iconPosition === "right" && (
-        <Ionicons
-          name={icon}
-          size={iconSize}
-          color={iconColor || textColor}
-          style={{ marginLeft: 8 }}
-        />
-      )}
+      {icon && iconPosition === "right" && renderIcon({ marginLeft: 8 })}
     </Pressable>
   );
 }

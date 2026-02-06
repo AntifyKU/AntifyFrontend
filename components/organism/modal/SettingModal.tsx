@@ -9,9 +9,11 @@ import {
   Alert,
   Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
 
 interface User {
   username?: string;
@@ -73,13 +75,14 @@ export default function SettingsModal({
     >
       <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
-
+        <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
         {/* Header */}
-        <View className="flex-row items-center justify-center px-5 py-4">
-          <TouchableOpacity className="absolute left-5" onPress={onClose}>
-            <Ionicons name="chevron-back" size={28} color="#22A45D" />
-          </TouchableOpacity>
-          <Text className="text-xl font-semibold text-gray-800">Settings</Text>
+        <View className="py-6">
+          <ScreenHeader
+            title="Settings"
+            leftIcon="chevron-back"
+            onLeftPress={onClose}
+          />
         </View>
 
         {/* Profile Section */}
@@ -93,13 +96,10 @@ export default function SettingsModal({
               <Image
                 source={{ uri: user.profile_picture }}
                 className="w-28 h-28 rounded-full"
-                style={{ backgroundColor: "#c5e063" }}
               />
             ) : (
-              <View className="w-28 h-28 rounded-full bg-[#c5e063] items-center justify-center">
-                <View className="w-20 h-20 rounded-full bg-[#328e6e] items-center justify-center">
-                  <Ionicons name="person" size={40} color="#c5e063" />
-                </View>
+              <View className="w-28 h-28 items-center justify-center">
+                <FontAwesome name="user-circle" size={96} color="#90A1B9" />
               </View>
             )}
 
@@ -113,19 +113,13 @@ export default function SettingsModal({
             </View>
           </TouchableOpacity>
 
-          <Text className="mt-4 text-xl font-bold text-gray-800">
-            {user?.username || "Ant Enthusiast"}
-          </Text>
-          <Text className="mt-1 text-gray-500">
-            {user?.email || "user@antify.com"}
+          <Text className="mt-4 text-xl font-semibold text-gray-800">
+            {user?.username || "Guest User"}
           </Text>
         </View>
 
-        {/* Divider */}
-        <View className="h-px mx-5 bg-gray-200" />
-
         {/* Menu Items */}
-        <View className="px-5 mt-4">
+        <View className="px-6 mt-4">
           {SETTINGS_MENU_ITEMS.map((item) => (
             <TouchableOpacity
               key={item.id}
@@ -153,16 +147,22 @@ export default function SettingsModal({
 
         {/* Logout Button */}
         {isAuthenticated && (
-          <View className="px-5 mt-8">
-            <TouchableOpacity
-              className="flex-row items-center justify-center py-4 bg-red-50 rounded-xl"
+          <View className="px-6 mt-8">
+            <PrimaryButton
+              title="Log Out"
               onPress={onLogout}
-            >
-              <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-              <Text className="ml-2 text-base font-medium text-red-500">
-                Log Out
-              </Text>
-            </TouchableOpacity>
+              icon="log-out-outline"
+              size="large"
+              variant="outlined"
+              style={{
+                backgroundColor: "#FEF2F2",
+                borderColor: "#EF4444",
+                borderWidth: 0,
+                borderRadius: 12,
+              }}
+              textStyle={{ color: "#EF4444", fontWeight: "600" }}
+              iconColor="#EF4444"
+            />
           </View>
         )}
       </SafeAreaView>

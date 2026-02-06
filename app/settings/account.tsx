@@ -1,73 +1,71 @@
-/**
- * Account Settings Screen
- * Allows users to edit their profile information
- */
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useAuth } from '@/context/AuthContext';
-import { authService } from '@/services/auth';
-import TextInput from '@/components/TextInput';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/services/auth";
+import TextInput from "@/components/TextInput";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { MenuItem } from "@/components/atom/MenuItem";
+
+type MenuScreen = "main" | "username" | "email" | "password";
 
 export default function AccountSettingsScreen() {
   const { user, token, refreshUser } = useAuth();
-  
+  const [currentScreen, setCurrentScreen] = useState<MenuScreen>("main");
+
   // Form states
-  const [username, setUsername] = useState(user?.username || '');
-  const [newEmail, setNewEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [newUsername, setNewUsername] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   // Loading states
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  
+
   // Validation errors
-  const [usernameError, setUsernameError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleUpdateUsername = async () => {
     if (!token) return;
-    
-    // Validate
-    if (!username.trim()) {
-      setUsernameError('Username is required');
+
+    if (!newUsername.trim()) {
+      setUsernameError("Username is required");
       return;
     }
-    if (username.trim().length < 3) {
-      setUsernameError('Username must be at least 3 characters');
+    if (newUsername.trim().length < 3) {
+      setUsernameError("Username must be at least 3 characters");
       return;
     }
-    if (username === user?.username) {
-      setUsernameError('Username is the same as current');
+    if (newUsername === user?.username) {
+      setUsernameError("Username is the same as current");
       return;
     }
-    
-    setUsernameError('');
+
+    setUsernameError("");
     setIsUpdatingUsername(true);
-    
+
     try {
-      await authService.updateProfile(token, { username: username.trim() });
+      await authService.updateProfile(token, { username: newUsername.trim() });
       await refreshUser();
-      Alert.alert('Success', 'Username updated successfully!');
+      Alert.alert("Success", "Username updated successfully!");
+      setCurrentScreen("main");
     } catch (error: any) {
-      setUsernameError(error.message || 'Failed to update username');
+      setUsernameError(error.message || "Failed to update username");
     } finally {
       setIsUpdatingUsername(false);
     }
@@ -75,32 +73,32 @@ export default function AccountSettingsScreen() {
 
   const handleUpdateEmail = async () => {
     if (!token) return;
-    
-    // Validate
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!newEmail.trim()) {
-      setEmailError('Email is required');
+      setEmailError("Email is required");
       return;
     }
     if (!emailRegex.test(newEmail)) {
-      setEmailError('Invalid email format');
+      setEmailError("Invalid email format");
       return;
     }
     if (newEmail === user?.email) {
-      setEmailError('Email is the same as current');
+      setEmailError("Email is the same as current");
       return;
     }
-    
-    setEmailError('');
+
+    setEmailError("");
     setIsUpdatingEmail(true);
-    
+
     try {
       await authService.changeEmail(token, newEmail.trim());
       await refreshUser();
-      setNewEmail('');
-      Alert.alert('Success', 'Email updated successfully!');
+      setNewEmail("");
+      Alert.alert("Success", "Email updated successfully!");
+      setCurrentScreen("main");
     } catch (error: any) {
-      setEmailError(error.message || 'Failed to update email');
+      setEmailError(error.message || "Failed to update email");
     } finally {
       setIsUpdatingEmail(false);
     }
@@ -108,185 +106,295 @@ export default function AccountSettingsScreen() {
 
   const handleUpdatePassword = async () => {
     if (!token) return;
-    
-    // Validate
+
     if (!newPassword) {
-      setPasswordError('New password is required');
+      setPasswordError("New password is required");
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      setPasswordError("Password must be at least 6 characters");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match');
+      setPasswordError("Passwords do not match");
       return;
     }
-    
-    setPasswordError('');
+
+    setPasswordError("");
     setIsUpdatingPassword(true);
-    
+
     try {
       await authService.changePassword(token, newPassword);
-      setNewPassword('');
-      setConfirmPassword('');
-      setCurrentPassword('');
-      Alert.alert('Success', 'Password updated successfully!');
+      setNewPassword("");
+      setConfirmPassword("");
+      setCurrentPassword("");
+      Alert.alert("Success", "Password updated successfully!");
+      setCurrentScreen("main");
     } catch (error: any) {
-      setPasswordError(error.message || 'Failed to update password');
+      setPasswordError(error.message || "Failed to update password");
     } finally {
       setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!token) return;
+
+    // try {
+    //   await authService.deleteAccount(token);
+    //   await refreshUser();
+    //   Alert.alert("Success", "Account deleted successfully!");
+    // } catch (error: any) {
+    //   Alert.alert("Error", error.message || "Failed to delete account");
+    // }
+  };
+
+  const renderMainMenu = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <View className="py-4">
+        <MenuItem
+          icon="person-outline"
+          title="Username"
+          description="Manage your account username"
+          onPress={() => setCurrentScreen("username")}
+        />
+
+        <MenuItem
+          icon="mail-outline"
+          title="Email"
+          description="Manage your email address"
+          onPress={() => setCurrentScreen("email")}
+        />
+
+        <MenuItem
+          icon="lock-closed-outline"
+          title="Change Password"
+          description="Update your password"
+          onPress={() => setCurrentScreen("password")}
+        />
+
+        <View className="mt-8 mb-6">
+          <PrimaryButton
+            title="Delete Account"
+            iconType="ant"
+            icon="user-delete"
+            size="large"
+            variant="outlined"
+            style={{
+              backgroundColor: "#EF4444",
+              borderColor: "#EF4444",
+              borderWidth: 0,
+              borderRadius: 12,
+            }}
+            textStyle={{ color: "#FFFFFF", fontWeight: "600" }}
+            iconColor="#FFFFFF"
+            onPress={() => {
+              Alert.alert(
+                "Delete Account",
+                "Are you sure you want to delete your account? This action cannot be undone.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: handleDeleteAccount,
+                  },
+                ],
+              );
+            }}
+          />
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const renderUsernameForm = () => (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+        <View className="py-6">
+          <Text className="text-base text-gray-500 mb-2">Current username</Text>
+          <Text className="text-base font-semibold text-gray-800 mb-6">
+            {user?.username}
+          </Text>
+
+          <Text className="text-lg font-semibold text-gray-800 mb-4">
+            New username
+          </Text>
+
+          <TextInput
+            placeholder="Enter new username"
+            value={newUsername}
+            onChangeText={(text) => {
+              setNewUsername(text);
+              setUsernameError("");
+            }}
+            icon="person-outline"
+            error={usernameError}
+            autoCapitalize="none"
+          />
+
+          <PrimaryButton
+            title={isUpdatingUsername ? "Updating..." : "Update Username"}
+            onPress={handleUpdateUsername}
+            disabled={isUpdatingUsername}
+            size="large"
+            style={{
+              marginTop: 24,
+              shadowColor: "transparent",
+              elevation: 0,
+              borderRadius: 12,
+            }}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+
+  const renderEmailForm = () => (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+        <View className="py-6">
+          <Text className="text-sm text-gray-500 mb-2">Current email</Text>
+          <Text className="text-base font-semibold text-gray-800 mb-6">
+            {user?.email}
+          </Text>
+
+          <Text className="text-lg font-semibold text-gray-800 mb-4">
+            New email
+          </Text>
+
+          <TextInput
+            placeholder="Enter new email"
+            value={newEmail}
+            onChangeText={(text) => {
+              setNewEmail(text);
+              setEmailError("");
+            }}
+            icon="mail-outline"
+            error={emailError}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <PrimaryButton
+            title={isUpdatingEmail ? "Updating..." : "Update Email"}
+            onPress={handleUpdateEmail}
+            disabled={isUpdatingEmail}
+            size="large"
+            style={{
+              marginTop: 24,
+              shadowColor: "transparent",
+              elevation: 0,
+              borderRadius: 12,
+            }}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+
+  const renderPasswordForm = () => (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+        <View className="py-6">
+          <Text className="text-lg font-semibold text-gray-800 mb-4">
+            New password
+          </Text>
+
+          <TextInput
+            placeholder="New password"
+            value={newPassword}
+            onChangeText={(text) => {
+              setNewPassword(text);
+              setPasswordError("");
+            }}
+            icon="lock-closed-outline"
+            secureTextEntry
+            error={
+              passwordError && !confirmPassword ? passwordError : undefined
+            }
+          />
+
+          <View className="h-3" />
+
+          <TextInput
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              setPasswordError("");
+            }}
+            icon="lock-closed-outline"
+            secureTextEntry
+            error={passwordError}
+          />
+
+          <PrimaryButton
+            title={isUpdatingPassword ? "Updating..." : "Update Password"}
+            onPress={handleUpdatePassword}
+            disabled={isUpdatingPassword}
+            size="large"
+            style={{
+              marginTop: 24,
+              shadowColor: "transparent",
+              elevation: 0,
+              borderRadius: 12,
+            }}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+
+  const getScreenTitle = () => {
+    switch (currentScreen) {
+      case "username":
+        return "Username";
+      case "email":
+        return "Email";
+      case "password":
+        return "Change Password";
+      default:
+        return "Account Settings";
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
-      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color="#22A45D" />
-        </TouchableOpacity>
-        <Text className="flex-1 text-xl font-semibold text-gray-800 text-center mr-7">
-          Account Settings
-        </Text>
+      <View className="py-6">
+        <ScreenHeader
+          title={getScreenTitle()}
+          leftIcon="chevron-back"
+          onLeftPress={() => {
+            if (currentScreen === "main") {
+              router.back();
+            } else {
+              setCurrentScreen("main");
+              setUsernameError("");
+              setEmailError("");
+              setPasswordError("");
+            }
+          }}
+        />
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
-        <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
-          {/* Username Section */}
-          <View className="py-6 border-b border-gray-100">
-            <Text className="text-lg font-semibold text-gray-800 mb-4">Username</Text>
-            <TextInput
-              placeholder="Enter new username"
-              value={username}
-              onChangeText={(text) => {
-                setUsername(text);
-                setUsernameError('');
-              }}
-              icon="person-outline"
-              error={usernameError}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity
-              className={`mt-4 py-3 rounded-lg items-center ${
-                isUpdatingUsername ? 'bg-gray-300' : 'bg-[#22A45D]'
-              }`}
-              onPress={handleUpdateUsername}
-              disabled={isUpdatingUsername}
-            >
-              {isUpdatingUsername ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white font-semibold">Update Username</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* Email Section */}
-          <View className="py-6 border-b border-gray-100">
-            <Text className="text-lg font-semibold text-gray-800 mb-2">Email</Text>
-            <Text className="text-gray-500 mb-4">Current: {user?.email}</Text>
-            <TextInput
-              placeholder="Enter new email"
-              value={newEmail}
-              onChangeText={(text) => {
-                setNewEmail(text);
-                setEmailError('');
-              }}
-              icon="mail-outline"
-              error={emailError}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TouchableOpacity
-              className={`mt-4 py-3 rounded-lg items-center ${
-                isUpdatingEmail ? 'bg-gray-300' : 'bg-[#22A45D]'
-              }`}
-              onPress={handleUpdateEmail}
-              disabled={isUpdatingEmail}
-            >
-              {isUpdatingEmail ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white font-semibold">Update Email</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* Password Section */}
-          <View className="py-6">
-            <Text className="text-lg font-semibold text-gray-800 mb-4">Change Password</Text>
-            <TextInput
-              placeholder="New password"
-              value={newPassword}
-              onChangeText={(text) => {
-                setNewPassword(text);
-                setPasswordError('');
-              }}
-              icon="lock-closed-outline"
-              secureTextEntry
-              error={passwordError && !confirmPassword ? passwordError : undefined}
-            />
-            <View className="h-3" />
-            <TextInput
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChangeText={(text) => {
-                setConfirmPassword(text);
-                setPasswordError('');
-              }}
-              icon="lock-closed-outline"
-              secureTextEntry
-              error={passwordError}
-            />
-            <TouchableOpacity
-              className={`mt-4 py-3 rounded-lg items-center ${
-                isUpdatingPassword ? 'bg-gray-300' : 'bg-[#22A45D]'
-              }`}
-              onPress={handleUpdatePassword}
-              disabled={isUpdatingPassword}
-            >
-              {isUpdatingPassword ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white font-semibold">Update Password</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* Danger Zone */}
-          <View className="py-6 mb-10">
-            <Text className="text-lg font-semibold text-red-500 mb-4">Danger Zone</Text>
-            <TouchableOpacity
-              className="py-3 border-2 border-red-500 rounded-lg items-center"
-              onPress={() => {
-                Alert.alert(
-                  'Delete Account',
-                  'Are you sure you want to delete your account? This action cannot be undone.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { 
-                      text: 'Delete', 
-                      style: 'destructive',
-                      onPress: () => {
-                        // TODO: Implement account deletion
-                        Alert.alert('Coming Soon', 'Account deletion will be available in a future update.');
-                      }
-                    }
-                  ]
-                );
-              }}
-            >
-              <Text className="text-red-500 font-semibold">Delete Account</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      {/* Content */}
+      {currentScreen === "main" && renderMainMenu()}
+      {currentScreen === "username" && renderUsernameForm()}
+      {currentScreen === "email" && renderEmailForm()}
+      {currentScreen === "password" && renderPasswordForm()}
     </SafeAreaView>
   );
 }
