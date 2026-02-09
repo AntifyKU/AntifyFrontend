@@ -20,7 +20,7 @@ import { MenuItem } from "@/components/atom/MenuItem";
 type MenuScreen = "main" | "username" | "email" | "password";
 
 export default function AccountSettingsScreen() {
-  const { user, token, refreshUser } = useAuth();
+  const { user, token, refreshUser, logout } = useAuth();
   const [currentScreen, setCurrentScreen] = useState<MenuScreen>("main");
 
   // Form states
@@ -140,13 +140,14 @@ export default function AccountSettingsScreen() {
   const handleDeleteAccount = async () => {
     if (!token) return;
 
-    // try {
-    //   await authService.deleteAccount(token);
-    //   await refreshUser();
-    //   Alert.alert("Success", "Account deleted successfully!");
-    // } catch (error: any) {
-    //   Alert.alert("Error", error.message || "Failed to delete account");
-    // }
+    try {
+      await authService.deleteAccount(token);
+      Alert.alert("Deleted", "Your account has been deleted.");
+      logout();
+      router.replace("/(auth)/login");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to delete account");
+    }
   };
 
   const renderMainMenu = () => (
@@ -157,6 +158,7 @@ export default function AccountSettingsScreen() {
           title="Username"
           description="Manage your account username"
           onPress={() => setCurrentScreen("username")}
+          iconColor="#22A45D"
         />
 
         <MenuItem
@@ -164,6 +166,7 @@ export default function AccountSettingsScreen() {
           title="Email"
           description="Manage your email address"
           onPress={() => setCurrentScreen("email")}
+          iconColor="#22A45D"
         />
 
         <MenuItem
@@ -171,6 +174,7 @@ export default function AccountSettingsScreen() {
           title="Change Password"
           description="Update your password"
           onPress={() => setCurrentScreen("password")}
+          iconColor="#22A45D"
         />
 
         <View className="mt-8 mb-6">
@@ -215,7 +219,7 @@ export default function AccountSettingsScreen() {
     >
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <View className="py-6">
-          <Text className="text-base text-gray-500 mb-2">Current username</Text>
+          <Text className="text-lg text-gray-500 mb-2">Current username</Text>
           <Text className="text-base font-semibold text-gray-800 mb-6">
             {user?.username}
           </Text>
@@ -260,7 +264,7 @@ export default function AccountSettingsScreen() {
     >
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <View className="py-6">
-          <Text className="text-sm text-gray-500 mb-2">Current email</Text>
+          <Text className="text-lg text-gray-500 mb-2">Current email</Text>
           <Text className="text-base font-semibold text-gray-800 mb-6">
             {user?.email}
           </Text>

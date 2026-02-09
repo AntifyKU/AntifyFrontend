@@ -183,6 +183,18 @@ export async function changePassword(
   );
 }
 
+/**
+ * Delete user account
+ */
+export async function deleteAccount(
+  token: string
+): Promise<{ message: string }> {
+  return apiClient.delete<{ message: string }>(
+    "/api/users/me",
+    { authToken: token }
+  );
+}
+
 export const authService = {
   signup,
   login,
@@ -193,6 +205,7 @@ export const authService = {
   deleteProfilePicture,
   changeEmail,
   changePassword,
+  deleteAccount
 };
 
 export default authService;

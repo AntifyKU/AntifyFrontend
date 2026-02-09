@@ -3,37 +3,32 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Pressable,
   StatusBar,
-  Dimensions,
-  Modal,
-  StyleSheet,
   ActivityIndicator,
   Alert,
   Image,
   Platform,
   ActionSheetIOS,
-  TextInput,
   ScrollView,
+  Dimensions,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import ListCard from "@/components/ListCard";
-import FavoriteListCard from "@/components/FavoriteListCard";
-import CollectionGridItem from "@/components/CollectionGridItem";
-import SortButton from "@/components/atom/SortButton";
-import { FolderChip, AllChip, AddFolderChip } from "@/components/FolderChip";
 import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { authService } from "@/services/auth";
-import { FOLDER_COLORS, Folder } from "@/services/folders";
+import { Folder } from "@/services/folders";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
-import SettingsModal from "@/components/organism/SettingModal";
+import SettingsModal from "@/components/organism/modal/SettingModal";
+import { TabSwitcher } from "@/components/atom/TabSwitcher";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import CollectionSection from "@/components/organism/CollectionSection";
+import FavoriteSection from "@/components/organism/FavoriteSection";
 
 const { width } = Dimensions.get("window");
 const numColumns = 2;
@@ -57,16 +52,6 @@ export default function ProfileScreen() {
 
   // Folder-related state
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  const [showCreateFolder, setShowCreateFolder] = useState(false);
-  const [showEditFolder, setShowEditFolder] = useState(false);
-  const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
-  const [showAddToFolder, setShowAddToFolder] = useState(false);
-  const [addToFolderItemId, setAddToFolderItemId] = useState<string | null>(
-    null,
-  );
-  const [newFolderName, setNewFolderName] = useState("");
-  const [newFolderColor, setNewFolderColor] = useState(FOLDER_COLORS[0].hex);
-  const [isSavingFolder, setIsSavingFolder] = useState(false);
 
   // Auth and data hooks
   const {
@@ -182,21 +167,6 @@ export default function ProfileScreen() {
     activeTab === "collection"
       ? setCollectionSortOption
       : setFavoritesSortOption;
-
-  const getSortLabel = () => {
-    switch (currentSortOption) {
-      case "newest":
-        return "Newest";
-      case "oldest":
-        return "Oldest";
-      case "name-asc":
-        return "A-Z";
-      case "name-desc":
-        return "Z-A";
-      default:
-        return "Sort";
-    }
-  };
 
   const handleSortSelect = (option: SortOption) => {
     setCurrentSortOption(option);
@@ -436,233 +406,16 @@ export default function ProfileScreen() {
     ]);
   };
 
-  // Folder handlers
-  const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) {
-      Alert.alert("Error", "Please enter a folder name");
-      return;
-    }
-    setIsSavingFolder(true);
-    try {
-      await createFolder(newFolderName.trim(), newFolderColor, "folder");
-      setShowCreateFolder(false);
-      setNewFolderName("");
-      setNewFolderColor(FOLDER_COLORS[0].hex);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create folder");
-    } finally {
-      setIsSavingFolder(false);
-    }
-  };
-
-  const handleUpdateFolder = async () => {
-    if (!editingFolder) return;
-    if (!newFolderName.trim()) {
-      Alert.alert("Error", "Please enter a folder name");
-      return;
-    }
-    setIsSavingFolder(true);
-    try {
-      await updateFolder(editingFolder.id, {
-        name: newFolderName.trim(),
-        color: newFolderColor,
-      });
-      setShowEditFolder(false);
-      setEditingFolder(null);
-      setNewFolderName("");
-      setNewFolderColor(FOLDER_COLORS[0].hex);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to update folder");
-    } finally {
-      setIsSavingFolder(false);
-    }
-  };
-
-  const handleDeleteFolder = (folder: Folder) => {
-    Alert.alert(
-      `Delete Folder`,
-      `Are you sure you want to delete "${folder.name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Keep Items",
-          onPress: async () => {
-            try {
-              const result = await deleteFolder(folder.id, false);
-              if (selectedFolderId === folder.id) setSelectedFolderId(null);
-              Alert.alert(
-                "Deleted",
-                `Folder deleted. ${result.items_affected} items kept in collection.`,
-              );
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to delete folder");
-            }
-          },
-        },
-        {
-          text: "Delete Items Too",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const result = await deleteFolder(folder.id, true);
-              if (selectedFolderId === folder.id) setSelectedFolderId(null);
-              await refreshCollection();
-              Alert.alert(
-                "Deleted",
-                `Folder and ${result.items_affected} items deleted.`,
-              );
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to delete folder");
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  const handleFolderLongPress = (folder: Folder) => {
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Edit Folder", "Delete Folder"],
-          destructiveButtonIndex: 2,
-          cancelButtonIndex: 0,
-          title: folder.name,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            setEditingFolder(folder);
-            setNewFolderName(folder.name);
-            setNewFolderColor(folder.color);
-            setShowEditFolder(true);
-          } else if (buttonIndex === 2) {
-            handleDeleteFolder(folder);
-          }
-        },
-      );
-    } else {
-      Alert.alert(folder.name, "Choose an action", [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Edit",
-          onPress: () => {
-            setEditingFolder(folder);
-            setNewFolderName(folder.name);
-            setNewFolderColor(folder.color);
-            setShowEditFolder(true);
-          },
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => handleDeleteFolder(folder),
-        },
-      ]);
-    }
-  };
-
-  const handleOpenAddToFolder = (speciesId: string) => {
-    setAddToFolderItemId(speciesId);
-    setShowAddToFolder(true);
-  };
-
-  const handleToggleItemFolder = async (
-    speciesId: string,
-    folderId: string,
-    isCurrentlyIn: boolean,
-  ) => {
-    const item = collection.find((c) => c.species_id === speciesId);
-    if (!item) return;
-
-    const currentFolderIds = item.folder_ids || [];
-    const newFolderIds = isCurrentlyIn
-      ? currentFolderIds.filter((id) => id !== folderId)
-      : [...currentFolderIds, folderId];
-
-    try {
-      await setItemFolders(speciesId, newFolderIds);
-      await refreshFolders();
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to update folders");
-    }
-  };
-
-  const guestHeaderActions = [
-    { icon: "notifications-outline" as const, onPress: () => {} },
-  ];
-
-  const authHeaderActions = [
+  const headerActions = [
     { icon: "notifications-outline" as const, onPress: () => {} },
     { icon: "settings-outline" as const, onPress: () => setShowSettings(true) },
   ];
-
-  // ---------------------------------------------------------------------------
-  // Sort Modal
-  // ---------------------------------------------------------------------------
-  const SortModal = () => (
-    <Modal
-      visible={showSort}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setShowSort(false)}
-    >
-      <Pressable
-        className="flex-1 bg-black/30"
-        onPress={() => setShowSort(false)}
-      >
-        <View className="flex-1 justify-end">
-          <View className="bg-white rounded-t-3xl">
-            <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
-            <Text className="text-xl font-bold text-center py-4 text-gray-800">
-              Sort By
-            </Text>
-
-            {(
-              ["newest", "oldest", "name-asc", "name-desc"] as SortOption[]
-            ).map((option) => {
-              const labels: Record<SortOption, string> = {
-                newest: "Newest First",
-                oldest: "Oldest First",
-                "name-asc": "Name (A-Z)",
-                "name-desc": "Name (Z-A)",
-              };
-              const isActive = currentSortOption === option;
-              const isLast = option === "name-desc";
-
-              return (
-                <TouchableOpacity
-                  key={option}
-                  className={`flex-row items-center justify-between px-6 py-4 ${isLast ? "" : "border-b border-gray-100"} ${isActive ? "bg-green-50" : ""}`}
-                  onPress={() => handleSortSelect(option)}
-                >
-                  <Text
-                    className={`text-base ${isActive ? "text-[#22A45D] font-semibold" : "text-gray-700"}`}
-                  >
-                    {labels[option]}
-                  </Text>
-                  {isActive && (
-                    <Ionicons name="checkmark" size={24} color="#22A45D" />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-
-            <View className="h-8" />
-          </View>
-        </View>
-      </Pressable>
-    </Modal>
-  );
 
   // Guest view
   if (!isAuthenticated) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
-
-        <View className="pt-4 pb-5">
-          <ScreenHeader title="Profile" rightActions={guestHeaderActions} />
-        </View>
 
         <SettingsModal
           visible={showSettings}
@@ -674,51 +427,110 @@ export default function ProfileScreen() {
           onLogout={handleLogout}
         />
 
-        <View className="flex-1 items-center justify-center px-8">
-          <View className="w-24 h-24 rounded-full bg-[#c5e063] items-center justify-center mb-6">
-            <View className="w-16 h-16 rounded-full bg-[#328e6e] items-center justify-center">
-              <Ionicons name="person" size={32} color="#c5e063" />
-            </View>
-          </View>
-          <Text className="text-2xl font-bold text-gray-800 mb-2">
-            Welcome to Antify
-          </Text>
-          <Text className="text-gray-500 text-center mb-8">
-            Sign in to save your favorite species and build your collection
-          </Text>
-          <TouchableOpacity
-            className="bg-[#0A9D5C] rounded-full px-8 py-4 mb-4 w-full"
-            onPress={() => router.push("/(auth)/login")}
-          >
-            <Text className="text-white font-semibold text-center text-lg">
-              Sign In
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="border-2 border-[#0A9D5C] rounded-full px-8 py-4 w-full"
-            onPress={() => router.push("/(auth)/signup")}
-          >
-            <Text className="text-[#0A9D5C] font-semibold text-center text-lg">
-              Create Account
-            </Text>
-          </TouchableOpacity>
+        <View className="pt-4 pb-5">
+          <ScreenHeader title="Profile" rightActions={headerActions} />
         </View>
+
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="items-center py-8">
+            <View className="w-28 h-28 rounded-full bg-[#0A9D5C] items-center justify-center mb-4">
+              <Ionicons name="leaf" size={48} color="#FFFFFF" />
+            </View>
+            <Text className="text-xl font-semibold text-gray-800">
+              Guest User
+            </Text>
+          </View>
+
+          {/* History section */}
+          <View className="h-28" />
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
   // Authenticated view
   const isLoading = favoritesLoading || collectionLoading || foldersLoading;
-  const addToFolderItem = collection.find(
-    (c) => c.species_id === addToFolderItemId,
-  );
-  const addToFolderItemFolderIds = addToFolderItem?.folder_ids || [];
+
+  // Folder handler for delete (called from CollectionSection)
+  const handleFolderLongPress = (folder: Folder) => {
+    const handleDeleteFolder = (folder: Folder) => {
+      Alert.alert(
+        `Delete Folder`,
+        `Are you sure you want to delete "${folder.name}"?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Keep Items",
+            onPress: async () => {
+              try {
+                const result = await deleteFolder(folder.id, false);
+                if (selectedFolderId === folder.id) setSelectedFolderId(null);
+                Alert.alert(
+                  "Deleted",
+                  `Folder deleted. ${result.items_affected} items kept in collection.`,
+                );
+              } catch (error: any) {
+                Alert.alert(
+                  "Error",
+                  error.message || "Failed to delete folder",
+                );
+              }
+            },
+          },
+          {
+            text: "Delete Items Too",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                const result = await deleteFolder(folder.id, true);
+                if (selectedFolderId === folder.id) setSelectedFolderId(null);
+                await refreshCollection();
+                Alert.alert(
+                  "Deleted",
+                  `Folder and ${result.items_affected} items deleted.`,
+                );
+              } catch (error: any) {
+                Alert.alert(
+                  "Error",
+                  error.message || "Failed to delete folder",
+                );
+              }
+            },
+          },
+        ],
+      );
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancel", "Delete Folder"],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+          title: folder.name,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            handleDeleteFolder(folder);
+          }
+        },
+      );
+    } else {
+      Alert.alert(folder.name, "Choose an action", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => handleDeleteFolder(folder),
+        },
+      ]);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
 
-      {/* ── Modals ── */}
       <SettingsModal
         visible={showSettings}
         onClose={() => setShowSettings(false)}
@@ -729,588 +541,77 @@ export default function ProfileScreen() {
         onLogout={handleLogout}
       />
 
-      <SortModal />
-
-      {/* Create Folder Modal */}
-      <Modal
-        visible={showCreateFolder}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowCreateFolder(false)}
-      >
-        <View className="flex-1 bg-black/30 justify-center items-center">
-          <View className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]">
-            <View className="p-6">
-              <Text className="text-xl font-bold text-center text-gray-800 mb-4">
-                New Folder
-              </Text>
-
-              <Text className="text-sm font-medium text-gray-600 mb-2">
-                Folder Name
-              </Text>
-              <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-800 mb-4"
-                placeholder="Enter folder name"
-                placeholderTextColor="#9CA3AF"
-                value={newFolderName}
-                onChangeText={setNewFolderName}
-                maxLength={50}
-              />
-
-              <Text className="text-sm font-medium text-gray-600 mb-2">
-                Color
-              </Text>
-              <View className="flex-row flex-wrap mb-6">
-                {FOLDER_COLORS.map((color) => (
-                  <TouchableOpacity
-                    key={color.hex}
-                    onPress={() => setNewFolderColor(color.hex)}
-                    className="mr-2 mb-2"
-                  >
-                    <View
-                      className={`w-10 h-10 rounded-full items-center justify-center ${newFolderColor === color.hex ? "border-2 border-gray-800" : ""}`}
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {newFolderColor === color.hex && (
-                        <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <View className="flex-row">
-                <TouchableOpacity
-                  className="flex-1 py-3 rounded-lg border border-gray-300 mr-2"
-                  onPress={() => {
-                    setShowCreateFolder(false);
-                    setNewFolderName("");
-                    setNewFolderColor(FOLDER_COLORS[0].hex);
-                  }}
-                >
-                  <Text className="text-center text-gray-600 font-medium">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 py-3 rounded-lg bg-[#22A45D] ml-2"
-                  onPress={handleCreateFolder}
-                  disabled={isSavingFolder || !newFolderName.trim()}
-                  style={{
-                    opacity: isSavingFolder || !newFolderName.trim() ? 0.5 : 1,
-                  }}
-                >
-                  {isSavingFolder ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <Text className="text-center text-white font-medium">
-                      Create
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Edit Folder Modal */}
-      <Modal
-        visible={showEditFolder}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowEditFolder(false)}
-      >
-        <View className="flex-1 bg-black/30 justify-center items-center">
-          <View className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]">
-            <View className="p-6">
-              <Text className="text-xl font-bold text-center text-gray-800 mb-4">
-                Edit Folder
-              </Text>
-
-              <Text className="text-sm font-medium text-gray-600 mb-2">
-                Folder Name
-              </Text>
-              <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-800 mb-4"
-                placeholder="Enter folder name"
-                placeholderTextColor="#9CA3AF"
-                value={newFolderName}
-                onChangeText={setNewFolderName}
-                maxLength={50}
-              />
-
-              <Text className="text-sm font-medium text-gray-600 mb-2">
-                Color
-              </Text>
-              <View className="flex-row flex-wrap mb-6">
-                {FOLDER_COLORS.map((color) => (
-                  <TouchableOpacity
-                    key={color.hex}
-                    onPress={() => setNewFolderColor(color.hex)}
-                    className="mr-2 mb-2"
-                  >
-                    <View
-                      className={`w-10 h-10 rounded-full items-center justify-center ${newFolderColor === color.hex ? "border-2 border-gray-800" : ""}`}
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {newFolderColor === color.hex && (
-                        <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <View className="flex-row">
-                <TouchableOpacity
-                  className="flex-1 py-3 rounded-lg border border-gray-300 mr-2"
-                  onPress={() => {
-                    setShowEditFolder(false);
-                    setEditingFolder(null);
-                    setNewFolderName("");
-                    setNewFolderColor(FOLDER_COLORS[0].hex);
-                  }}
-                >
-                  <Text className="text-center text-gray-600 font-medium">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 py-3 rounded-lg bg-[#22A45D] ml-2"
-                  onPress={handleUpdateFolder}
-                  disabled={isSavingFolder || !newFolderName.trim()}
-                  style={{
-                    opacity: isSavingFolder || !newFolderName.trim() ? 0.5 : 1,
-                  }}
-                >
-                  {isSavingFolder ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <Text className="text-center text-white font-medium">
-                      Save
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Add to Folder Modal */}
-      <Modal
-        visible={showAddToFolder}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowAddToFolder(false)}
-      >
-        <View className="flex-1 bg-black/30 justify-center items-center">
-          <View className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]">
-            <View className="p-6">
-              <Text className="text-xl font-bold text-center text-gray-800 mb-2">
-                Add to Folder
-              </Text>
-              <Text className="text-sm text-gray-500 text-center mb-4">
-                {addToFolderItem?.species_name || "Select folders"}
-              </Text>
-
-              {folders.length === 0 ? (
-                <View className="items-center py-6">
-                  <Ionicons name="folder-outline" size={48} color="#D1D5DB" />
-                  <Text className="text-gray-500 mt-2 text-center">
-                    No folders yet
-                  </Text>
-                  <TouchableOpacity
-                    className="mt-4 bg-[#22A45D] rounded-lg px-4 py-2"
-                    onPress={() => {
-                      setShowAddToFolder(false);
-                      setShowCreateFolder(true);
-                    }}
-                  >
-                    <Text className="text-white font-medium">
-                      Create Folder
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View className="mb-4">
-                  {folders.map((folder) => {
-                    const isInFolder = addToFolderItemFolderIds.includes(
-                      folder.id,
-                    );
-                    return (
-                      <TouchableOpacity
-                        key={folder.id}
-                        className={`flex-row items-center p-3 rounded-lg mb-2 ${isInFolder ? "bg-green-50" : "bg-gray-50"}`}
-                        onPress={() => {
-                          if (addToFolderItemId) {
-                            handleToggleItemFolder(
-                              addToFolderItemId,
-                              folder.id,
-                              isInFolder,
-                            );
-                          }
-                        }}
-                      >
-                        <View
-                          className="w-4 h-4 rounded-full mr-3"
-                          style={{ backgroundColor: folder.color }}
-                        />
-                        <Text className="flex-1 text-base text-gray-800">
-                          {folder.name}
-                        </Text>
-                        {isInFolder && (
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={24}
-                            color="#22A45D"
-                          />
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-
-              <TouchableOpacity
-                className="py-3 rounded-lg border border-gray-300"
-                onPress={() => {
-                  setShowAddToFolder(false);
-                  setAddToFolderItemId(null);
-                }}
-              >
-                <Text className="text-center text-gray-600 font-medium">
-                  Done
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* ── Header ── */}
       <View className="pt-4 pb-5">
-        <ScreenHeader title="Profile" rightActions={authHeaderActions} />
+        <ScreenHeader title="Profile" rightActions={headerActions} />
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Profile Avatar */}
-        <View className="items-center py-6">
+        <View className="items-center py-8">
           <TouchableOpacity
-            onPress={handleProfilePicturePress}
             disabled={isUploadingPhoto}
             className="relative mb-4"
           >
-            {user?.profile_picture ? (
+            {isUploadingPhoto ? (
+              <View className="w-28 h-28 rounded-full items-center justify-center bg-gray-200">
+                <ActivityIndicator size="large" color="#0A9D5C" />
+              </View>
+            ) : user?.profile_picture ? (
               <Image
                 source={{ uri: user.profile_picture }}
                 className="w-28 h-28 rounded-full"
-                style={{ backgroundColor: "#c5e063" }}
               />
             ) : (
-              <View className="w-28 h-28 rounded-full bg-[#c5e063] items-center justify-center">
-                <View className="w-20 h-20 rounded-full bg-[#328e6e] items-center justify-center">
-                  <Ionicons name="person" size={40} color="#c5e063" />
-                </View>
+              <View className="w-28 h-28 items-center justify-center">
+                <FontAwesome name="user-circle" size={96} color="#90A1B9" />
               </View>
             )}
-            <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#22A45D] items-center justify-center">
-              {isUploadingPhoto ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Ionicons name="camera" size={16} color="#FFFFFF" />
-              )}
-            </View>
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-gray-800">
-            {user?.username || "Ant Enthusiast"}
-          </Text>
-          <Text className="mt-1 text-gray-500">
-            {user?.email || "user@antify.com"}
+          <Text className="text-xl font-semibold text-gray-800">
+            {user?.username}
           </Text>
         </View>
 
         {/* Tab Switcher */}
-        <View className="mx-5 mb-4">
-          <View className="flex-row p-1 bg-gray-100 rounded-full">
-            <Pressable
-              className={`flex-1 py-3 rounded-full ${activeTab === "collection" ? "bg-[#22A45D]" : ""}`}
-              onPress={() => {
-                setActiveTab("collection");
-                setIsEditMode(false);
-              }}
-              style={({ pressed }) => pressed && styles.pressed}
-            >
-              <Text
-                className={`text-center font-medium ${activeTab === "collection" ? "text-white" : "text-gray-500"}`}
-              >
-                Collection ({collection.length})
-              </Text>
-            </Pressable>
-            <Pressable
-              className={`flex-1 py-3 rounded-full ${activeTab === "favorite" ? "bg-[#22A45D]" : ""}`}
-              onPress={() => {
-                setActiveTab("favorite");
-                setIsEditMode(false);
-              }}
-              style={({ pressed }) => pressed && styles.pressed}
-            >
-              <Text
-                className={`text-center font-medium ${activeTab === "favorite" ? "text-white" : "text-gray-500"}`}
-              >
-                Favorite ({favorites.length})
-              </Text>
-            </Pressable>
-          </View>
+        <View className="px-6 mb-4">
+          <TabSwitcher
+            tabs={[
+              {
+                value: "collection",
+                label: "Collection",
+                count: collection.length,
+              },
+              { value: "favorite", label: "Favorite", count: favorites.length },
+            ]}
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              setIsEditMode(false);
+            }}
+          />
         </View>
-
-        {/* Sort & Edit row */}
-        <View className="flex-row items-center justify-between px-5 mb-4">
-          {activeTab === "collection" ? (
-            <>
-              <SortButton
-                onPress={() => setShowSort(true)}
-                label={getSortLabel()}
-                isOpen={showSort}
-              />
-              <View className="flex-row items-center">
-                {isEditMode && (
-                  <Pressable
-                    onPress={() => setIsEditMode(false)}
-                    style={({ pressed }) => [
-                      {
-                        paddingHorizontal: 16,
-                        paddingVertical: 8,
-                        borderRadius: 8,
-                        marginRight: 8,
-                        opacity: pressed ? 0.7 : 1,
-                      },
-                    ]}
-                  >
-                    <Text className="font-medium text-gray-500">Cancel</Text>
-                  </Pressable>
-                )}
-                <Pressable
-                  onPress={() => {
-                    console.log(
-                      "[Profile] Edit/Done button pressed, current isEditMode:",
-                      isEditMode,
-                    );
-                    setIsEditMode(!isEditMode);
-                  }}
-                  style={({ pressed }) => [
-                    {
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: "#22A45D",
-                      backgroundColor: isEditMode ? "#22A45D" : "transparent",
-                      opacity: pressed ? 0.7 : 1,
-                    },
-                  ]}
-                >
-                  <Text
-                    className={`font-medium ${isEditMode ? "text-white" : "text-[#22A45D]"}`}
-                  >
-                    {isEditMode ? "Done" : "Edit"}
-                  </Text>
-                </Pressable>
-              </View>
-            </>
-          ) : (
-            <>
-              <View />
-              <SortButton
-                onPress={() => setShowSort(true)}
-                label={getSortLabel()}
-                isOpen={showSort}
-              />
-            </>
-          )}
-        </View>
-
-        {/* Folder Row – Collection tab only */}
-        {activeTab === "collection" && (
-          <View className="mb-4">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20 }}
-            >
-              <AllChip
-                isSelected={selectedFolderId === null}
-                onPress={() => setSelectedFolderId(null)}
-                itemCount={collection.length}
-              />
-              {folders.map((folder) => (
-                <FolderChip
-                  key={folder.id}
-                  folder={folder}
-                  isSelected={selectedFolderId === folder.id}
-                  onPress={() => setSelectedFolderId(folder.id)}
-                  onLongPress={() => handleFolderLongPress(folder)}
-                />
-              ))}
-              <AddFolderChip onPress={() => setShowCreateFolder(true)} />
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Loading */}
-        {isLoading && (
-          <View className="items-center py-8">
-            <ActivityIndicator size="large" color="#0A9D5C" />
-            <Text className="mt-2 text-gray-500">Loading...</Text>
-          </View>
-        )}
 
         {/* Content */}
-        {!isLoading && (
-          <View className="px-5">
-            {activeTab === "collection" ? (
-              sortedCollection.length > 0 ? (
-                <View className="flex-row flex-wrap">
-                  {sortedCollection.map((item, index) => (
-                    <View key={item.id} style={{ position: "relative" }}>
-                      <CollectionGridItem
-                        id={item.species_id}
-                        title={item.species_name}
-                        subtitle={item.species_scientific_name}
-                        image={item.species_image}
-                        itemWidth={itemWidth}
-                        isLeftColumn={index % 2 === 0}
-                        onPress={() => handleItemPress(item.species_id)}
-                      />
-
-                      {/* Edit-mode overlays */}
-                      {isEditMode && (
-                        <>
-                          <TouchableOpacity
-                            className="absolute top-2 left-2 w-8 h-8 bg-blue-500 rounded-full items-center justify-center"
-                            style={{
-                              zIndex: 10,
-                              left: index % 2 === 0 ? 2 : 8,
-                            }}
-                            onPress={() =>
-                              handleOpenAddToFolder(item.species_id)
-                            }
-                          >
-                            <Ionicons
-                              name="folder-outline"
-                              size={16}
-                              color="#fff"
-                            />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full items-center justify-center"
-                            style={{
-                              zIndex: 10,
-                              right: index % 2 === 0 ? 8 : 2,
-                            }}
-                            onPress={() =>
-                              handleDeleteCollection(item.species_id)
-                            }
-                            disabled={deletingItemId === item.species_id}
-                          >
-                            {deletingItemId === item.species_id ? (
-                              <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                              <Ionicons
-                                name="trash-outline"
-                                size={16}
-                                color="#fff"
-                              />
-                            )}
-                          </TouchableOpacity>
-                        </>
-                      )}
-
-                      {/* Folder-color dots (non-edit mode) */}
-                      {!isEditMode &&
-                        item.folder_ids &&
-                        item.folder_ids.length > 0 && (
-                          <View
-                            className="absolute top-2 right-2 flex-row"
-                            style={{ right: index % 2 === 0 ? 8 : 2 }}
-                          >
-                            {item.folder_ids.slice(0, 3).map((folderId) => {
-                              const folder = folders.find(
-                                (f) => f.id === folderId,
-                              );
-                              if (!folder) return null;
-                              return (
-                                <View
-                                  key={folderId}
-                                  className="w-3 h-3 rounded-full ml-1"
-                                  style={{ backgroundColor: folder.color }}
-                                />
-                              );
-                            })}
-                            {item.folder_ids.length > 3 && (
-                              <Text className="text-xs text-white ml-1">
-                                +{item.folder_ids.length - 3}
-                              </Text>
-                            )}
-                          </View>
-                        )}
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <View className="items-center py-12">
-                  <Ionicons name="albums-outline" size={64} color="#D1D5DB" />
-                  <Text className="mt-4 text-gray-500 text-center">
-                    Your collection is empty.{"\n"}Start adding species you've
-                    found!
-                  </Text>
-                  <TouchableOpacity
-                    className="mt-6 bg-[#0A9D5C] rounded-full px-6 py-3"
-                    onPress={() => router.push("/(tabs)/explore")}
-                  >
-                    <Text className="text-white font-semibold">
-                      Explore Species
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )
-            ) : sortedFavorites.length > 0 ? (
-              <View>
-                <Text className="text-gray-400 text-xs mb-3 text-center">
-                  Tap the heart to remove from favorites
-                </Text>
-                {sortedFavorites.map((item) => (
-                  <FavoriteListCard
-                    key={item.id}
-                    id={item.species_id}
-                    title={item.species_name}
-                    description={item.species_scientific_name}
-                    image={item.species_image}
-                    onPress={() => handleItemPress(item.species_id)}
-                    onRemove={() => handleDeleteFavorite(item.species_id)}
-                    isRemoving={deletingItemId === item.species_id}
-                  />
-                ))}
-              </View>
-            ) : (
-              <View className="items-center py-12">
-                <Ionicons name="heart-outline" size={64} color="#D1D5DB" />
-                <Text className="mt-4 text-gray-500 text-center">
-                  No favorites yet.{"\n"}Tap the heart icon on any species to
-                  save it!
-                </Text>
-                <TouchableOpacity
-                  className="mt-6 bg-[#0A9D5C] rounded-full px-6 py-3"
-                  onPress={() => router.push("/(tabs)/explore")}
-                >
-                  <Text className="text-white font-semibold">
-                    Explore Species
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+        {activeTab === "collection" ? (
+          <CollectionSection
+            folders={folders}
+            isLoading={isLoading}
+            itemWidth={itemWidth}
+            createFolder={createFolder}
+            updateFolder={updateFolder}
+            handleFolderLongPress={handleFolderLongPress}
+          />
+        ) : (
+          <FavoriteSection
+            sortedFavorites={sortedFavorites}
+            isLoading={isLoading}
+            deletingItemId={deletingItemId}
+            showSort={showSort}
+            setShowSort={setShowSort}
+            favoritesSortOption={favoritesSortOption}
+            handleItemPress={handleItemPress}
+            handleDeleteFavorite={handleDeleteFavorite}
+            handleSortSelect={handleSortSelect}
+          />
         )}
 
         {/* Bottom padding for tab bar */}
@@ -1319,9 +620,3 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  pressed: {
-    opacity: 0.7,
-  },
-});
