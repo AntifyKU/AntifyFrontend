@@ -244,10 +244,7 @@ export default function SignupScreen() {
           </View>
 
           {/* Modal Content */}
-          <ScrollView
-            className="flex-1 px-6"
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
             {termsType === "terms" ? (
               <View className="py-6">
                 <Section

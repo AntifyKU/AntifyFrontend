@@ -35,7 +35,7 @@ export default function SupportInfoScreen() {
   };
 
   const renderMainMenu = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
       <View className="py-4">
         <MenuItem
           icon="information-circle-outline"
@@ -85,7 +85,7 @@ export default function SupportInfoScreen() {
   );
 
   const renderAbout = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
       <View className="py-6">
         {/* Logo/Icon */}
         <View className="items-center mb-8">
@@ -93,7 +93,7 @@ export default function SupportInfoScreen() {
             <Ionicons name="leaf" size={48} color="#FFFFFF" />
           </View>
           <Text className="text-2xl font-bold text-gray-800">Antify</Text>
-          <Text className="text-sm text-gray-500 mt-1">
+          <Text className="text-base text-gray-500 mt-1">
             Discover the World of Ants
           </Text>
         </View>
@@ -161,7 +161,7 @@ export default function SupportInfoScreen() {
   );
 
   const renderHowToUse = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
       <View className="py-6">
         <Text className="text-base text-gray-600 mb-6">
           Get started with Antify in just a few simple steps:
@@ -216,7 +216,7 @@ export default function SupportInfoScreen() {
   );
 
   const renderContact = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
       <View className="py-6">
         <Text className="text-base text-gray-600 mb-6">
           Have questions, feedback, or need help? We'd love to hear from you!
@@ -255,6 +255,7 @@ export default function SupportInfoScreen() {
                 "Thank you for your support! We'll redirect you to the App Store.",
                 [{ text: "OK" }],
               );
+              // TODO:
               // Replace with actual App Store URL when published
               // Linking.openURL('https://apps.apple.com/app/antify/id...');
             }}
@@ -266,11 +267,11 @@ export default function SupportInfoScreen() {
   );
 
   const renderTermsPrivacy = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
       <View className="py-6">
         {/* Terms of Service */}
         <View className="mb-8">
-          <Text className="text-xl font-bold text-gray-800 mb-4">
+          <Text className="text-xl font-bold text-green-700 mb-4">
             Terms of Service
           </Text>
 
@@ -404,8 +405,7 @@ export default function SupportInfoScreen() {
   );
 }
 
-// Helper Components
-
+// sub component
 const FeatureItem = ({
   icon,
   title,
@@ -421,7 +421,7 @@ const FeatureItem = ({
     </View>
     <View className="flex-1">
       <Text className="text-base font-semibold text-gray-800">{title}</Text>
-      <Text className="text-sm text-gray-600 mt-1">{description}</Text>
+      <Text className="text-base text-gray-600 mt-1">{description}</Text>
     </View>
   </View>
 );
@@ -456,6 +456,6 @@ const StepItem = ({
 const TipItem = ({ text }: { text: string }) => (
   <View className="flex-row items-start mb-2">
     <Text className="text-[#22A45D] mr-2">•</Text>
-    <Text className="text-sm text-gray-700 flex-1">{text}</Text>
+    <Text className="text-base text-gray-700 flex-1">{text}</Text>
   </View>
 );
