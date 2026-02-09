@@ -17,7 +17,7 @@ import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import StarRating from "@/components/StarRating"
 import Badge from "@/components/atom/Badge"
-import PrimaryButton from "@/components/atom/PrimaryButton"
+import PrimaryButton from "@/components/atom/button/PrimaryButton"
 import { feedbackService } from "@/services/feedback"
 
 // Define the type for route params

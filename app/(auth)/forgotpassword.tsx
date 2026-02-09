@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import TextInput from "@/components/TextInput";
-import PrimaryButton from "@/components/atom/PrimaryButton";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
 export default function ForgotPasswordScreen() {

@@ -3,7 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import PrimaryButton from "@/components/atom/PrimaryButton";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
 
 type OnboardingSlideProps = {
   iconName: keyof typeof Ionicons.glyphMap;

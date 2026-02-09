@@ -24,7 +24,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import SectionHeader from "@/components/molecule/SectionHeader";
 import AntCard from "@/components/AntCard";
-import PrimaryButton from "@/components/atom/PrimaryButton";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useSpecies } from "@/hooks/useSpecies";
 import {
   quickDiscoveryCategories,

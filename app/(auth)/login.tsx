@@ -14,7 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import TextInput from "@/components/TextInput";
-import PrimaryButton from "@/components/atom/PrimaryButton";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 

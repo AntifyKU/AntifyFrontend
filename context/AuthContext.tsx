@@ -1,14 +1,15 @@
-/**
- * Auth Context
- * Provides authentication state and methods throughout the app
- */
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import * as SecureStore from "expo-secure-store";
+import { authService, UserProfile } from "@/services/auth";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { authService, UserProfile } from '@/services/auth';
-
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'auth_user';
+const TOKEN_KEY = "auth_token";
+const USER_KEY = "auth_user";
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -26,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -61,12 +62,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
         } catch (error) {
           // Token is invalid, clear stored auth
-          console.log('Token validation failed, clearing auth');
+          console.log("Token validation failed, clearing auth");
           await clearStoredAuth();
         }
       }
     } catch (error) {
-      console.error('Error loading stored auth:', error);
+      console.error("Error loading stored auth:", error);
     } finally {
       setIsLoading(false);
     }
@@ -90,10 +91,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const response = await authService.login(email, password);
-      
+
       // Fetch full user profile
       const userProfile = await authService.getCurrentUser(response.id_token);
-      
+
       await saveAuth(response.id_token, userProfile);
     } finally {
       setIsLoading(false);
@@ -105,13 +106,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       // First create the account
       await authService.signup({ username, email, password });
-      
+
       // Then login to get the token (backend signup doesn't return token)
       const loginResponse = await authService.login(email, password);
-      
+
       // Fetch full user profile
-      const userProfile = await authService.getCurrentUser(loginResponse.id_token);
-      
+      const userProfile = await authService.getCurrentUser(
+        loginResponse.id_token,
+      );
+
       await saveAuth(loginResponse.id_token, userProfile);
     } finally {
       setIsLoading(false);
@@ -126,7 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       // Ignore logout errors, still clear local state
-      console.log('Logout API error (ignored):', error);
+      console.log("Logout API error (ignored):", error);
     } finally {
       await clearStoredAuth();
       setIsLoading(false);
@@ -135,13 +138,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function refreshUser() {
     if (!token) return;
-    
+
     try {
       const currentUser = await authService.getCurrentUser(token);
       setUser(currentUser);
       await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
     } catch (error) {
-      console.error('Error refreshing user:', error);
+      console.error("Error refreshing user:", error);
     }
   }
 
