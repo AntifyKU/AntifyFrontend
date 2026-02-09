@@ -315,14 +315,14 @@ export default function AccountSettingsScreen() {
           </Text>
 
           <TextInput
-            placeholder="New password"
+            placeholder="Enter new password"
             value={newPassword}
             onChangeText={(text) => {
               setNewPassword(text);
               setPasswordError("");
             }}
             icon="lock-closed-outline"
-            secureTextEntry
+            isPassword
             error={
               passwordError && !confirmPassword ? passwordError : undefined
             }
@@ -338,7 +338,7 @@ export default function AccountSettingsScreen() {
               setPasswordError("");
             }}
             icon="lock-closed-outline"
-            secureTextEntry
+            isPassword
             error={passwordError}
           />
 

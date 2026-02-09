@@ -10,6 +10,7 @@ import { authService, UserProfile } from "@/services/auth";
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
+const REFRESH_KEY = "auth_refresh";
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -73,8 +74,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  async function saveAuth(authToken: string, userProfile: UserProfile) {
+  async function saveAuth(
+    authToken: string,
+    refreshToken: string,
+    userProfile: UserProfile,
+  ) {
     await SecureStore.setItemAsync(TOKEN_KEY, authToken);
+    await SecureStore.setItemAsync(REFRESH_KEY, refreshToken);
     await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userProfile));
     setToken(authToken);
     setUser(userProfile);
@@ -91,11 +97,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const response = await authService.login(email, password);
-
-      // Fetch full user profile
       const userProfile = await authService.getCurrentUser(response.id_token);
 
-      await saveAuth(response.id_token, userProfile);
+      await saveAuth(response.id_token, response.refresh_token, userProfile);
     } finally {
       setIsLoading(false);
     }

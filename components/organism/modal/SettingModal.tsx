@@ -33,16 +33,51 @@ export interface SettingsModalProps {
 }
 
 const AUTH_MENU = [
-  { id: "1", title: "Account", icon: "person-outline", route: "/settings/account" },
-  { id: "2", title: "App Preferences", icon: "globe-outline", route: "/settings/preferences" },
-  { id: "3", title: "Privacy & Security", icon: "shield-outline", route: "/settings/privacy" },
-  { id: "4", title: "Support & Info", icon: "help-circle-outline", route: "/settings/support" },
+  {
+    id: "1",
+    title: "Account",
+    icon: "person-outline",
+    route: "/settings/account",
+  },
+  {
+    id: "2",
+    title: "App Preferences",
+    icon: "globe-outline",
+    route: "/settings/preferences",
+  },
+  {
+    id: "3",
+    title: "Privacy & Security",
+    icon: "shield-outline",
+    route: "/settings/privacy",
+  },
+  {
+    id: "4",
+    title: "Support & Info",
+    icon: "help-circle-outline",
+    route: "/settings/support",
+  },
 ];
 
 const GUEST_MENU = [
-  { id: "2", title: "App Preferences", icon: "globe-outline", route: "/settings/preferences" },
-  { id: "3", title: "Privacy & Security", icon: "shield-outline", route: "/settings/privacy" },
-  { id: "4", title: "Support & Info", icon: "help-circle-outline", route: "/settings/support" },
+  {
+    id: "2",
+    title: "App Preferences",
+    icon: "globe-outline",
+    route: "/settings/preferences",
+  },
+  {
+    id: "3",
+    title: "Privacy & Security",
+    icon: "shield-outline",
+    route: "/settings/privacy",
+  },
+  {
+    id: "4",
+    title: "Support & Info",
+    icon: "help-circle-outline",
+    route: "/settings/support",
+  },
 ];
 
 export default function SettingsModal({
@@ -57,14 +92,22 @@ export default function SettingsModal({
   const menuItems = isAuthenticated ? AUTH_MENU : GUEST_MENU;
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+    >
       <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
         <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
 
         {/* Header */}
         <View className="py-6">
-          <ScreenHeader title="Settings" leftIcon="chevron-back" onLeftPress={onClose} />
+          <ScreenHeader
+            title="Settings"
+            leftIcon="chevron-back"
+            onLeftPress={onClose}
+          />
         </View>
 
         {/* Profile Section */}
@@ -79,7 +122,10 @@ export default function SettingsModal({
                 <ActivityIndicator size="large" color="#0A9D5C" />
               </View>
             ) : isAuthenticated && user?.profile_picture ? (
-              <Image source={{ uri: user.profile_picture }} className="w-28 h-28 rounded-full" />
+              <Image
+                source={{ uri: user.profile_picture }}
+                className="w-28 h-28 rounded-full"
+              />
             ) : isAuthenticated ? (
               <View className="w-28 h-28 items-center justify-center">
                 <FontAwesome name="user-circle" size={96} color="#90A1B9" />
@@ -91,8 +137,11 @@ export default function SettingsModal({
             )}
 
             {isAuthenticated && !isUploadingPhoto && (
-              <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#0A9D5C] items-center justify-center border-2 border-white">
-                <Ionicons name="pencil" size={16} color="#FFFFFF" />
+              <View
+                style={{ width: 32, height: 32, borderRadius: 16 }}
+                className="absolute bottom-0 right-0 bg-[#0A9D5C] items-center justify-center"
+              >
+                <Ionicons name="pencil" size={14} color="#FFFFFF" />
               </View>
             )}
           </TouchableOpacity>
@@ -114,7 +163,10 @@ export default function SettingsModal({
                   onClose();
                   router.push(item.route as any);
                 } else {
-                  Alert.alert("Coming Soon", `${item.title} will be available soon.`);
+                  Alert.alert(
+                    "Coming Soon",
+                    `${item.title} will be available soon.`,
+                  );
                 }
               }}
             />
@@ -130,7 +182,11 @@ export default function SettingsModal({
               icon="log-out-outline"
               size="large"
               variant="outlined"
-              style={{ backgroundColor: "#FEF2F2", borderRadius: 12, borderColor: "transparent" }}
+              style={{
+                backgroundColor: "#FEF2F2",
+                borderRadius: 12,
+                borderColor: "transparent",
+              }}
               textStyle={{ color: "#EF4444", fontWeight: "600" }}
               iconColor="#EF4444"
             />

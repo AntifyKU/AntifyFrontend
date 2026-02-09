@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, ViewStyle, TextStyle } from "react-native";
+import {
+  View,
+  Text,
+  ViewStyle,
+  TextStyle,
+  Image,
+  ImageSourcePropType,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 
@@ -9,6 +16,8 @@ interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
   iconColor?: string;
+  image?: ImageSourcePropType;
+  imageSize?: number;
   containerStyle?: ViewStyle;
   titleStyle?: TextStyle;
   descriptionStyle?: TextStyle;
@@ -23,6 +32,8 @@ export default function EmptyState({
   icon = "alert-circle-outline",
   iconSize = 64,
   iconColor = "#D1D5DB",
+  image,
+  imageSize = 64,
   containerStyle,
   titleStyle,
   descriptionStyle,
@@ -31,8 +42,19 @@ export default function EmptyState({
   buttonIcon,
 }: EmptyStateProps) {
   return (
-    <View className="items-center py-12" style={containerStyle}>
-      <Ionicons name={icon} size={iconSize} color={iconColor} />
+    <View
+      className="flex-1 items-center justify-center px-6"
+      style={containerStyle}
+    >
+      {image ? (
+        <Image
+          source={image}
+          style={{ width: imageSize, height: imageSize, marginBottom: 12 }}
+          resizeMode="contain"
+        />
+      ) : (
+        <Ionicons name={icon} size={iconSize} color={iconColor} />
+      )}
 
       {title && (
         <Text className="mt-4 text-gray-500 text-center" style={titleStyle}>
@@ -41,7 +63,10 @@ export default function EmptyState({
       )}
 
       {description && (
-        <Text className="text-gray-500 text-center" style={descriptionStyle}>
+        <Text
+          className="mt-1 text-gray-400 text-center"
+          style={descriptionStyle}
+        >
           {description}
         </Text>
       )}
@@ -52,11 +77,7 @@ export default function EmptyState({
             title={buttonTitle}
             onPress={onButtonPress}
             icon={buttonIcon}
-            style={{
-              shadowColor: "transparent",
-              elevation: 0,
-              width: undefined,
-            }}
+            style={{ shadowColor: "transparent", elevation: 0}}
           />
         </View>
       )}

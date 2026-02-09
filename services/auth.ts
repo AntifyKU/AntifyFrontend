@@ -24,6 +24,8 @@ export interface LoginResponse {
   message: string;
   user_id: string;
   id_token: string;
+  refresh_token: string;
+  expires_in: string;
 }
 
 export interface UserProfile {
@@ -193,6 +195,19 @@ export async function deleteAccount(
     "/api/users/me",
     { authToken: token }
   );
+}
+
+export async function refreshIdToken(refreshToken: string) {
+  const res = await fetch(
+    `https://securetoken.googleapis.com/v1/token?key=YOUR_FIREBASE_API_KEY`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `grant_type=refresh_token&refresh_token=${refreshToken}`,
+    }
+  );
+
+  return res.json();
 }
 
 export const authService = {

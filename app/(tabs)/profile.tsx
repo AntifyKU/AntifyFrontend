@@ -26,9 +26,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import SettingsModal from "@/components/organism/modal/SettingModal";
 import { TabSwitcher } from "@/components/atom/TabSwitcher";
-import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import CollectionSection from "@/components/organism/CollectionSection";
 import FavoriteSection from "@/components/organism/FavoriteSection";
+import EmptyState from "@/components/molecule/EmptyState";
 
 const { width } = Dimensions.get("window");
 const numColumns = 2;
@@ -400,7 +400,12 @@ export default function ProfileScreen() {
         text: "Log Out",
         style: "destructive",
         onPress: async () => {
-          await logout();
+          try {
+            await logout();
+            Alert.alert("Success", "You have logged out successfully");
+          } catch (e) {
+            Alert.alert("Error", "Failed to log out");
+          }
         },
       },
     ]);
@@ -442,6 +447,19 @@ export default function ProfileScreen() {
           </View>
 
           {/* History section */}
+          <View className="flex-1 justify-center">
+            <Text className="text-xl font-semibold text-gray-800 text-center">
+              History
+            </Text>
+            <View className="w-20 h-1 bg-[#22A45D] rounded-full mx-auto mt-2 mb-14" />
+            <EmptyState
+              title="No history yet"
+              description="Start identifying ants to see your history here"
+              image={require("@/assets/images/ant.png")}
+              buttonTitle="Start Identifying"
+              onButtonPress={() => {}}
+            />
+          </View>
           <View className="h-28" />
         </ScrollView>
       </SafeAreaView>
