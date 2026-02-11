@@ -23,31 +23,30 @@ export function TabSwitcher<T extends string>({
   inactiveColor = "#6B7280",
 }: TabSwitcherProps<T>) {
   return (
-    <View className="flex-row p-1 bg-gray-100 rounded-full">
+    <View style={styles.container}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.value;
-        const displayLabel =
+        const label =
           tab.count !== undefined ? `${tab.label} (${tab.count})` : tab.label;
 
         return (
           <Pressable
             key={tab.value}
-            className="flex-1 py-3 rounded-full"
-            style={[isActive && { backgroundColor: activeColor }]}
             onPress={() => onTabChange(tab.value)}
-            android_ripple={{ color: "rgba(0,0,0,0.1)" }}
+            style={[
+              styles.tab,
+              { width: `${100 / tabs.length}%` },
+              isActive && { backgroundColor: activeColor },
+            ]}
           >
-            {({ pressed }) => (
-              <Text
-                className="text-center font-medium"
-                style={[
-                  isActive ? { color: "#FFFFFF" } : { color: inactiveColor },
-                  pressed && styles.pressed,
-                ]}
-              >
-                {displayLabel}
-              </Text>
-            )}
+            <Text
+              style={[
+                styles.text,
+                { color: isActive ? "#fff" : inactiveColor },
+              ]}
+            >
+              {label}
+            </Text>
           </Pressable>
         );
       })}
@@ -56,7 +55,21 @@ export function TabSwitcher<T extends string>({
 }
 
 const styles = StyleSheet.create({
-  pressed: {
-    opacity: 0.7,
+  container: {
+    flexDirection: "row",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 6,
+    overflow: "hidden",
+  },
+  tab: {
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
