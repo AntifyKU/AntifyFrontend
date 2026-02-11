@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { View, Text } from "react-native";
+import { router } from "expo-router";
 import EmptyState from "@/components/molecule/EmptyState";
 import { openIdentifySheet } from "@/utils/identifyHelper";
 import { useAuth } from "@/context/AuthContext";
@@ -40,6 +41,10 @@ export default function HistorySection() {
     return `${String(d.getDate()).padStart(2, "0")}/${String(
       d.getMonth() + 1,
     ).padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  const handleItemPress = (id: string) => {
+    router.push({ pathname: "/detail/[id]", params: { id } });
   };
 
   return (
@@ -85,7 +90,7 @@ export default function HistorySection() {
                 title={item.species_name}
                 description={formatDate(item.created_at)}
                 image={item.image_url}
-                onPress={() => {}}
+                onPress={() => handleItemPress(item.species_id)}
                 variant="menu"
                 onDeleteHistory={() => console.log("delete", item.id)}
               />

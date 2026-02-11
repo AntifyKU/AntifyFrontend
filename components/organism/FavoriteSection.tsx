@@ -97,6 +97,7 @@ const FavoriteSection: React.FC = () => {
                   description={item.species_scientific_name}
                   image={item.species_image}
                   onPress={() => handleItemPress(item.species_id)}
+                  variant="favorite"
                   onRemove={() => handleDelete(item.species_id)}
                   isRemoving={deletingItemId === item.species_id}
                 />
