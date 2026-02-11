@@ -1,52 +1,64 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import FavoriteListCard from "@/components/FavoriteListCard";
+import ProfileItemCard from "@/components/molecule/ProfileItemListCard";
 import SortModal from "@/components/molecule/SortModal";
 import { SortOption, getSortLabel } from "@/utils/sort";
 import ActionButton from "@/components/atom/button/ActionButton";
 import EmptyState from "@/components/molecule/EmptyState";
+import { useFavorites } from "@/hooks/useFavorites";
 
-interface FavoriteItem {
-  id: string;
-  species_id: string;
-  species_name: string;
-  species_scientific_name: string;
-  species_image: string;
-  added_at: string;
-}
+const FavoriteSection: React.FC = () => {
+  const { favorites, isLoading, removeFromFavorites } = useFavorites();
 
-interface FavoriteSectionProps {
-  sortedFavorites: FavoriteItem[];
-  isLoading: boolean;
-  deletingItemId: string | null;
-  showSort: boolean;
-  setShowSort: (value: boolean) => void;
-  favoritesSortOption: SortOption;
-  handleItemPress: (id: string) => void;
-  handleDeleteFavorite: (speciesId: string) => void;
-  handleSortSelect: (option: SortOption) => void;
-}
+  const [showSort, setShowSort] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
-const FavoriteSection: React.FC<FavoriteSectionProps> = ({
-  sortedFavorites,
-  isLoading,
-  deletingItemId,
-  showSort,
-  setShowSort,
-  favoritesSortOption,
-  handleItemPress,
-  handleDeleteFavorite,
-  handleSortSelect,
-}) => {
+  const sortedFavorites = useMemo(() => {
+    return [...favorites].sort((a, b) => {
+      switch (sortOption) {
+        case "newest":
+          return (
+            new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+          );
+        case "name-asc":
+          return a.species_name.localeCompare(b.species_name);
+        case "name-desc":
+          return b.species_name.localeCompare(a.species_name);
+        default:
+          return 0;
+      }
+    });
+  }, [favorites, sortOption]);
+
+  const handleDelete = async (id: string) => {
+    setDeletingItemId(id);
+    try {
+      await removeFromFavorites(id);
+    } finally {
+      setDeletingItemId(null);
+    }
+  };
+
+  const handleItemPress = (id: string) => {
+    router.push({ pathname: "/detail/[id]", params: { id } });
+  };
+
   return (
     <>
-      {/* Sort Modal */}
       <SortModal
         visible={showSort}
-        selected={favoritesSortOption}
+        selected={sortOption}
         onClose={() => setShowSort(false)}
-        onSelect={(option) => handleSortSelect(option)}
+        onSelect={(opt) => {
+          setSortOption(opt);
+          setShowSort(false);
+        }}
       />
 
       {/* Sort row */}
@@ -54,7 +66,7 @@ const FavoriteSection: React.FC<FavoriteSectionProps> = ({
         <View />
         <ActionButton
           type="sort"
-          label={getSortLabel(favoritesSortOption)}
+          label={getSortLabel(sortOption)}
           isOpen={showSort}
           onPress={() => setShowSort(true)}
         />
@@ -72,23 +84,24 @@ const FavoriteSection: React.FC<FavoriteSectionProps> = ({
       {!isLoading && (
         <View className="px-5">
           {sortedFavorites.length > 0 ? (
-            <View>
-              <Text className="text-gray-400 text-xs mb-3 text-center">
+            <>
+              <Text className="text-gray-500 text-sm mb-3 text-center">
                 Tap the heart to remove from favorites
               </Text>
+
               {sortedFavorites.map((item) => (
-                <FavoriteListCard
+                <ProfileItemCard
                   key={item.id}
                   id={item.species_id}
                   title={item.species_name}
                   description={item.species_scientific_name}
                   image={item.species_image}
                   onPress={() => handleItemPress(item.species_id)}
-                  onRemove={() => handleDeleteFavorite(item.species_id)}
+                  onRemove={() => handleDelete(item.species_id)}
                   isRemoving={deletingItemId === item.species_id}
                 />
               ))}
-            </View>
+            </>
           ) : (
             <EmptyState
               icon="heart-outline"

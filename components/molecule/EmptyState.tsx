@@ -76,6 +76,7 @@ export default function EmptyState({
           <PrimaryButton
             title={buttonTitle}
             onPress={onButtonPress}
+            fullWidth={false}
             icon={buttonIcon}
             style={{ shadowColor: "transparent", elevation: 0}}
           />

@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/services/auth";
-import TextInput from "@/components/TextInput";
+import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { MenuItem } from "@/components/atom/MenuItem";
@@ -142,7 +142,7 @@ export default function AccountSettingsScreen() {
 
     try {
       await authService.deleteAccount(token);
-      Alert.alert("Deleted", "Your account has been deleted.");
+      Alert.alert("Success", "Your account has been deleted!");
       logout();
       router.replace("/(auth)/login");
     } catch (error: any) {

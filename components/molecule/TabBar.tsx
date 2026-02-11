@@ -4,15 +4,12 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
-  Alert,
-  ActionSheetIOS,
-  Platform,
 } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
+import { openIdentifySheet } from "@/utils/identifyHelper";
+
 
 const { width } = Dimensions.get("window");
 
@@ -97,72 +94,6 @@ export default function TabBar({
     );
   };
 
-  const handleTakePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "You need camera permission.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets?.length) {
-      const img = result.assets[0];
-      router.push({
-        pathname: "/identification-results",
-        params: { imageUri: img.uri, source: "camera" },
-      });
-    }
-  };
-
-  const handleUploadPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "You need gallery permission.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets?.length) {
-      const img = result.assets[0];
-      router.push({
-        pathname: "/identification-results",
-        params: { imageUri: img.uri, source: "gallery" },
-      });
-    }
-  };
-
-  const handleCameraButtonPress = () => {
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Take Photo", "Choose from Gallery"],
-          cancelButtonIndex: 0,
-        },
-        (index) => {
-          if (index === 1) handleTakePhoto();
-          if (index === 2) handleUploadPhoto();
-        },
-      );
-    } else {
-      Alert.alert("Identify Ant", "Choose an option", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Take Photo", onPress: handleTakePhoto },
-        { text: "Choose from Gallery", onPress: handleUploadPhoto },
-      ]);
-    }
-  };
-
   return (
     <View style={{ position: "absolute", bottom: 0, width }}>
       {/* Floating Button */}
@@ -176,7 +107,7 @@ export default function TabBar({
       >
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={handleCameraButtonPress}
+          onPress={openIdentifySheet}
           style={{
             width: 70,
             height: 70,
