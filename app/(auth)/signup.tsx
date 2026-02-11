@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import TextInput from "@/components/TextInput";
+import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";

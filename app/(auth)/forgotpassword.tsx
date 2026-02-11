@@ -15,7 +15,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/config/firebase";
-import TextInput from "@/components/TextInput";
+import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
