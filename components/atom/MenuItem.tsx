@@ -3,7 +3,8 @@ import { View, Text, TouchableOpacity, Switch } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export interface MenuItemProps {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon?: keyof typeof Ionicons.glyphMap;
+  leftSlot?: React.ReactNode;
   title: string;
   description?: string;
   onPress?: () => void;
@@ -11,10 +12,15 @@ export interface MenuItemProps {
   switchValue?: boolean;
   onSwitchChange?: (value: boolean) => void;
   disabled?: boolean;
+  showChevron?: boolean;
+  // custom text size
+  titleSize?: number;
+  descriptionSize?: number;
 }
 
 export const MenuItem: React.FC<MenuItemProps> = ({
   icon,
+  leftSlot,
   title,
   description,
   onPress,
@@ -22,26 +28,41 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   switchValue,
   onSwitchChange,
   disabled = false,
+  showChevron = true,
+  titleSize,
+  descriptionSize,
 }) => {
   const hasSwitch = typeof switchValue === "boolean";
 
   return (
     <TouchableOpacity
       className="flex-row items-center py-4 border-b border-gray-100"
-      onPress={hasSwitch ? undefined : onPress}
-      activeOpacity={hasSwitch ? 1 : 0.7}
+      onPress={onPress}
+      activeOpacity={0.7}
       disabled={disabled}
     >
-      <View className="w-10 h-10 rounded-full items-center justify-center mr-3">
-        <Ionicons name={icon} size={24} color={iconColor} />
+      <View className="mr-3">
+        {leftSlot ? (
+          leftSlot
+        ) : icon ? (
+          <View className="w-10 h-10 rounded-full items-center justify-center">
+            <Ionicons name={icon} size={22} color={iconColor} />
+          </View>
+        ) : null}
       </View>
 
       <View className="flex-1">
-        <Text className="text-lg font-semibold text-gray-800 mb-1">
+        <Text
+          className="font-semibold text-gray-800 mb-2"
+          style={{ fontSize: titleSize ?? 16 }}
+        >
           {title}
         </Text>
         {description && (
-          <Text className="text-base text-gray-500 leading-5">
+          <Text
+            className="text-base text-gray-500 leading-5"
+            style={{ fontSize: descriptionSize ?? 14 }}
+          >
             {description}
           </Text>
         )}
@@ -56,9 +77,9 @@ export const MenuItem: React.FC<MenuItemProps> = ({
           ios_backgroundColor="#D1D5DB"
           disabled={disabled}
         />
-      ) : (
+      ) : showChevron ? (
         <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-      )}
+      ) : null}
     </TouchableOpacity>
   );
 };

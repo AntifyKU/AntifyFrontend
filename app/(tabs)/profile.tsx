@@ -21,12 +21,13 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { authService } from "@/services/auth";
-import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { ScreenHeader, RightAction } from "@/components/molecule/ScreenHeader";
 import SettingsModal from "@/components/organism/modal/SettingModal";
 import { TabSwitcher } from "@/components/atom/TabSwitcher";
 import CollectionSection from "@/components/organism/CollectionSection";
 import FavoriteSection from "@/components/organism/FavoriteSection";
 import HistorySection from "@/components/organism/HistorySection";
+import NotificationModal from "@/components/organism/modal/NotificationModal";
 
 const { width } = Dimensions.get("window");
 const numColumns = 2;
@@ -39,7 +40,7 @@ export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("collection");
   const [showSettings, setShowSettings] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-
+  const [showNoti, setShowNoti] = useState(false);
   const { user, token, isAuthenticated, logout, refreshUser } = useAuth();
 
   const {
@@ -69,6 +70,11 @@ export default function ProfileScreen() {
       }
     }, [isAuthenticated]),
   );
+
+  const headerActions: RightAction[] = [
+    { icon: "notifications-outline", onPress: () => setShowNoti(true) },
+    { icon: "settings-outline", onPress: () => setShowSettings(true) },
+  ];
 
   const handleProfilePicturePress = () => {
     if (!isAuthenticated) return;
@@ -180,15 +186,7 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="pt-4 pb-5">
-          <ScreenHeader
-            title="Profile"
-            rightActions={[
-              {
-                icon: "settings-outline",
-                onPress: () => setShowSettings(true),
-              },
-            ]}
-          />
+          <ScreenHeader title="Profile" rightActions={headerActions} />
         </View>
         <ScrollView>
           <View className="items-center py-8">
@@ -208,6 +206,11 @@ export default function ProfileScreen() {
           onProfilePicturePress={() => {}}
           onLogout={handleLogout}
         />
+        <NotificationModal
+          visible={showNoti}
+          role={user?.role === "admin" ? "admin" : "user"}
+          onClose={() => setShowNoti(false)}
+        />
       </SafeAreaView>
     );
   }
@@ -224,14 +227,13 @@ export default function ProfileScreen() {
         onProfilePicturePress={handleProfilePicturePress}
         onLogout={handleLogout}
       />
+      <NotificationModal
+        visible={showNoti}
+        role={user?.role === "admin" ? "admin" : "user"}
+        onClose={() => setShowNoti(false)}
+      />
       <View className="pt-4 pb-5">
-        <ScreenHeader
-          title="Profile"
-          rightActions={[
-            { icon: "notifications-outline", onPress: () => {} },
-            { icon: "settings-outline", onPress: () => setShowSettings(true) },
-          ]}
-        />
+        <ScreenHeader title="Profile" rightActions={headerActions} />
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="items-center py-8">

@@ -19,13 +19,16 @@ import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import EmptyState from "@/components/molecule/EmptyState";
 import SortModal from "@/components/molecule/SortModal";
 import { SortOption, getSortLabel } from "@/utils/sort";
+import { useAuth } from "@/context/AuthContext";
+import NotificationModal from "@/components/organism/modal/NotificationModal";
 
 export default function NewsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
-
+  const [showNoti, setShowNoti] = useState(false);
+  const { user } = useAuth();
   const { news, loading, refetch } = useNews({ limit: 20 });
 
   const filteredNews = useMemo(() => {
@@ -98,12 +101,18 @@ export default function NewsScreen() {
         }}
       />
 
+      <NotificationModal
+        visible={showNoti}
+        role={user?.role === "admin" ? "admin" : "user"}
+        onClose={() => setShowNoti(false)}
+      />
+
       {/* Header */}
       <View className="pt-4 pb-5">
         <ScreenHeader
           title="News"
           rightIcon="notifications-outline"
-          onRightPress={() => {}}
+          onRightPress={() => {setShowNoti(true)}}
         />
       </View>
 

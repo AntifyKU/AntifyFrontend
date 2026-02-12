@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView, StatusBar, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Badge from "@/components/atom/Badge";
+import Badge from "@/components/atom/badge/Badge";
 import { filterOptions, quickDiscoveryCategories } from "@/constants/AntData";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
