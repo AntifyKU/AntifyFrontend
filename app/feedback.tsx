@@ -16,7 +16,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import StarRating from "@/components/StarRating"
-import Badge from "@/components/atom/Badge"
+import Badge from "@/components/atom/badge/Badge"
 import PrimaryButton from "@/components/atom/button/PrimaryButton"
 import { feedbackService } from "@/services/feedback"
 
