@@ -8,13 +8,16 @@ import {
   Linking,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
+import { Ionicons } from "@expo/vector-icons";
 import ListCard from "@/components/ListCard";
 import SearchBar from "@/components/SearchBar";
 import ActionButton from "@/components/atom/button/ActionButton";
 import { useNews } from "@/hooks/useNews";
+import { useFavoriteNews } from "@/hooks/useFavoriteNews";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import EmptyState from "@/components/molecule/EmptyState";
 import SortModal from "@/components/molecule/SortModal";
@@ -28,8 +31,15 @@ export default function NewsScreen() {
   const [showSort, setShowSort] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [showNoti, setShowNoti] = useState(false);
-  const { user } = useAuth();
+
+  const { user, isAuthenticated } = useAuth();
   const { news, loading, refetch } = useNews({ limit: 20 });
+  const {
+    favoriteNews,
+    isFavorite,
+    toggleFavorite,
+    refresh: refreshFavorites,
+  } = useFavoriteNews();
 
   const filteredNews = useMemo(() => {
     let result = [...news];
@@ -69,7 +79,7 @@ export default function NewsScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), refreshFavorites()]);
     setRefreshing(false);
   };
 
@@ -83,6 +93,21 @@ export default function NewsScreen() {
       } else {
         Alert.alert("Cannot open URL", "The link cannot be opened.");
       }
+    }
+  };
+
+  const handleToggleFavorite = async (newsId: string) => {
+    if (!isAuthenticated) {
+      Alert.alert("Login Required", "Please login to add news to favorites", [
+        { text: "OK" },
+      ]);
+      return;
+    }
+
+    try {
+      await toggleFavorite(newsId);
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to update favorite");
     }
   };
 
@@ -112,7 +137,7 @@ export default function NewsScreen() {
         <ScreenHeader
           title="News"
           rightIcon="notifications-outline"
-          onRightPress={() => {setShowNoti(true)}}
+          onRightPress={() => setShowNoti(true)}
         />
       </View>
 
@@ -158,17 +183,41 @@ export default function NewsScreen() {
         {/* List */}
         {!loading && (
           <View className="px-5">
-            {filteredNews.map((newsItem) => (
-              <ListCard
-                key={newsItem.id}
-                id={newsItem.id}
-                title={newsItem.title}
-                description={newsItem.description}
-                image={newsItem.image || ""}
-                onPress={() => handleNewsPress(newsItem.link)}
-                showChevron={false}
-              />
-            ))}
+            {filteredNews.map((newsItem) => {
+              const newsIsFavorite = isAuthenticated && isFavorite(newsItem.id);
+
+              return (
+                <View key={newsItem.id} className="relative">
+                  <ListCard
+                    id={newsItem.id}
+                    title={newsItem.title}
+                    description={newsItem.description}
+                    image={newsItem.image || ""}
+                    onPress={() => handleNewsPress(newsItem.link)}
+                    showChevron={false}
+                  />
+
+                  {/* Heart Button */}
+                  <TouchableOpacity
+                    onPress={() => handleToggleFavorite(newsItem.id)}
+                    className="absolute top-2 right-2 w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 3,
+                      elevation: 3,
+                    }}
+                  >
+                    <Ionicons
+                      name={newsIsFavorite ? "heart" : "heart-outline"}
+                      size={20}
+                      color={newsIsFavorite ? "#EF4444" : "#6B7280"}
+                    />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
           </View>
         )}
 

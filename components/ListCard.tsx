@@ -1,5 +1,4 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 
@@ -9,8 +8,10 @@ interface ListCardProps {
   description: string;
   image?: string;
   onPress?: () => void;
+  onLongPress?: () => void;
   onDelete?: () => void;
   showChevron?: boolean;
+  badge?: React.ReactNode;
 }
 
 export default function ListCard({
@@ -18,16 +19,19 @@ export default function ListCard({
   description,
   image,
   onPress,
+  onLongPress,
   onDelete,
   showChevron = false,
+  badge,
 }: ListCardProps) {
   const [imageError, setImageError] = useState(false);
 
-  const Card = (
+  return (
     <View className="mb-4">
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={onPress}
+        onLongPress={onLongPress}
         className="flex-row overflow-hidden bg-white border border-gray-200 rounded-xl"
       >
         {/* image */}
@@ -44,38 +48,41 @@ export default function ListCard({
 
         {/* content */}
         <View className="flex-1 p-4 justify-center">
-          <Text
-            className="text-lg font-semibold text-gray-800"
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
+          <View className="flex-row items-center justify-between mb-1">
+            <Text
+              className="text-lg font-semibold text-gray-800 flex-1"
+              numberOfLines={1}
+            >
+              {title}
+            </Text>
+            {badge && <View className="ml-2">{badge}</View>}
+          </View>
           <Text className="text-gray-500 text-sm" numberOfLines={2}>
             {description}
           </Text>
         </View>
 
-        {showChevron && (
+        {/* Delete button - shown when onDelete is provided */}
+        {onDelete && (
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="justify-center items-center w-12 bg-red-50"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+          </TouchableOpacity>
+        )}
+
+        {/* Chevron - only shown if no delete button */}
+        {showChevron && !onDelete && (
           <View className="justify-center pr-4">
             <Ionicons name="chevron-forward" size={22} color="#94A3B8" />
           </View>
         )}
       </TouchableOpacity>
     </View>
-  );
-  if (!onDelete) return Card;
-  return (
-    <Swipeable
-      renderRightActions={() => (
-        <TouchableOpacity
-          onPress={onDelete}
-          className="w-20 bg-red-500 items-center justify-center"
-        >
-          <Ionicons name="trash" size={24} color="white" />
-        </TouchableOpacity>
-      )}
-    >
-      {Card}
-    </Swipeable>
   );
 }
