@@ -148,18 +148,18 @@ export default function LoginScreen() {
               />
             </View>
 
-            <View className="flex-row items-center mb-6">
+            {/* <View className="flex-row items-center mb-6">
               <View className="flex-1 h-px bg-gray-200" />
               <Text className="mx-4 text-gray-400">or</Text>
               <View className="flex-1 h-px bg-gray-200" />
-            </View>
+            </View> */}
 
-            <TouchableOpacity className="flex-row items-center justify-center py-4 border border-gray-200 rounded-full mb-4">
+            {/* <TouchableOpacity className="flex-row items-center justify-center py-4 border border-gray-200 rounded-full mb-4">
               <Ionicons name="logo-google" size={20} color="#333" />
               <Text className="ml-3 text-gray-700 font-medium">
                 Continue with Google
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Footer */}
