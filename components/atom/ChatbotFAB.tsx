@@ -25,7 +25,8 @@ export default function ChatbotButton() {
     isLoading ||
     hiddenRoutes.includes(pathname) ||
     pathname.startsWith("/detail") ||
-    pathname.startsWith("/settings")
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/collection")
   )
     return null;
 

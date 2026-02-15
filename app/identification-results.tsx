@@ -14,7 +14,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { identificationResultsData, antSpeciesData } from "@/constants/AntData";
 import { useIdentification } from "@/hooks/useIdentification";
 import { useSpecies } from "@/hooks/useSpecies";
-import AntCard from "@/components/AntCard";
+import AntCard from "@/components/molecule/AntCard";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 

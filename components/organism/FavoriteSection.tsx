@@ -62,15 +62,16 @@ const FavoriteSection: React.FC = () => {
       />
 
       {/* Sort row */}
-      <View className="flex-row items-center justify-between px-5 mb-4">
-        <View />
-        <ActionButton
-          type="sort"
-          label={getSortLabel(sortOption)}
-          isOpen={showSort}
-          onPress={() => setShowSort(true)}
-        />
-      </View>
+      {!isLoading && favorites.length > 0 && (
+        <View className="flex-row items-center justify-end px-5 mb-4">
+          <ActionButton
+            type="sort"
+            label={getSortLabel(sortOption)}
+            isOpen={showSort}
+            onPress={() => setShowSort(true)}
+          />
+        </View>
+      )}
 
       {/* Loading */}
       {isLoading && (

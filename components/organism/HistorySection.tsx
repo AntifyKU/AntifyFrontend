@@ -80,7 +80,7 @@ export default function HistorySection() {
         </View>
       )}
 
-      <View className="flex-1 px-4 pt-2">
+      <View className="flex-1 px-5 pt-2">
         {hasHistory ? (
           <View>
             {sortedHistory.map((item) => (
@@ -97,13 +97,15 @@ export default function HistorySection() {
             ))}
           </View>
         ) : (
-          <EmptyState
-            title="No history yet"
-            description="Start identifying ants to see your history here"
-            image={require("@/assets/images/ant.png")}
-            buttonTitle="Start Identifying"
-            onButtonPress={openIdentifySheet}
-          />
+          <View className="flex-1 justify-center items-center pt-8">
+            <EmptyState
+              title="No history yet"
+              description="Start identifying ants to see your history here"
+              image={require("@/assets/images/ant.png")}
+              buttonTitle="Start Identifying"
+              onButtonPress={openIdentifySheet}
+            />
+          </View>
         )}
       </View>
     </View>
