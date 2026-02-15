@@ -149,6 +149,33 @@ export interface FavoritesListResponse {
   total: number;
 }
 
+// News Favorites Types
+export interface FavoriteNewsItem {
+  id: string;
+  news_id: string;
+  news_title: string;
+  news_description: string;
+  news_link: string;
+  news_image?: string;
+  news_source: string;
+  news_published_at?: string;
+  added_at: string;
+}
+
+export interface FavoriteNewsListResponse {
+  items: FavoriteNewsItem[];
+  total: number;
+}
+
+export interface AddFavoriteNewsRequest {
+  news_id: string;
+}
+
+export interface CheckFavoriteNewsResponse {
+  is_favorite: boolean;
+  favorite_id?: string;
+}
+
 // ============================================================================
 // Feedback Types
 // ============================================================================
