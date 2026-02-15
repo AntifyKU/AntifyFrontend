@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Modal, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
-import { FOLDER_COLORS } from "@/services/folders";
+import { FOLDER_COLORS, Folder } from "@/services/folders";
 import TextInput from "@/components/atom/TextInput";
 
 interface FolderModalProps {
@@ -60,30 +60,17 @@ export default function FolderModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View className="flex-1 bg-black/40 justify-center items-center px-6">
-        <View
-          className="bg-white w-full rounded-2xl p-5"
-          style={{
-            borderWidth: 1,
-            borderColor: "#90A1B9",
-            shadowColor: "#90A1B9",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 2,
-          }}
-        >
+      <View className="flex-1 bg-black/40 justify-center items-center px-8">
+        <View className="bg-white w-full rounded-2xl p-5" style={modalShadow}>
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-bold">{title}</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={22} />
-            </TouchableOpacity>
           </View>
 
           {/* Name */}
           <TextInput
-            label="Collection Name"
-            placeholder="Enter your collection name"
+            label="Folder Name"
+            placeholder="Enter your folder name"
             value={name}
             onChangeText={(t) => {
               setName(t);
@@ -163,6 +150,75 @@ export default function FolderModal({
                 style={{ shadowColor: "transparent" }}
               />
             </View>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+export const modalShadow = {
+  shadowColor: "#90A1B9",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+};
+
+export function FolderActionModal({
+  folder,
+  visible,
+  onClose,
+  onEdit,
+  onDelete,
+}: {
+  folder: Folder;
+  visible: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View className="flex-1 bg-black/40 justify-center items-center px-8">
+        <View className="bg-white w-full rounded-2xl p-5" style={modalShadow}>
+          <Text className="text-lg font-bold mb-0.5">{folder.name}</Text>
+          <Text className="text-sm text-gray-500 mb-5">
+            Manage this collection
+          </Text>
+
+          <TouchableOpacity
+            className="flex-row items-center py-3 border-b border-gray-100"
+            onPress={onEdit}
+          >
+            <View className="w-9 h-9 rounded-full bg-blue-50 items-center justify-center mr-3">
+              <Ionicons name="pencil-outline" size={18} color="#3B82F6" />
+            </View>
+            <Text className="text-base text-gray-800">Edit folder</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-center py-3"
+            onPress={onDelete}
+          >
+            <View className="w-9 h-9 rounded-full bg-red-50 items-center justify-center mr-3">
+              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+            </View>
+            <Text className="text-base text-red-500">Delete folder</Text>
+          </TouchableOpacity>
+          <View className="mt-3">
+            <PrimaryButton
+              title="Cancel"
+              onPress={onClose}
+              size="small"
+              variant="outlined"
+              fullWidth
+              style={{ shadowColor: "transparent" }}
+            />
           </View>
         </View>
       </View>
