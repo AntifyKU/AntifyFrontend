@@ -35,8 +35,8 @@ export default function Badge({
 
   const textSizeClasses = {
     small: "text-sm",
-    medium: "text-sm",
-    large: "text-base",
+    medium: "text-base",
+    large: "text-lg",
   };
 
   const iconSize = size === "small" ? 12 : size === "medium" ? 16 : 20;
@@ -76,7 +76,7 @@ export default function Badge({
       onPress={onPress}
       className={`flex-row items-center rounded-full mr-2 mb-2 ${sizeClasses[size]}`}
       style={{ backgroundColor, minHeight: icon ? 32 : 28 }}
-      activeOpacity={0.7}
+      activeOpacity={1}
     >
       {renderIcon()}
       <Text
@@ -85,6 +85,7 @@ export default function Badge({
       >
         {label}
       </Text>
+
       {isSelected && showCloseIcon && (
         <Ionicons
           name="close"

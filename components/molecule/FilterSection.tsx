@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
-import Badge from "@/components/atom/Badge";
+import Badge from "@/components/atom/badge/Badge";
 
 type Props = {
   title: string;

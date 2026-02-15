@@ -32,10 +32,14 @@ import {
   featuredSpeciesList as staticFeaturedList,
 } from "@/constants/AntData";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import NotificationModal from "@/components/organism/modal/NotificationModal";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HomeScreen() {
   const [location, setLocation] = useState("Loading...");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [showNoti, setShowNoti] = useState(false);
+  const { user } = useAuth();
 
   // Fetch species from API with fallback to static data
   const {
@@ -276,10 +280,14 @@ export default function HomeScreen() {
         <View className="pt-4 pb-5">
           <ScreenHeader
             rightIcon="notifications-outline"
-            onRightPress={() => {}}
+            onRightPress={() => setShowNoti(true)}
           />
         </View>
-
+        <NotificationModal
+          visible={showNoti}
+          role={user?.role === "admin" ? "admin" : "user"}
+          onClose={() => setShowNoti(false)}
+        />
 
         {/* Your Location Section */}
         <Pressable
