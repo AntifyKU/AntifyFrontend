@@ -17,7 +17,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@/context/AuthContext";
-import { useFavorites } from "@/hooks/useFavorites";
+import { useFavoriteNews } from "@/hooks/useFavoriteNews";
 import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { authService } from "@/services/auth";
@@ -44,10 +44,10 @@ export default function ProfileScreen() {
   const { user, token, isAuthenticated, logout, refreshUser } = useAuth();
 
   const {
-    favorites,
+    favoriteNews,
     refresh: refreshFavorites,
     isLoading: fLoading,
-  } = useFavorites();
+  } = useFavoriteNews();
   const {
     collection,
     refresh: refreshCollection,
@@ -266,20 +266,18 @@ export default function ProfileScreen() {
                 label: "Collection",
                 count: collection.length,
               },
-              { value: "favorite", label: "Favorite", count: favorites.length },
+              {
+                value: "favorite",
+                label: "Favorite",
+                count: favoriteNews.length,
+              },
             ]}
             activeTab={activeTab}
             onTabChange={(tab) => setActiveTab(tab as TabType)}
           />
         </View>
         <View className="flex-1">
-          {activeTab === "collection" && (
-            <CollectionSection
-              folders={folders}
-              isLoading={isLoading}
-              itemWidth={itemWidth}
-            />
-          )}
+          {activeTab === "collection" && <CollectionSection />}
           {activeTab === "favorite" && <FavoriteSection />}
           {activeTab === "history" && <HistorySection />}
         </View>
