@@ -1,5 +1,3 @@
-"use client"
-
 import {
   View,
   Text,
@@ -12,151 +10,152 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
-} from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { router, useLocalSearchParams } from "expo-router"
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { antSpeciesData } from "@/constants/AntData"
-import Badge from "@/components/atom/badge/Badge"
-import { useSpeciesDetail } from "@/hooks/useSpeciesDetail"
-import { useAuth } from "@/context/AuthContext"
-import { useFavorites } from "@/hooks/useFavorites"
-import { useCollection } from "@/hooks/useCollection"
-import { useFolders } from "@/hooks/useFolders"
-import { useState } from "react"
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { antSpeciesData } from "@/constants/AntData";
+import Badge from "@/components/atom/badge/Badge";
+import { useSpeciesDetail } from "@/hooks/useSpeciesDetail";
+import { useAuth } from "@/context/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useCollection } from "@/hooks/useCollection";
+import { useFolders } from "@/hooks/useFolders";
+import { useState } from "react";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
 
 // Define the type for route params
 type DetailParams = {
-  id: string
-}
+  id: string;
+};
+
+const BUTTON_HEIGHT = 52;
 
 export default function DetailScreen() {
-  const params = useLocalSearchParams<DetailParams>()
-  const { id } = params
+  const params = useLocalSearchParams<DetailParams>();
+  const { id } = params;
 
   // Auth and data hooks
-  const { isAuthenticated } = useAuth()
-  const { isFavorite, toggleFavorite } = useFavorites()
-  const { isInCollection, addToCollection, removeFromCollection } = useCollection()
-  const { folders } = useFolders()
+  const { isAuthenticated } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isInCollection, addToCollection, removeFromCollection } =
+    useCollection();
+  const { folders } = useFolders();
 
   // Local loading states for buttons
-  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
-  const [isCollectionLoading, setIsCollectionLoading] = useState(false)
-  const [showFolderSelect, setShowFolderSelect] = useState(false)
-  const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([])
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
+  const [showFolderSelect, setShowFolderSelect] = useState(false);
+  const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([]);
 
   // Fetch species data from API with fallback to static data
-  const { species, loading, error, isUsingFallback } = useSpeciesDetail(id)
+  const { species, loading, error, isUsingFallback } = useSpeciesDetail(id);
 
   // Transform API species to display format
-  const currentAnt = species ? {
-    id: species.id,
-    name: species.name,
-    scientificName: species.scientific_name,
-    classification: species.classification,
-    tags: species.tags,
-    about: species.about,
-    characteristics: species.characteristics,
-    colors: species.colors,
-    habitat: species.habitat,
-    distribution: species.distribution,
-    behavior: species.behavior,
-    ecologicalRole: species.ecological_role,
-    image: species.image || '',
-  } : antSpeciesData[0]
+  const currentAnt = species
+    ? {
+        id: species.id,
+        name: species.name,
+        scientificName: species.scientific_name,
+        classification: species.classification,
+        tags: species.tags,
+        about: species.about,
+        characteristics: species.characteristics,
+        colors: species.colors,
+        habitat: species.habitat,
+        distribution: species.distribution,
+        behavior: species.behavior,
+        ecologicalRole: species.ecological_role,
+        image: species.image || "",
+      }
+    : antSpeciesData[0];
 
   const handleBackPress = () => {
-    router.back()
-  }
+    router.back();
+  };
 
   const handleFavoritePress = async () => {
     if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please log in to add favorites',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Log In', onPress: () => router.push('/(auth)/login') }
-        ]
-      )
-      return
+      Alert.alert("Login Required", "Please log in to add favorites", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Log In", onPress: () => router.push("/(auth)/login") },
+      ]);
+      return;
     }
 
-    console.log('[Detail] Favorite button pressed for species:', id)
-    console.log('[Detail] Current isFavorite status:', isFavorite(id))
+    console.log("[Detail] Favorite button pressed for species:", id);
+    console.log("[Detail] Current isFavorite status:", isFavorite(id));
 
-    setIsFavoriteLoading(true)
+    setIsFavoriteLoading(true);
     try {
-      await toggleFavorite(id)
-      console.log('[Detail] toggleFavorite completed successfully')
+      await toggleFavorite(id);
+      console.log("[Detail] toggleFavorite completed successfully");
     } catch (error: any) {
-      console.error('[Detail] toggleFavorite error:', error)
-      Alert.alert('Error', error.message || 'Failed to update favorites')
+      console.error("[Detail] toggleFavorite error:", error);
+      Alert.alert("Error", error.message || "Failed to update favorites");
     } finally {
-      setIsFavoriteLoading(false)
+      setIsFavoriteLoading(false);
     }
-  }
+  };
 
   const handleCollectionPress = async () => {
     if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please log in to add to your collection',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Log In', onPress: () => router.push('/(auth)/login') }
-        ]
-      )
-      return
+      Alert.alert("Login Required", "Please log in to add to your collection", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Log In", onPress: () => router.push("/(auth)/login") },
+      ]);
+      return;
     }
 
     // If already in collection, remove it
     if (isInCollection(id)) {
-      setIsCollectionLoading(true)
+      setIsCollectionLoading(true);
       try {
-        await removeFromCollection(id)
+        await removeFromCollection(id);
       } catch (error: any) {
-        Alert.alert('Error', error.message || 'Failed to remove from collection')
+        Alert.alert(
+          "Error",
+          error.message || "Failed to remove from collection",
+        );
       } finally {
-        setIsCollectionLoading(false)
+        setIsCollectionLoading(false);
       }
-      return
+      return;
     }
 
     // If folders exist, show folder selection modal
     if (folders.length > 0) {
-      setSelectedFolderIds([])
-      setShowFolderSelect(true)
+      setSelectedFolderIds([]);
+      setShowFolderSelect(true);
     } else {
       // No folders, add directly
-      await addToCollectionWithFolders([])
+      await addToCollectionWithFolders([]);
     }
-  }
+  };
 
   const addToCollectionWithFolders = async (folderIds: string[]) => {
-    setIsCollectionLoading(true)
+    setIsCollectionLoading(true);
     try {
-      await addToCollection(id, undefined, undefined, folderIds)
-      setShowFolderSelect(false)
+      await addToCollection(id, undefined, undefined, folderIds);
+      setShowFolderSelect(false);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to add to collection')
+      Alert.alert("Error", error.message || "Failed to add to collection");
     } finally {
-      setIsCollectionLoading(false)
+      setIsCollectionLoading(false);
     }
-  }
+  };
 
   const toggleFolderSelection = (folderId: string) => {
-    setSelectedFolderIds(prev => 
+    setSelectedFolderIds((prev) =>
       prev.includes(folderId)
-        ? prev.filter(id => id !== folderId)
-        : [...prev, folderId]
-    )
-  }
+        ? prev.filter((id) => id !== folderId)
+        : [...prev, folderId],
+    );
+  };
 
   // Check current status
-  const isCurrentFavorite = isAuthenticated && isFavorite(id)
-  const isCurrentInCollection = isAuthenticated && isInCollection(id)
+  const isCurrentFavorite = isAuthenticated && isFavorite(id);
+  const isCurrentInCollection = isAuthenticated && isInCollection(id);
 
   // Show loading state
   if (loading) {
@@ -166,7 +165,7 @@ export default function DetailScreen() {
         <ActivityIndicator size="large" color="#0A9D5C" />
         <Text className="mt-4 text-gray-600">Loading species details...</Text>
       </View>
-    )
+    );
   }
 
   // Show error state if no data available
@@ -174,7 +173,7 @@ export default function DetailScreen() {
     return (
       <View className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
-        <SafeAreaView edges={['top']}>
+        <SafeAreaView edges={["top"]}>
           <Pressable
             onPress={handleBackPress}
             className="m-4 w-10 h-10 rounded-full bg-white/80 items-center justify-center"
@@ -184,9 +183,17 @@ export default function DetailScreen() {
           </Pressable>
         </SafeAreaView>
         <View className="flex-1 items-center justify-center px-8">
-          <MaterialCommunityIcons name="alert-circle-outline" size={64} color="#9CA3AF" />
-          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">Species Not Found</Text>
-          <Text className="mt-2 text-gray-500 text-center">Unable to load species details. Please try again.</Text>
+          <MaterialCommunityIcons
+            name="alert-circle-outline"
+            size={64}
+            color="#9CA3AF"
+          />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
+            Species Not Found
+          </Text>
+          <Text className="mt-2 text-gray-500 text-center">
+            Unable to load species details. Please try again.
+          </Text>
           <Pressable
             onPress={handleBackPress}
             className="mt-6 bg-[#0A9D5C] rounded-full px-6 py-3"
@@ -196,7 +203,7 @@ export default function DetailScreen() {
           </Pressable>
         </View>
       </View>
-    )
+    );
   }
 
   return (
@@ -210,51 +217,64 @@ export default function DetailScreen() {
         animationType="fade"
         onRequestClose={() => setShowFolderSelect(false)}
       >
-        <Pressable 
+        <Pressable
           className="flex-1 bg-black/30 justify-center items-center"
           onPress={() => setShowFolderSelect(false)}
         >
-          <Pressable className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]" onPress={() => {}}>
+          <Pressable
+            className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]"
+            onPress={() => {}}
+          >
             <View className="p-6">
-              <Text className="text-xl font-bold text-center text-gray-800 mb-2">Add to Collection</Text>
+              <Text className="text-xl font-bold text-center text-gray-800 mb-2">
+                Add to Collection
+              </Text>
               <Text className="text-sm text-gray-500 text-center mb-4">
                 Select folders to organize this species
               </Text>
-              
+
               {/* Folder list */}
               <View className="mb-4 max-h-64">
                 <ScrollView showsVerticalScrollIndicator={false}>
                   {folders.map((folder) => {
-                    const isSelected = selectedFolderIds.includes(folder.id)
+                    const isSelected = selectedFolderIds.includes(folder.id);
                     return (
                       <TouchableOpacity
                         key={folder.id}
                         className={`flex-row items-center p-3 rounded-lg mb-2 ${
-                          isSelected ? 'bg-green-50' : 'bg-gray-50'
+                          isSelected ? "bg-green-50" : "bg-gray-50"
                         }`}
                         onPress={() => toggleFolderSelection(folder.id)}
                       >
-                        <View 
+                        <View
                           className="w-4 h-4 rounded-full mr-3"
                           style={{ backgroundColor: folder.color }}
                         />
-                        <Text className="flex-1 text-base text-gray-800">{folder.name}</Text>
+                        <Text className="flex-1 text-base text-gray-800">
+                          {folder.name}
+                        </Text>
                         {isSelected && (
-                          <Ionicons name="checkmark-circle" size={24} color="#22A45D" />
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={24}
+                            color="#22A45D"
+                          />
                         )}
                       </TouchableOpacity>
-                    )
+                    );
                   })}
                 </ScrollView>
               </View>
-              
+
               {/* Buttons */}
               <View className="flex-row">
                 <TouchableOpacity
                   className="flex-1 py-3 rounded-lg border border-gray-300 mr-2"
                   onPress={() => setShowFolderSelect(false)}
                 >
-                  <Text className="text-center text-gray-600 font-medium">Cancel</Text>
+                  <Text className="text-center text-gray-600 font-medium">
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   className="flex-1 py-3 rounded-lg bg-[#22A45D] ml-2"
@@ -265,7 +285,9 @@ export default function DetailScreen() {
                     <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
                     <Text className="text-center text-white font-medium">
-                      {selectedFolderIds.length > 0 ? 'Add to Collection' : 'Skip Folders'}
+                      {selectedFolderIds.length > 0
+                        ? "Add to Collection"
+                        : "Skip Folders"}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -277,19 +299,19 @@ export default function DetailScreen() {
 
       {/* Fixed Header - Back Button Only - Stays on screen when scrolling */}
       <View className="absolute top-0 left-0 z-20" style={{ zIndex: 20 }}>
-        <SafeAreaView edges={['top']}>
+        <SafeAreaView edges={["top"]}>
           <Pressable
             onPress={handleBackPress}
             className="m-4 w-10 h-10 rounded-full bg-white/80 items-center justify-center"
             style={({ pressed }) => [
               {
-                shadowColor: '#000',
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 4,
                 elevation: 3,
               },
-              pressed && styles.pressed
+              pressed && styles.pressed,
             ]}
           >
             <Ionicons name="chevron-back" size={24} color="#0A9D5C" />
@@ -314,23 +336,29 @@ export default function DetailScreen() {
           )}
 
           {/* Pagination Dots - only show if more than 1 image */}
-          {currentAnt.image && (
+          {currentAnt.image &&
             // For now we only have 1 image per ant, so don't show dots
             // When multiple images are added, this will show the correct number of dots
-            null
-          )}
+            null}
         </View>
 
         {/* Content */}
         <View className="px-5 pt-5">
           {/* Title */}
-          <Text className="text-2xl font-bold text-gray-800 mb-1">{currentAnt.name}</Text>
-          <Text className="text-gray-500 italic mb-3">{currentAnt.scientificName}</Text>
+          <Text className="text-2xl font-bold text-gray-800 mb-1">
+            {currentAnt.name}
+          </Text>
+          <Text className="text-gray-500 italic mb-3">
+            {currentAnt.scientificName}
+          </Text>
 
           {/* Tags */}
           <View className="flex-row flex-wrap mb-4">
             {currentAnt.tags.map((tag, index) => (
-              <View key={index} className="bg-[#0A9D5C] rounded-full px-4 py-1.5 mr-2 mb-2">
+              <View
+                key={index}
+                className="bg-[#0A9D5C] rounded-full px-4 py-1.5 mr-2 mb-2"
+              >
                 <Text className="text-sm text-white font-medium">{tag}</Text>
               </View>
             ))}
@@ -344,27 +372,39 @@ export default function DetailScreen() {
 
           {/* Classification Section */}
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-3">Classification</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-3">
+              Classification
+            </Text>
             <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
               <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
                 <Text className="text-gray-600">Family</Text>
-                <Text className="text-gray-800 font-medium">{currentAnt.classification.family}</Text>
+                <Text className="text-gray-800 font-medium">
+                  {currentAnt.classification.family}
+                </Text>
               </View>
               <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
                 <Text className="text-gray-600">Subfamily</Text>
-                <Text className="text-gray-800 font-medium">{currentAnt.classification.subfamily}</Text>
+                <Text className="text-gray-800 font-medium">
+                  {currentAnt.classification.subfamily}
+                </Text>
               </View>
               <View className="flex-row justify-between py-3 px-4">
                 <Text className="text-gray-600">Genus</Text>
-                <Text className="text-[#0A9D5C] font-medium italic">{currentAnt.classification.genus}</Text>
+                <Text className="text-[#0A9D5C] font-medium italic">
+                  {currentAnt.classification.genus}
+                </Text>
               </View>
             </View>
           </View>
 
           {/* Characteristics Section */}
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Characteristics</Text>
-            <Text className="text-gray-600 leading-5">{currentAnt.characteristics}</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Characteristics
+            </Text>
+            <Text className="text-gray-600 leading-5">
+              {currentAnt.characteristics}
+            </Text>
           </View>
 
           {/* Color Section */}
@@ -375,7 +415,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={color}
-                  onPress={() => { }}
+                  onPress={() => {}}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -385,13 +425,15 @@ export default function DetailScreen() {
 
           {/* Habitat Section */}
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Habitat</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Habitat
+            </Text>
             <View className="flex-row flex-wrap">
               {currentAnt.habitat.map((hab, index) => (
                 <Badge
                   key={index}
                   label={hab}
-                  onPress={() => { }}
+                  onPress={() => {}}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -401,13 +443,15 @@ export default function DetailScreen() {
 
           {/* Distribution in Thailand Section */}
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Distribution in Thailand</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Distribution in Thailand
+            </Text>
             <View className="flex-row flex-wrap">
               {currentAnt.distribution.map((dist, index) => (
                 <Badge
                   key={index}
                   label={dist}
-                  onPress={() => { }}
+                  onPress={() => {}}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -417,28 +461,57 @@ export default function DetailScreen() {
 
           {/* Behavior Section */}
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Behavior</Text>
-            <Text className="text-gray-600 leading-5">{currentAnt.behavior}</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Behavior
+            </Text>
+            <Text className="text-gray-600 leading-5">
+              {currentAnt.behavior}
+            </Text>
           </View>
 
           {/* Ecological Role Section */}
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Ecological Role</Text>
-            <Text className="text-gray-600 leading-5">{currentAnt.ecologicalRole}</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Ecological Role
+            </Text>
+            <Text className="text-gray-600 leading-5">
+              {currentAnt.ecologicalRole}
+            </Text>
           </View>
 
           {/* Contribute Section */}
           <View className="mb-6">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Contribute</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Contribute
+            </Text>
             <View className="flex-row items-center justify-between">
               <Text className="text-gray-600">Help improve our database</Text>
-              <Pressable
-                className="flex-row items-center border border-[#0A9D5C] rounded-full px-4 py-2"
-                style={({ pressed }) => pressed && styles.pressed}
-              >
-                <Ionicons name="pencil" size={16} color="#0A9D5C" />
-                <Text className="text-[#0A9D5C] font-medium ml-2">Suggest Update</Text>
-              </Pressable>
+              <PrimaryButton
+                title="Suggest Update"
+                onPress={() => {
+                  if (!isAuthenticated) {
+                    Alert.alert(
+                      "Login Required",
+                      "Please log in to suggest updates to species information",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Log In",
+                          onPress: () => router.push("/(auth)/login"),
+                        },
+                      ],
+                    );
+                    return;
+                  }
+                  router.push("/requestformpage");
+                }}
+                icon="pencil"
+                fullWidth={false}
+                variant="outlined"
+                size="small"
+                style={{ shadowColor: "transparent" }}
+                textStyle={{ fontWeight: "600" }}
+              />
             </View>
           </View>
         </View>
@@ -449,79 +522,71 @@ export default function DetailScreen() {
 
       {/* Bottom Fixed Buttons */}
       <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
-        <SafeAreaView edges={['bottom']}>
+        <SafeAreaView edges={["bottom"]}>
           <View className="flex-row px-4 py-3 gap-3">
-            {/* Favorite (Heart) Button */}
-            <Pressable
-              className={`w-14 h-14 rounded-full items-center justify-center ${
-                isCurrentFavorite ? 'bg-red-50 border-2 border-red-400' : 'bg-gray-50 border-2 border-gray-200'
-              }`}
-              onPress={handleFavoritePress}
-              disabled={isFavoriteLoading}
-              style={({ pressed }) => pressed && styles.pressed}
-            >
-              {isFavoriteLoading ? (
-                <ActivityIndicator size="small" color={isCurrentFavorite ? '#EF4444' : '#9CA3AF'} />
-              ) : (
-                <Ionicons
-                  name={isCurrentFavorite ? 'heart' : 'heart-outline'}
-                  size={24}
-                  color={isCurrentFavorite ? '#EF4444' : '#9CA3AF'}
+            {/* Add to Collection */}
+            <View style={{ flex: 2 }}>
+              <View style={{ height: BUTTON_HEIGHT }}>
+                <PrimaryButton
+                  title={
+                    isCurrentInCollection
+                      ? "In Collection"
+                      : "Add to My Collection"
+                  }
+                  onPress={handleCollectionPress}
+                  disabled={isCollectionLoading}
+                  icon={isCurrentInCollection ? "checkmark" : "add"}
+                  fullWidth
+                  variant={isCurrentInCollection ? "outlined" : "filled"}
+                  iconColor={isCurrentInCollection ? "#0A9D5C" : "#FFFFFF"}
+                  style={{
+                    height: BUTTON_HEIGHT,
+                    borderColor: "#0A9D5C",
+                    backgroundColor: isCurrentInCollection
+                      ? "#E8F6EF"
+                      : "#0A9D5C",
+                    shadowColor: isCurrentInCollection
+                      ? "transparent"
+                      : "#0A9D5C",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: isCurrentInCollection ? 0 : 0.3,
+                    shadowRadius: 8,
+                    elevation: isCurrentInCollection ? 0 : 6,
+                  }}
+                  textStyle={{
+                    color: isCurrentInCollection ? "#0A9D5C" : "#FFFFFF",
+                    fontWeight: "600",
+                  }}
                 />
-              )}
-            </Pressable>
+              </View>
+            </View>
 
-            {/* Add to Collection Button */}
-            <Pressable
-              className={`flex-1 rounded-full py-4 flex-row items-center justify-center ${
-                isCurrentInCollection ? 'bg-[#0A9D5C]/10 border-2 border-[#0A9D5C]' : 'bg-[#0A9D5C]'
-              }`}
-              onPress={handleCollectionPress}
-              disabled={isCollectionLoading}
-              style={({ pressed }) => [
-                !isCurrentInCollection && {
-                  shadowColor: '#0A9D5C',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 6,
-                },
-                pressed && styles.pressed
-              ]}
-            >
-              {isCollectionLoading ? (
-                <ActivityIndicator size="small" color={isCurrentInCollection ? '#0A9D5C' : '#fff'} />
-              ) : (
-                <>
-                  <Ionicons
-                    name={isCurrentInCollection ? 'checkmark' : 'add'}
-                    size={20}
-                    color={isCurrentInCollection ? '#0A9D5C' : '#fff'}
-                  />
-                  <Text className={`font-semibold ml-2 ${isCurrentInCollection ? 'text-[#0A9D5C]' : 'text-white'}`}>
-                    {isCurrentInCollection ? 'In Collection' : 'Add to My Collection'}
-                  </Text>
-                </>
-              )}
-            </Pressable>
-
-            {/* Ask Chat Button */}
-            <Pressable
-              className="bg-white border-2 border-[#0A9D5C] rounded-full px-6 py-4 items-center justify-center"
-              onPress={() => router.push("/chatbot")}
-              style={({ pressed }) => pressed && styles.pressed}
-            >
-              <Text className="text-[#0A9D5C] font-semibold">Ask Chat</Text>
-            </Pressable>
+            {/* Ask Chat */}
+            <View style={{ flex: 1 }}>
+              <View style={{ height: BUTTON_HEIGHT }}>
+                <PrimaryButton
+                  title="Ask Chat"
+                  onPress={() => router.push("/chatbot")}
+                  fullWidth
+                  variant="outlined"
+                  style={{
+                    height: BUTTON_HEIGHT,
+                    borderColor: "#0A9D5C",
+                    shadowColor: "transparent",
+                  }}
+                  textStyle={{ fontWeight: "600" }}
+                />
+              </View>
+            </View>
           </View>
         </SafeAreaView>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-})
+});

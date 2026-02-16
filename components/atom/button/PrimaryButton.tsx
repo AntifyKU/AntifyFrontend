@@ -91,7 +91,7 @@ export default function PrimaryButton({
       onPress={onPress}
       disabled={disabled}
       className={`flex-row items-center justify-center rounded-full ${sizeClasses[size]} ${
-        fullWidth ? "w-full" : ""
+        fullWidth ? "w-full" : "self-start"
       }`}
       style={[
         {

@@ -145,7 +145,7 @@ export default function IdentificationResultsScreen() {
 
   const handleProvideFeedback = () => {
     router.push({
-      pathname: "/feedback",
+      pathname: "/help-improve-ai",
       params: {
         imageUri: imageUri,
         antName: bestMatch.name,
