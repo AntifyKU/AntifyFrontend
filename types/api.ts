@@ -3,10 +3,7 @@
  * TypeScript types matching backend schemas
  */
 
-// ============================================================================
 // Species Types
-// ============================================================================
-
 export interface SpeciesClassification {
   family: string;
   subfamily: string;
@@ -48,10 +45,7 @@ export interface SpeciesFilters {
   limit?: number;
 }
 
-// ============================================================================
 // News Types
-// ============================================================================
-
 export interface NewsItem {
   id: string;
   title: string;
@@ -69,10 +63,7 @@ export interface NewsListResponse {
   last_updated?: string;
 }
 
-// ============================================================================
 // Identification Types
-// ============================================================================
-
 export interface Detection {
   class_id: number;
   class_name: string;
@@ -108,9 +99,7 @@ export interface IdentifyBase64Request {
   confidence_threshold?: number;
 }
 
-// ============================================================================
 // Collection & Favorites Types
-// ============================================================================
 
 export interface CollectionItem {
   id: string;
@@ -176,10 +165,7 @@ export interface CheckFavoriteNewsResponse {
   favorite_id?: string;
 }
 
-// ============================================================================
 // Feedback Types
-// ============================================================================
-
 export interface FeedbackRequest {
   rating: number;
   likes?: string[];
@@ -208,10 +194,7 @@ export interface SpeciesCorrectionRequest {
   notes?: string;
 }
 
-// ============================================================================
 // Auth Types
-// ============================================================================
-
 export interface LoginRequest {
   email: string;
   password: string;
@@ -241,10 +224,7 @@ export interface UserProfile {
   created_at?: string;
 }
 
-// ============================================================================
 // Common Types
-// ============================================================================
-
 export interface ApiErrorResponse {
   detail: string;
   status_code?: number;
@@ -253,4 +233,27 @@ export interface ApiErrorResponse {
 export interface HealthResponse {
   status: string;
   models_loaded?: string[];
+}
+
+// History Types
+export interface HistoryPrediction {
+  rank: number;
+  species_id?: string;
+  class_name: string;
+  confidence: number;
+}
+
+export interface HistoryItem {
+  id: string;
+  image_uri: string;
+  top_prediction: string;
+  top_confidence: number;
+  predictions: HistoryPrediction[];
+  identified_at: string;
+  notes?: string;
+}
+
+export interface HistoryListResponse {
+  items: HistoryItem[];
+  total: number;
 }
