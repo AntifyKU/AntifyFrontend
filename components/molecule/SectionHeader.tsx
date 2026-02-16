@@ -21,9 +21,9 @@ export default function SectionHeader({
     return (
         <View className={`flex-row items-center justify-between ${containerClassName}`}>
             <View className="flex-1">
-                <Text className="text-lg font-bold text-gray-800">{title}</Text>
+                <Text className="text-lg font-bold text-gray-900">{title}</Text>
                 {subtitle && (
-                    <Text className="text-gray-500 text-sm">{subtitle}</Text>
+                    <Text className="text-gray-500 text-base">{subtitle}</Text>
                 )}
             </View>
             {showSeeMore && onSeeMorePress && (

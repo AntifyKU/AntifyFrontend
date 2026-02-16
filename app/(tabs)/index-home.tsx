@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
-  Image,
   StatusBar,
   Alert,
   ActionSheetIOS,
@@ -24,6 +23,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import SectionHeader from "@/components/molecule/SectionHeader";
 import AntCard from "@/components/molecule/AntCard";
+import CardItem from "@/components/molecule/CardItem";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useSpecies } from "@/hooks/useSpecies";
 import {
@@ -41,7 +41,6 @@ export default function HomeScreen() {
   const [showNoti, setShowNoti] = useState(false);
   const { user } = useAuth();
 
-  // Fetch species from API with fallback to static data
   const {
     species,
     loading: speciesLoading,
@@ -50,40 +49,32 @@ export default function HomeScreen() {
     filters: { limit: 10 },
   });
 
-  // Derive featured species from API data or fallback
   const { featuredAntOfTheDay, featuredSpeciesList } = useMemo(() => {
     if (species.length > 0) {
-      // Use first species as "ant of the day"
       const antOfTheDay = {
         id: species[0].id,
         name: species[0].name,
         scientificName: species[0].scientific_name,
         image: species[0].image || "",
       };
-
-      // Use remaining species as featured list
       const featuredList = species.slice(1, 6).map((s) => ({
         id: s.id,
         name: s.name,
         scientificName: s.scientific_name,
         image: s.image || "",
       }));
-
       return {
         featuredAntOfTheDay: antOfTheDay,
         featuredSpeciesList:
           featuredList.length > 0 ? featuredList : staticFeaturedList,
       };
     }
-
-    // Fallback to static data
     return {
       featuredAntOfTheDay: staticAntOfTheDay,
       featuredSpeciesList: staticFeaturedList,
     };
   }, [species]);
 
-  // Get user's location on mount
   useEffect(() => {
     getLocation();
   }, []);
@@ -91,33 +82,23 @@ export default function HomeScreen() {
   const getLocation = async () => {
     try {
       setIsLoadingLocation(true);
-
-      // Request location permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== "granted") {
         setLocation("Location permission denied");
         setIsLoadingLocation(false);
         return;
       }
-
-      // Get current position
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-
-      // Reverse geocode to get address
       const [address] = await Location.reverseGeocodeAsync({
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
       });
-
       if (address) {
-        // Format the address
         const displayLocation =
           address.city || address.subregion || address.region;
         const displayCountry = address.country;
-
         if (displayLocation && displayCountry) {
           setLocation(`${displayLocation}, ${displayCountry}`);
         } else if (displayLocation) {
@@ -145,11 +126,9 @@ export default function HomeScreen() {
     });
   };
 
-  // Handle camera photo
   const handleTakePhoto = async () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
-
       if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
@@ -157,13 +136,11 @@ export default function HomeScreen() {
         );
         return;
       }
-
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
       });
-
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const capturedImage = result.assets[0];
         router.push({
@@ -180,12 +157,10 @@ export default function HomeScreen() {
     }
   };
 
-  // Handle upload photo from gallery
   const handleUploadPhoto = async () => {
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-
       if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
@@ -193,14 +168,12 @@ export default function HomeScreen() {
         );
         return;
       }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
       });
-
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedImage = result.assets[0];
         router.push({
@@ -217,7 +190,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Handle Identify Ant button - show action sheet to choose camera or gallery
   const handleIdentifyAnt = () => {
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -254,7 +226,6 @@ export default function HomeScreen() {
     });
   };
 
-  // Handle location press - refresh or open settings
   const handleLocationPress = () => {
     if (location === "Location permission denied") {
       Alert.alert(
@@ -266,7 +237,6 @@ export default function HomeScreen() {
         ],
       );
     } else {
-      // Refresh location
       getLocation();
     }
   };
@@ -283,6 +253,7 @@ export default function HomeScreen() {
             onRightPress={() => setShowNoti(true)}
           />
         </View>
+
         <NotificationModal
           visible={showNoti}
           role={user?.role === "admin" ? "admin" : "user"}
@@ -296,7 +267,7 @@ export default function HomeScreen() {
           style={({ pressed }) => pressed && styles.pressed}
         >
           <View>
-            <Text className="text-xl font-bold text-gray-800">
+            <Text className="text-xl font-bold text-gray-900">
               Your Location
             </Text>
             <View className="flex-row items-center mt-1">
@@ -307,7 +278,7 @@ export default function HomeScreen() {
               )}
             </View>
           </View>
-          <MaterialIcons name="location-on" size={24} color="#328e6e" />
+          <MaterialIcons name="location-on" size={30} color="#328e6e" />
         </Pressable>
 
         {/* Identify Ant Button */}
@@ -369,13 +340,15 @@ export default function HomeScreen() {
                 <Text className="mt-2 text-gray-500">Loading...</Text>
               </View>
             ) : (
-              <AntCard
-                id={featuredAntOfTheDay.id}
+              <CardItem
+                variant="species"
                 name={featuredAntOfTheDay.name}
-                description={featuredAntOfTheDay.scientificName}
-                image={featuredAntOfTheDay.image}
-                variant="vertical"
+                scientificName={featuredAntOfTheDay.scientificName}
+                imageUri={featuredAntOfTheDay.image}
+                accentColor="#328e6e"
                 onPress={() => handleAntPress(featuredAntOfTheDay.id)}
+                showMore={false}
+                backgroundColor="#e8f5e0"
               />
             )}
           </View>
@@ -398,18 +371,24 @@ export default function HomeScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+              contentContainerStyle={{
+                paddingLeft: 20,
+                paddingRight: 10,
+                gap: 12,
+              }}
             >
-              {featuredSpeciesList.map((species) => (
-                <AntCard
-                  key={species.id}
-                  id={species.id}
-                  name={species.name}
-                  scientificName={species.scientificName}
-                  image={species.image}
-                  variant="compact"
-                  onPress={() => handleAntPress(species.id)}
-                />
+              {featuredSpeciesList.map((item) => (
+                <View key={item.id} style={{ width: 200 }}>
+                  <CardItem
+                    variant="species"
+                    name={item.name}
+                    scientificName={item.scientificName}
+                    imageUri={item.image}
+                    accentColor="#328e6e"
+                    onPress={() => handleAntPress(item.id)}
+                    showMore={false}
+                  />
+                </View>
               ))}
             </ScrollView>
           )}

@@ -6,7 +6,9 @@ interface BaseCardItemProps {
   name: string;
   accentColor: string;
   onPress: () => void;
-  onMore: () => void;
+  onMore?: () => void;
+  showMore?: boolean;
+  backgroundColor?: string;
 }
 
 interface FolderCardItemProps extends BaseCardItemProps {
@@ -23,7 +25,15 @@ interface SpeciesCardItemProps extends BaseCardItemProps {
 export type CardItemProps = FolderCardItemProps | SpeciesCardItemProps;
 
 export default function CardItem(props: CardItemProps) {
-  const { name, accentColor, onPress, onMore } = props;
+  const {
+    name,
+    accentColor,
+    onPress,
+    onMore,
+    showMore = true,
+    backgroundColor = "#f9fafb",
+  } = props;
+
   const [imageError, setImageError] = useState(false);
   const isSpecies = props.variant === "species";
   const imageUri = isSpecies
@@ -35,8 +45,9 @@ export default function CardItem(props: CardItemProps) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.75}
-      className="bg-white rounded-2xl overflow-hidden border border-gray-100"
+      className="rounded-2xl overflow-hidden border border-gray-100"
       style={{
+        backgroundColor,
         shadowColor: accentColor,
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.15,
@@ -103,9 +114,11 @@ export default function CardItem(props: CardItemProps) {
             )}
           </View>
 
-          <TouchableOpacity onPress={onMore} hitSlop={10}>
-            <Ionicons name="ellipsis-vertical" size={18} color="#666" />
-          </TouchableOpacity>
+          {showMore && (
+            <TouchableOpacity onPress={onMore} hitSlop={10}>
+              <Ionicons name="ellipsis-vertical" size={18} color="#666" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
