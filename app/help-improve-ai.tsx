@@ -84,15 +84,19 @@ export default function HelpImproveAIScreen() {
         await feedbackService.submitFeedback(feedbackData);
       }
 
-      // Navigate home after submitting feedback (user already viewed species detail)
-      router.dismissAll();
-      router.replace("/(tabs)/index-home");
+      // Navigate to detail page after submitting feedback
+      router.push({
+        pathname: "/detail/[id]",
+        params: { id: antId || "1", imageUri, source },
+      });
     } catch (error) {
       console.error("Error submitting feedback:", error);
 
-      // Still navigate home on error (API might not be available)
-      router.dismissAll();
-      router.replace("/(tabs)/index-home");
+      // Still navigate on error (API might not be available)
+      router.push({
+        pathname: "/detail/[id]",
+        params: { id: antId || "1", imageUri, source },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -173,16 +177,18 @@ export default function HelpImproveAIScreen() {
           {/* Yes/No Buttons */}
           <View className="flex-row justify-center gap-4">
             <Pressable
-              className={`flex-1 py-4 rounded-xl items-center border-2 ${isCorrect === true
+              className={`flex-1 py-4 rounded-xl items-center border-2 ${
+                isCorrect === true
                   ? "bg-[#0A9D5C] border-[#0A9D5C]"
                   : "bg-white border-gray-200"
-                }`}
+              }`}
               onPress={handleCorrectPress}
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View
-                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${isCorrect === true ? "bg-white/20" : "bg-[#e8f5e0]"
-                  }`}
+                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${
+                  isCorrect === true ? "bg-white/20" : "bg-[#e8f5e0]"
+                }`}
               >
                 <Ionicons
                   name="thumbs-up"
@@ -191,24 +197,27 @@ export default function HelpImproveAIScreen() {
                 />
               </View>
               <Text
-                className={`font-semibold ${isCorrect === true ? "text-white" : "text-[#0A9D5C]"
-                  }`}
+                className={`font-semibold ${
+                  isCorrect === true ? "text-white" : "text-[#0A9D5C]"
+                }`}
               >
                 Yes, Correct
               </Text>
             </Pressable>
 
             <Pressable
-              className={`flex-1 py-4 rounded-xl items-center border-2 ${isCorrect === false
+              className={`flex-1 py-4 rounded-xl items-center border-2 ${
+                isCorrect === false
                   ? "bg-[#EF4444] border-[#EF4444]"
                   : "bg-white border-gray-200"
-                }`}
+              }`}
               onPress={handleIncorrectPress}
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View
-                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${isCorrect === false ? "bg-white/20" : "bg-[#FEE2E2]"
-                  }`}
+                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${
+                  isCorrect === false ? "bg-white/20" : "bg-[#FEE2E2]"
+                }`}
               >
                 <Ionicons
                   name="thumbs-down"
@@ -217,8 +226,9 @@ export default function HelpImproveAIScreen() {
                 />
               </View>
               <Text
-                className={`font-semibold ${isCorrect === false ? "text-white" : "text-[#EF4444]"
-                  }`}
+                className={`font-semibold ${
+                  isCorrect === false ? "text-white" : "text-[#EF4444]"
+                }`}
               >
                 No, Incorrect
               </Text>
@@ -246,10 +256,11 @@ export default function HelpImproveAIScreen() {
 
             {/* Species not in list option */}
             <Pressable
-              className={`flex-row items-center p-3 mb-2 rounded-xl border ${selectedSpeciesId === "not-in-list"
+              className={`flex-row items-center p-3 mb-2 rounded-xl border ${
+                selectedSpeciesId === "not-in-list"
                   ? "border-[#0A9D5C] bg-[#e8f5e0]"
                   : "border-gray-200"
-                }`}
+              }`}
               onPress={() => handleSpeciesSelect("not-in-list")}
               style={({ pressed }) => pressed && styles.pressed}
             >
@@ -260,10 +271,11 @@ export default function HelpImproveAIScreen() {
             {filteredSpecies.map((species) => (
               <Pressable
                 key={species.id}
-                className={`flex-row items-center p-3 mb-2 rounded-xl border ${selectedSpeciesId === species.id
+                className={`flex-row items-center p-3 mb-2 rounded-xl border ${
+                  selectedSpeciesId === species.id
                     ? "border-[#0A9D5C] bg-[#e8f5e0]"
                     : "border-gray-200"
-                  }`}
+                }`}
                 onPress={() => handleSpeciesSelect(species.id)}
                 style={({ pressed }) => pressed && styles.pressed}
               >
