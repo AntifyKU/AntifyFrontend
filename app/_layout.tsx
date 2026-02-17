@@ -26,6 +26,12 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="detail" />
       <Stack.Screen
+        name="help-improve-ai"
+        options={{
+          animation: "slide_from_left",
+        }}
+      />
+      <Stack.Screen
         name="chatbot"
         options={{
           presentation: "modal",

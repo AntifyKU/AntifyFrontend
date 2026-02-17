@@ -27,13 +27,19 @@ import PrimaryButton from "@/components/atom/button/PrimaryButton";
 // Define the type for route params
 type DetailParams = {
   id: string;
+  fromIdentification?: string;
+  antName?: string;
+  scientificName?: string;
+  matchPercentage?: string;
+  imageUri?: string;
+  source?: string;
 };
 
 const BUTTON_HEIGHT = 52;
 
 export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>();
-  const { id } = params;
+  const { id, fromIdentification, antName, scientificName, matchPercentage, imageUri, source } = params;
 
   // Auth and data hooks
   const { isAuthenticated } = useAuth();
@@ -54,24 +60,39 @@ export default function DetailScreen() {
   // Transform API species to display format
   const currentAnt = species
     ? {
-        id: species.id,
-        name: species.name,
-        scientificName: species.scientific_name,
-        classification: species.classification,
-        tags: species.tags,
-        about: species.about,
-        characteristics: species.characteristics,
-        colors: species.colors,
-        habitat: species.habitat,
-        distribution: species.distribution,
-        behavior: species.behavior,
-        ecologicalRole: species.ecological_role,
-        image: species.image || "",
-      }
+      id: species.id,
+      name: species.name,
+      scientificName: species.scientific_name,
+      classification: species.classification,
+      tags: species.tags,
+      about: species.about,
+      characteristics: species.characteristics,
+      colors: species.colors,
+      habitat: species.habitat,
+      distribution: species.distribution,
+      behavior: species.behavior,
+      ecologicalRole: species.ecological_role,
+      image: species.image || "",
+    }
     : antSpeciesData[0];
 
   const handleBackPress = () => {
-    router.back();
+    // If coming from identification flow, redirect to feedback page
+    if (fromIdentification === "true") {
+      router.replace({
+        pathname: "/help-improve-ai",
+        params: {
+          antId: id,
+          imageUri,
+          source,
+          antName: antName || currentAnt.name,
+          scientificName: scientificName || currentAnt.scientificName,
+          matchPercentage,
+        },
+      });
+    } else {
+      router.back();
+    }
   };
 
   const handleFavoritePress = async () => {
@@ -223,7 +244,7 @@ export default function DetailScreen() {
         >
           <Pressable
             className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]"
-            onPress={() => {}}
+            onPress={() => { }}
           >
             <View className="p-6">
               <Text className="text-xl font-bold text-center text-gray-800 mb-2">
@@ -241,9 +262,8 @@ export default function DetailScreen() {
                     return (
                       <TouchableOpacity
                         key={folder.id}
-                        className={`flex-row items-center p-3 rounded-lg mb-2 ${
-                          isSelected ? "bg-green-50" : "bg-gray-50"
-                        }`}
+                        className={`flex-row items-center p-3 rounded-lg mb-2 ${isSelected ? "bg-green-50" : "bg-gray-50"
+                          }`}
                         onPress={() => toggleFolderSelection(folder.id)}
                       >
                         <View
@@ -415,7 +435,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={color}
-                  onPress={() => {}}
+                  onPress={() => { }}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -433,7 +453,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={hab}
-                  onPress={() => {}}
+                  onPress={() => { }}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -451,7 +471,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={dist}
-                  onPress={() => {}}
+                  onPress={() => { }}
                   size="small"
                   showCloseIcon={false}
                 />

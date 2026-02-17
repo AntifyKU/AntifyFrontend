@@ -99,6 +99,16 @@ export interface IdentifyBase64Request {
   confidence_threshold?: number;
 }
 
+export interface SpeciesDetailsResponse {
+  success: boolean;
+  message?: string;
+  top_prediction?: string;
+  top_confidence?: number;
+  predictions: ClassificationResult[];
+  species_info: Species | null;
+  model?: string;
+}
+
 // Collection & Favorites Types
 
 export interface CollectionItem {
