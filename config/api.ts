@@ -15,17 +15,18 @@ export const API_ENDPOINTS = {
   // Species
   species: '/api/species',
   speciesById: (id: string) => `/api/species/${id}`,
-  
+
   // News
   news: '/api/news',
   newsRefresh: '/api/news/refresh',
-  
+
   // Identification
   identify: '/api/identify',
   identifyBase64: '/api/identify/base64',
   identifyDetect: '/api/identify/detect',
   identifyHealth: '/api/identify/health',
-  
+  identifySpeciesDetails: '/api/identify/species/details',
+
   // User Collection & Favorites
   collection: '/api/users/me/collection',
   collectionItem: (id: string) => `/api/users/me/collection/${id}`,
@@ -33,12 +34,12 @@ export const API_ENDPOINTS = {
   favorites: '/api/users/me/favorites',
   favoritesItem: (id: string) => `/api/users/me/favorites/${id}`,
   favoritesCheck: (speciesId: string) => `/api/users/me/favorites/${speciesId}/check`,
-  
+
   // Feedback
   feedback: '/api/feedback',
   feedbackAI: '/api/feedback/ai',
   speciesCorrections: (speciesId: string) => `/api/species/${speciesId}/corrections`,
-  
+
   // Auth
   login: '/api/auth/login',
   signup: '/api/auth/signup',

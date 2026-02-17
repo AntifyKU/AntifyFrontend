@@ -99,6 +99,17 @@ export interface IdentifyBase64Request {
   confidence_threshold?: number;
 }
 
+// Species Details Response (combined AI prediction + Firestore data)
+export interface SpeciesDetailsResponse {
+  success: boolean;
+  message?: string;
+  top_prediction?: string;
+  top_confidence?: number;
+  predictions?: ClassificationResult[];
+  species_info?: Species;
+  model?: string;
+}
+
 // Collection & Favorites Types
 
 export interface CollectionItem {

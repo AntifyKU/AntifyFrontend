@@ -11,9 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { identificationResultsData, antSpeciesData } from "@/constants/AntData";
+import { identificationResultsData } from "@/constants/AntData";
 import { useIdentification } from "@/hooks/useIdentification";
-import { useSpecies } from "@/hooks/useSpecies";
 import AntCard from "@/components/molecule/AntCard";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
@@ -24,55 +23,18 @@ type IdentificationParams = {
   source?: string; // 'camera', 'gallery'
 };
 
-// Helper to find species info from API or static data
-function findSpeciesInfo(
-  classNames: string[],
-  allSpecies: typeof antSpeciesData,
-) {
-  return classNames.map((className, index) => {
-    // Try to match by name (case insensitive)
-    const found = allSpecies.find(
-      (s) =>
-        s.name.toLowerCase().includes(className.toLowerCase()) ||
-        s.scientificName.toLowerCase().includes(className.toLowerCase()) ||
-        className.toLowerCase().includes(s.name.toLowerCase()),
-    );
-
-    if (found) {
-      return {
-        id: found.id,
-        name: found.name,
-        scientificName: found.scientificName,
-        image: found.image,
-        matchPercentage: 0, // Will be overwritten
-      };
-    }
-
-    // Fallback to using the class name as display
-    return {
-      id: `unknown-${index}`,
-      name: className.replace(/_/g, " "),
-      scientificName: className,
-      image: "",
-      matchPercentage: 0,
-    };
-  });
-}
-
 export default function IdentificationResultsScreen() {
   const params = useLocalSearchParams<IdentificationParams>();
   const { imageUri, source } = params;
 
-  // Use the identification hook
+  // Use the identification hook — now with species details
   const {
-    classificationResult,
+    speciesResult,
+    speciesInfo,
     loading: identifyLoading,
     error: identifyError,
-    identifyImage,
+    identifySpecies,
   } = useIdentification();
-
-  // Get species list for matching predictions to species info
-  const { species: speciesList } = useSpecies();
 
   // State for processed results
   const [hasIdentified, setHasIdentified] = useState(false);
@@ -81,35 +43,41 @@ export default function IdentificationResultsScreen() {
   useEffect(() => {
     if (imageUri && !hasIdentified && !identifyLoading) {
       setHasIdentified(true);
-      identifyImage(imageUri);
+      identifySpecies(imageUri);
     }
-  }, [imageUri, hasIdentified, identifyLoading, identifyImage]);
+  }, [imageUri, hasIdentified, identifyLoading, identifySpecies]);
 
   // Process identification results
   const { bestMatch, otherMatches, totalMatches, isUsingFallback } =
     useMemo(() => {
-      // If we have API results, use them
-      if (
-        classificationResult?.success &&
-        classificationResult.top5_predictions?.length > 0
-      ) {
-        const predictions = classificationResult.top5_predictions;
+      // If we have API results from the new species details endpoint
+      if (speciesResult?.success && speciesResult.predictions && speciesResult.predictions.length > 0) {
+        const predictions = speciesResult.predictions;
+        const info = speciesInfo;
 
-        // Map predictions to species info - use static data for species lookup
-        const allSpecies = antSpeciesData;
-        const classNames = predictions.map((p) => p.class_name);
-        const speciesInfoList = findSpeciesInfo(classNames, allSpecies);
+        // Build best match from top prediction + Firestore info
+        const bestPrediction = predictions[0];
+        const bestMatchItem = {
+          id: info?.id ?? `prediction-0`,
+          name: info?.name ?? bestPrediction.class_name.replace(/_/g, " "),
+          scientificName: info?.scientific_name ?? bestPrediction.class_name,
+          image: info?.image ?? "",
+          matchPercentage: Math.round(bestPrediction.confidence * 100),
+        };
 
-        // Add confidence percentages
-        const matchesWithConfidence = speciesInfoList.map((info, index) => ({
-          ...info,
-          matchPercentage: Math.round(predictions[index].confidence * 100),
+        // Other predictions (no Firestore lookup for these, just show class names)
+        const otherMatchItems = predictions.slice(1).map((pred, index) => ({
+          id: `prediction-${index + 1}`,
+          name: pred.class_name.replace(/_/g, " "),
+          scientificName: pred.class_name,
+          image: "",
+          matchPercentage: Math.round(pred.confidence * 100),
         }));
 
         return {
-          bestMatch: matchesWithConfidence[0],
-          otherMatches: matchesWithConfidence.slice(1),
-          totalMatches: matchesWithConfidence.length,
+          bestMatch: bestMatchItem,
+          otherMatches: otherMatchItems,
+          totalMatches: predictions.length,
           isUsingFallback: false,
         };
       }
@@ -121,21 +89,21 @@ export default function IdentificationResultsScreen() {
         totalMatches: identificationResultsData.length,
         isUsingFallback: true,
       };
-    }, [classificationResult]);
+    }, [speciesResult, speciesInfo]);
 
   const handleBackPress = () => {
-    // TODO: change that user already give the feedback or not if not redirect to feedback page
     router.back();
   };
 
   const handleConfirmAndViewDetails = (antId: string) => {
-    // Navigate to help-improve-ai page first before going to detail
+    // Navigate directly to detail page, feedback will be shown on back press
     router.push({
-      pathname: "/help-improve-ai",
+      pathname: "/detail/[id]",
       params: {
-        antId: antId,
+        id: antId,
         imageUri,
         source,
+        fromIdentification: "true",
         antName: bestMatch.name,
         scientificName: bestMatch.scientificName,
         matchPercentage: bestMatch.matchPercentage?.toString(),
@@ -158,7 +126,6 @@ export default function IdentificationResultsScreen() {
   const handleIdentifyAnother = () => {
     router.dismissAll();
     router.replace("/(tabs)/index-home");
-    // TODO: navigate to camera or gallery based on 'source' param
   };
 
   const handleOtherMatchPress = (ant: {
@@ -237,6 +204,54 @@ export default function IdentificationResultsScreen() {
             onPress={handleIdentifyAnother}
             size="large"
           />
+        </View>
+      </View>
+    );
+  }
+
+  // Show rejection state when safety gate rejects the image
+  if (speciesResult && !speciesResult.success) {
+    return (
+      <View className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaView>
+          <View className="pt-4 pb-5">
+            <ScreenHeader
+              title="Identification Results"
+              leftIcon="chevron-back"
+              onLeftPress={handleBackPress}
+            />
+          </View>
+        </SafeAreaView>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialCommunityIcons
+            name="image-off-outline"
+            size={64}
+            color="#F59E0B"
+          />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
+            Can't Detect Ant
+          </Text>
+          <Text className="mt-2 text-gray-500 text-center">
+            {speciesResult.message || "The image doesn't appear to contain a real ant. Please try again with a photo of a real ant."}
+          </Text>
+          {imageUri && (
+            <View className="mt-6 w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
+              <Image
+                source={{ uri: imageUri }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          <View className="mt-8 w-full">
+            <PrimaryButton
+              title="Try Another Photo"
+              icon="camera-outline"
+              onPress={handleIdentifyAnother}
+              size="large"
+            />
+          </View>
         </View>
       </View>
     );

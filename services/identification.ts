@@ -5,11 +5,12 @@
 
 import { apiClient } from './api';
 import { API_ENDPOINTS } from '@/config/api';
-import type { 
-  DetectionResponse, 
+import type {
+  DetectionResponse,
   ClassificationResponse,
   IdentifyBase64Request,
   HealthResponse,
+  SpeciesDetailsResponse,
 } from '@/types/api';
 
 /**
@@ -65,7 +66,7 @@ export async function identifyFromFile(
     name: fileName,
     type: mimeType,
   } as unknown as Blob);
-  
+
   return apiClient.postFormData<ClassificationResponse>(API_ENDPOINTS.identify, formData);
 }
 
@@ -83,8 +84,40 @@ export async function detectFromFile(
     name: fileName,
     type: mimeType,
   } as unknown as Blob);
-  
+
   return apiClient.postFormData<DetectionResponse>(API_ENDPOINTS.identifyDetect, formData);
+}
+
+/**
+ * Identify species from image AND get full Firestore species data
+ */
+export async function identifySpeciesFromFile(
+  imageUri: string,
+  fileName = 'image.jpg',
+  mimeType = 'image/jpeg'
+): Promise<SpeciesDetailsResponse> {
+  const formData = new FormData();
+  formData.append('file', {
+    uri: imageUri,
+    name: fileName,
+    type: mimeType,
+  } as unknown as Blob);
+
+  return apiClient.postFormData<SpeciesDetailsResponse>(API_ENDPOINTS.identifySpeciesDetails, formData);
+}
+
+/**
+ * Identify species from base64 AND get full Firestore species data
+ */
+export async function identifySpeciesFromBase64(
+  imageBase64: string,
+  mimeType = 'image/jpeg'
+): Promise<SpeciesDetailsResponse> {
+  const data = {
+    image_base64: imageBase64,
+    mime_type: mimeType,
+  };
+  return apiClient.post<SpeciesDetailsResponse>(API_ENDPOINTS.identifySpeciesDetails, data);
 }
 
 export const identificationService = {
@@ -93,6 +126,8 @@ export const identificationService = {
   detectFromBase64,
   identifyFromFile,
   detectFromFile,
+  identifySpeciesFromFile,
+  identifySpeciesFromBase64,
 };
 
 export default identificationService;
