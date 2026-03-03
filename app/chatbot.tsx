@@ -20,11 +20,21 @@ import { useChatbot } from "@/hooks/useChatbot";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import MessageBubble from "@/components/atom/MessageBubble";
 
+import { useLocalSearchParams } from "expo-router";
+
 export default function ChatbotScreen() {
+  const params = useLocalSearchParams<{ initialAntName?: string }>();
+
+  const initialMessage = params.initialAntName
+    ? `Ask me about the ${params.initialAntName}! I can help you with its characteristics, venom, distribution, and more.`
+    : "Ask me about ants! I can help identify species and answer questions.";
+
+  const initialContext = params.initialAntName
+    ? `The user is currently viewing the ant species: ${params.initialAntName}. Please answer questions with this specific ant in mind.`
+    : undefined;
+
   const { messages, isConnected, isTyping, sendMessage, sendMessageWithImage } =
-    useChatbot(
-      "Ask me about ants! I can help identify species and answer questions.",
-    );
+    useChatbot(initialMessage, initialContext);
 
   const [inputText, setInputText] = React.useState("");
   const scrollViewRef = useRef<ScrollView>(null);

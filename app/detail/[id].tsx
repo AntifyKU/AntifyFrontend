@@ -713,7 +713,10 @@ export default function DetailScreen() {
               <View style={{ height: BUTTON_HEIGHT }}>
                 <PrimaryButton
                   title="Ask Chat"
-                  onPress={() => router.push("/chatbot")}
+                  onPress={() => router.push({
+                    pathname: "/chatbot",
+                    params: { initialAntName: currentAnt.name }
+                  })}
                   fullWidth
                   variant="outlined"
                   style={{

@@ -22,7 +22,6 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import SectionHeader from "@/components/molecule/SectionHeader";
-import AntCard from "@/components/molecule/AntCard";
 import CardItem from "@/components/molecule/CardItem";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useSpecies } from "@/hooks/useSpecies";
@@ -39,41 +38,81 @@ export default function HomeScreen() {
   const [location, setLocation] = useState("Loading...");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [showNoti, setShowNoti] = useState(false);
+  const [locationObj, setLocationObj] = useState<Location.LocationGeocodedAddress | null>(null);
   const { user } = useAuth();
 
   const {
     species,
     loading: speciesLoading,
-    isUsingFallback,
   } = useSpecies({
-    filters: { limit: 10 },
+    filters: { limit: 500 }, // Fetch full list to enable local filtering
   });
 
-  const { featuredAntOfTheDay, featuredSpeciesList } = useMemo(() => {
+  const { featuredAntOfTheDay, featuredSpeciesList, localSpeciesList } = useMemo(() => {
     if (species.length > 0) {
+      // 1. Daily Random Ant of the Day
+      // Use the current date to seed the random index so it changes once per day
+      const today = new Date();
+      const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
+      // Simple pseudo-random generator based on the date seed
+      const randomValue = Math.sin(seed) * 10000;
+      const index = Math.floor((randomValue - Math.floor(randomValue)) * species.length);
+      const chosenAnt = species[index];
+
       const antOfTheDay = {
-        id: species[0].id,
-        name: species[0].name,
-        scientificName: species[0].scientific_name,
-        image: species[0].image || "",
+        id: chosenAnt.id,
+        name: chosenAnt.name,
+        scientificName: chosenAnt.scientific_name,
+        image: chosenAnt.image || "",
       };
-      const featuredList = species.slice(1, 6).map((s) => ({
+
+      // 2. Featured Species (just take the first 5 for now)
+      const featuredList = species.slice(0, 5).map((s) => ({
         id: s.id,
         name: s.name,
         scientificName: s.scientific_name,
         image: s.image || "",
       }));
+
+      // 3. Species Near You
+      let localList: typeof featuredList = [];
+      if (locationObj) {
+        const potentialProvinces = [
+          locationObj.city?.toLowerCase(),
+          locationObj.subregion?.toLowerCase(),
+          locationObj.region?.toLowerCase(),
+        ].filter(Boolean) as string[];
+
+        const localMatches = species.filter(s => {
+          const antProvinces = s.distribution_v2?.provinces?.map(p => p.toLowerCase()) || [];
+          return antProvinces.some(p =>
+            potentialProvinces.some(userLoc =>
+              userLoc.includes(p) || p.includes(userLoc)
+            )
+          );
+        });
+
+        localList = localMatches.slice(0, 10).map((s) => ({
+          id: s.id,
+          name: s.name,
+          scientificName: s.scientific_name,
+          image: s.image || "",
+        }));
+      }
+
       return {
         featuredAntOfTheDay: antOfTheDay,
-        featuredSpeciesList:
-          featuredList.length > 0 ? featuredList : staticFeaturedList,
+        featuredSpeciesList: featuredList.length > 0 ? featuredList : staticFeaturedList,
+        localSpeciesList: localList,
       };
     }
     return {
       featuredAntOfTheDay: staticAntOfTheDay,
       featuredSpeciesList: staticFeaturedList,
+      localSpeciesList: [],
     };
-  }, [species]);
+  }, [species, locationObj]);
 
   useEffect(() => {
     getLocation();
@@ -99,6 +138,10 @@ export default function HomeScreen() {
         const displayLocation =
           address.city || address.subregion || address.region;
         const displayCountry = address.country;
+
+        // Save the raw address object so we can use it to filter local species
+        setLocationObj(address);
+
         if (displayLocation && displayCountry) {
           setLocation(`${displayLocation}, ${displayCountry}`);
         } else if (displayLocation) {
@@ -109,6 +152,7 @@ export default function HomeScreen() {
           setLocation("Unknown location");
         }
       } else {
+        setLocationObj(null);
         setLocation("Unknown location");
       }
     } catch (error) {
@@ -393,6 +437,39 @@ export default function HomeScreen() {
             </ScrollView>
           )}
         </View>
+
+        {/* Species Near You Section */}
+        {localSpeciesList.length > 0 && (
+          <View className="mb-8">
+            <SectionHeader
+              title={`Species near ${locationObj?.city || locationObj?.subregion || 'you'}`}
+              subtitle="Found in your province"
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingLeft: 20,
+                paddingRight: 10,
+                gap: 12,
+              }}
+            >
+              {localSpeciesList.map((item) => (
+                <View key={item.id} style={{ width: 200 }}>
+                  <CardItem
+                    variant="species"
+                    name={item.name}
+                    scientificName={item.scientificName}
+                    imageUri={item.image}
+                    accentColor="#0A9D5C"
+                    onPress={() => handleAntPress(item.id)}
+                    showMore={false}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Bottom padding for tab bar */}
         <View className="h-24" />

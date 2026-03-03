@@ -11,6 +11,7 @@ export type ChatMessage = {
     isUser: boolean;
     timestamp: Date;
     isStreaming?: boolean;
+    isHidden?: boolean;
 };
 
 type UseChatbotReturn = {
@@ -22,20 +23,34 @@ type UseChatbotReturn = {
     clearMessages: () => void;
 };
 
-export function useChatbot(initialMessage?: string): UseChatbotReturn {
+export function useChatbot(initialMessage?: string, initialContext?: string): UseChatbotReturn {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>(() => {
+        const initMessages: ChatMessage[] = [];
+
+        // Add a hidden system/context message first if provided
+        if (initialContext) {
+            initMessages.push({
+                id: '0',
+                text: initialContext,
+                isUser: true, // Send as user so the AI treats it as the user's hidden context
+                timestamp: new Date(),
+                isHidden: true,
+            });
+        }
+
+        // Then the visible welcome message from the bot
         if (initialMessage) {
-            return [{
+            initMessages.push({
                 id: '1',
                 text: initialMessage,
                 isUser: false,
                 timestamp: new Date(),
-            }];
+            });
         }
-        return [];
+        return initMessages;
     });
     const streamingMessageRef = useRef<string>('');
 
@@ -146,7 +161,7 @@ export function useChatbot(initialMessage?: string): UseChatbotReturn {
         setIsTyping(true);
         streamingMessageRef.current = '';
 
-        // Build conversation history for context
+        // Build conversation history for context (include hidden items)
         const conversationHistory = messages
             .filter(m => !m.isStreaming)
             .map(m => ({
@@ -203,7 +218,7 @@ export function useChatbot(initialMessage?: string): UseChatbotReturn {
     }, []);
 
     return {
-        messages,
+        messages: messages.filter(m => !m.isHidden), // Don't expose hidden messages to the UI
         isConnected,
         isTyping,
         sendMessage,
