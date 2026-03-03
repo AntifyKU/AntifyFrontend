@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import RiskTags from '@/components/molecule/RiskTags';
 
 interface AntCardProps {
   id: string;
@@ -12,6 +13,7 @@ interface AntCardProps {
   onPress?: () => void;
   variant?: "horizontal" | "vertical" | "compact";
   showMatchPercentage?: boolean;
+  riskInfo?: import('@/types/api').RiskInfo;
 }
 
 export default function AntCard({
@@ -24,6 +26,7 @@ export default function AntCard({
   onPress,
   variant = "vertical",
   showMatchPercentage = false,
+  riskInfo,
 }: AntCardProps) {
   const [imageError, setImageError] = useState(false);
   const showImage = image && !imageError;
@@ -62,6 +65,12 @@ export default function AntCard({
               {matchPercentage}% Match
             </Text>
           )}
+          {riskInfo && (
+            <RiskTags
+              riskInfo={riskInfo}
+              size="small"
+            />
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -91,6 +100,12 @@ export default function AntCard({
         <Text className="mt-2 font-semibold text-gray-800">{name}</Text>
         {scientificName && (
           <Text className="text-gray-500 text-sm">{scientificName}</Text>
+        )}
+        {riskInfo && (
+          <RiskTags
+            riskInfo={riskInfo}
+            size="small"
+          />
         )}
       </TouchableOpacity>
     );
@@ -126,6 +141,12 @@ export default function AntCard({
           <Text className="text-[#0A9D5C] font-semibold mt-1">
             {matchPercentage}% Match
           </Text>
+        )}
+        {riskInfo && (
+          <RiskTags
+            riskInfo={riskInfo}
+            size="small"
+          />
         )}
       </View>
     </TouchableOpacity>

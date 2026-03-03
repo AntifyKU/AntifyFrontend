@@ -17,8 +17,9 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { antSpeciesData } from "@/constants/AntData";
 import Badge from "@/components/atom/badge/Badge";
 import { useSpeciesDetail } from "@/hooks/useSpeciesDetail";
+import { useSpecies } from "@/hooks/useSpecies";
+import RiskTags from "@/components/molecule/RiskTags";
 import { useAuth } from "@/context/AuthContext";
-import { useFavorites } from "@/hooks/useFavorites";
 import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { useState } from "react";
@@ -43,19 +44,20 @@ export default function DetailScreen() {
 
   // Auth and data hooks
   const { isAuthenticated } = useAuth();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { isInCollection, addToCollection, removeFromCollection } =
     useCollection();
   const { folders } = useFolders();
 
   // Local loading states for buttons
-  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
   const [showFolderSelect, setShowFolderSelect] = useState(false);
   const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([]);
 
   // Fetch species data from API with fallback to static data
-  const { species, loading, error, isUsingFallback } = useSpeciesDetail(id);
+  const { species, loading } = useSpeciesDetail(id);
+
+  // Fetch full species list to enrich lookalikes
+  const { species: allSpecies } = useSpecies();
 
   // Transform API species to display format
   const currentAnt = species
@@ -73,8 +75,19 @@ export default function DetailScreen() {
       behavior: species.behavior,
       ecologicalRole: species.ecological_role,
       image: species.image || "",
+      // Extended fields
+      provinces: species.distribution_v2?.provinces ?? [],
+      acceptedTaxon: species.accepted_taxon,
+      lookalikes: species.lookalikes ?? [],
+      risk: species.risk,
     }
-    : antSpeciesData[0];
+    : {
+      ...antSpeciesData[0],
+      provinces: [] as string[],
+      acceptedTaxon: undefined,
+      lookalikes: [] as string[],
+      risk: undefined,
+    };
 
   const handleBackPress = () => {
     // If coming from identification flow, redirect to feedback page
@@ -92,30 +105,6 @@ export default function DetailScreen() {
       });
     } else {
       router.back();
-    }
-  };
-
-  const handleFavoritePress = async () => {
-    if (!isAuthenticated) {
-      Alert.alert("Login Required", "Please log in to add favorites", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Log In", onPress: () => router.push("/(auth)/login") },
-      ]);
-      return;
-    }
-
-    console.log("[Detail] Favorite button pressed for species:", id);
-    console.log("[Detail] Current isFavorite status:", isFavorite(id));
-
-    setIsFavoriteLoading(true);
-    try {
-      await toggleFavorite(id);
-      console.log("[Detail] toggleFavorite completed successfully");
-    } catch (error: any) {
-      console.error("[Detail] toggleFavorite error:", error);
-      Alert.alert("Error", error.message || "Failed to update favorites");
-    } finally {
-      setIsFavoriteLoading(false);
     }
   };
 
@@ -175,7 +164,6 @@ export default function DetailScreen() {
   };
 
   // Check current status
-  const isCurrentFavorite = isAuthenticated && isFavorite(id);
   const isCurrentInCollection = isAuthenticated && isInCollection(id);
 
   // Show loading state
@@ -479,6 +467,26 @@ export default function DetailScreen() {
             </View>
           </View>
 
+          {/* Provinces Section */}
+          {currentAnt.provinces.length > 0 && (
+            <View className="mb-5">
+              <Text className="text-lg font-bold text-gray-800 mb-2">
+                Observed Provinces
+              </Text>
+              <View className="flex-row flex-wrap">
+                {currentAnt.provinces.map((province, index) => (
+                  <Badge
+                    key={index}
+                    label={province}
+                    onPress={() => { }}
+                    size="small"
+                    showCloseIcon={false}
+                  />
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Behavior Section */}
           <View className="mb-5">
             <Text className="text-lg font-bold text-gray-800 mb-2">
@@ -498,6 +506,125 @@ export default function DetailScreen() {
               {currentAnt.ecologicalRole}
             </Text>
           </View>
+
+          {/* Accepted Taxon Section */}
+          {currentAnt.acceptedTaxon && (
+            <View className="mb-5">
+              <Text className="text-lg font-bold text-gray-800 mb-3">
+                Accepted Taxonomy
+              </Text>
+              <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+                {currentAnt.acceptedTaxon.scientific_name && (
+                  <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
+                    <Text className="text-gray-600">Scientific Name</Text>
+                    <Text className="text-gray-800 font-medium italic flex-1 text-right ml-4" numberOfLines={2}>
+                      {currentAnt.acceptedTaxon.scientific_name}
+                    </Text>
+                  </View>
+                )}
+                {currentAnt.acceptedTaxon.rank && (
+                  <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
+                    <Text className="text-gray-600">Rank</Text>
+                    <Text className="text-gray-800 font-medium capitalize">
+                      {currentAnt.acceptedTaxon.rank}
+                    </Text>
+                  </View>
+                )}
+                {currentAnt.acceptedTaxon.synonyms && currentAnt.acceptedTaxon.synonyms.length > 0 && (
+                  <View className="flex-row justify-between py-3 px-4">
+                    <Text className="text-gray-600">Synonyms</Text>
+                    <Text className="text-gray-800 font-medium">
+                      {currentAnt.acceptedTaxon.synonyms.join(", ")}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Lookalikes Section */}
+          {currentAnt.lookalikes.length > 0 && (
+            <View className="mb-5">
+              <Text className="text-lg font-bold text-gray-800 mb-2">
+                Similar Species
+              </Text>
+              <View className="flex-col">
+                {currentAnt.lookalikes.map((lookalike, index) => {
+                  const matchedSpecies = allSpecies.find((s) =>
+                    s.name.toLowerCase() === lookalike.toLowerCase() ||
+                    s.scientific_name.toLowerCase() === lookalike.toLowerCase() ||
+                    s.classification.genus.toLowerCase() === lookalike.toLowerCase()
+                  );
+
+                  return (
+                    <View key={index} className="mb-3 bg-gray-50 rounded-xl p-3 border border-gray-100 flex-row items-center flex-wrap">
+                      <Text className="font-semibold text-gray-800 text-base mr-3 mb-1">{lookalike}</Text>
+                      {matchedSpecies?.risk && (
+                        <View className="mb-1">
+                          <RiskTags riskInfo={matchedSpecies.risk} size="small" />
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* Risk & Safety Section */}
+          {currentAnt.risk && (
+            <View className="mb-5">
+              <Text className="text-lg font-bold text-gray-800 mb-3">
+                Risk & Safety
+              </Text>
+              <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+                {currentAnt.risk.sting_or_bite && (
+                  <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
+                    <Text className="text-gray-600">Sting / Bite</Text>
+                    <Text className="text-gray-800 font-medium capitalize">
+                      {currentAnt.risk.sting_or_bite.replace(/_/g, " ")}
+                    </Text>
+                  </View>
+                )}
+                {currentAnt.risk.medical_importance && (
+                  <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
+                    <Text className="text-gray-600">Medical Importance</Text>
+                    <Text className="text-gray-800 font-medium capitalize">
+                      {currentAnt.risk.medical_importance.replace(/_/g, " ")}
+                    </Text>
+                  </View>
+                )}
+                {currentAnt.risk.venom && (
+                  <View className="py-3 px-4 border-b border-gray-100">
+                    <View className="flex-row justify-between mb-1">
+                      <Text className="text-gray-600">Venom</Text>
+                      <Text
+                        className={`font-medium ${currentAnt.risk.venom.has_venom
+                          ? "text-red-500"
+                          : "text-[#0A9D5C]"
+                          }`}
+                      >
+                        {currentAnt.risk.venom.has_venom ? "Yes" : "No"}
+                      </Text>
+                    </View>
+                    {currentAnt.risk.venom.details && (
+                      <Text className="text-gray-500 text-sm">
+                        {currentAnt.risk.venom.details}
+                      </Text>
+                    )}
+                  </View>
+                )}
+                {currentAnt.risk.allergy_risk_note ? (
+                  <View className="py-3 px-4">
+                    <Text className="text-gray-600 mb-1">Allergy Risk</Text>
+                    <Text className="text-gray-500 text-sm">
+                      {currentAnt.risk.allergy_risk_note}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          )}
 
           {/* Contribute Section */}
           <View className="mb-6">

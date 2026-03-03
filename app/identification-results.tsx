@@ -15,6 +15,8 @@ import { identificationResultsData } from "@/constants/AntData";
 import { useIdentification } from "@/hooks/useIdentification";
 import AntCard from "@/components/molecule/AntCard";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import RiskTags from "@/components/molecule/RiskTags";
+import { useSpecies } from "@/hooks/useSpecies";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
 // Define the type for route params
@@ -36,6 +38,9 @@ export default function IdentificationResultsScreen() {
     identifySpecies,
   } = useIdentification();
 
+  // Fetch full species list to enrich predictions
+  const { species: allSpecies } = useSpecies();
+
   // State for processed results
   const [hasIdentified, setHasIdentified] = useState(false);
 
@@ -48,7 +53,7 @@ export default function IdentificationResultsScreen() {
   }, [imageUri, hasIdentified, identifyLoading, identifySpecies]);
 
   // Process identification results
-  const { bestMatch, otherMatches, totalMatches, isUsingFallback } =
+  const { bestMatch, otherMatches, totalMatches } =
     useMemo(() => {
       // If we have API results from the new species details endpoint
       if (speciesResult?.success && speciesResult.predictions && speciesResult.predictions.length > 0) {
@@ -63,16 +68,26 @@ export default function IdentificationResultsScreen() {
           scientificName: info?.scientific_name ?? bestPrediction.class_name,
           image: info?.image ?? "",
           matchPercentage: Math.round(bestPrediction.confidence * 100),
+          riskInfo: info?.risk,
         };
 
-        // Other predictions (no Firestore lookup for these, just show class names)
-        const otherMatchItems = predictions.slice(1).map((pred, index) => ({
-          id: `prediction-${index + 1}`,
-          name: pred.class_name.replace(/_/g, " "),
-          scientificName: pred.class_name,
-          image: "",
-          matchPercentage: Math.round(pred.confidence * 100),
-        }));
+        // Other predictions (try to enrich from allSpecies)
+        const otherMatchItems = predictions.slice(1).map((pred, index) => {
+          const matchedSpecies = allSpecies.find((s) =>
+            s.scientific_name === pred.class_name ||
+            s.id === pred.species_id ||
+            s.name.toLowerCase() === pred.class_name.replace(/_/g, " ").toLowerCase()
+          );
+
+          return {
+            id: matchedSpecies?.id ?? pred.species_id ?? `prediction-${index + 1}`,
+            name: matchedSpecies?.name ?? pred.class_name.replace(/_/g, " "),
+            scientificName: matchedSpecies?.scientific_name ?? pred.class_name,
+            image: matchedSpecies?.image ?? "",
+            matchPercentage: Math.round(pred.confidence * 100),
+            riskInfo: matchedSpecies?.risk,
+          };
+        });
 
         return {
           bestMatch: bestMatchItem,
@@ -89,7 +104,7 @@ export default function IdentificationResultsScreen() {
         totalMatches: identificationResultsData.length,
         isUsingFallback: true,
       };
-    }, [speciesResult, speciesInfo]);
+    }, [speciesResult, speciesInfo, allSpecies]);
 
   const handleBackPress = () => {
     router.back();
@@ -134,6 +149,7 @@ export default function IdentificationResultsScreen() {
     scientificName: string;
     image: string;
     matchPercentage: number;
+    riskInfo?: any;
   }) => {
     router.push({
       pathname: "/detail/[id]",
@@ -230,7 +246,7 @@ export default function IdentificationResultsScreen() {
             color="#F59E0B"
           />
           <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            Can't Detect Ant
+            Can&apos;t Detect Ant
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
             {speciesResult.message || "The image doesn't appear to contain a real ant. Please try again with a photo of a real ant."}
@@ -326,6 +342,13 @@ export default function IdentificationResultsScreen() {
                 {bestMatch.matchPercentage}% Match
               </Text>
 
+              {/* Added RiskTags for Best Match */}
+              {(bestMatch as any).riskInfo && (
+                <View className="mt-2">
+                  <RiskTags riskInfo={(bestMatch as any).riskInfo} size="small" />
+                </View>
+              )}
+
               {/* Confirm Button */}
               <TouchableOpacity
                 className="mt-4 py-3 rounded-full border-2 border-[#0A9D5C] items-center"
@@ -373,6 +396,7 @@ export default function IdentificationResultsScreen() {
               variant="horizontal"
               showMatchPercentage={true}
               onPress={() => handleOtherMatchPress(ant)}
+              riskInfo={(ant as any).riskInfo}
             />
           ))}
         </View>

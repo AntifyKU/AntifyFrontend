@@ -10,6 +10,55 @@ export interface SpeciesClassification {
   genus: string;
 }
 
+export interface VenomInfo {
+  has_venom: boolean;
+  details?: string;
+  source?: string;
+}
+
+export interface RiskInfo {
+  sting_or_bite?: string;
+  medical_importance?: string;
+  allergy_risk_note?: string;
+  evidence_sources?: string[];
+  venom?: VenomInfo;
+}
+
+export interface DistributionV2 {
+  regions?: string[];
+  granularity?: string;
+  basis?: string;
+  notes?: string;
+  evidence_sources?: string[];
+  provinces?: string[];
+  provinces_source?: string;
+}
+
+export interface AcceptedTaxon {
+  scientific_name?: string;
+  rank?: string;
+  genus?: string;
+  synonyms?: string[];
+  taxonomy_conflict?: boolean;
+  evidence_sources?: string[];
+}
+
+export interface NormalizedInfo {
+  rank?: string;
+  species_epithet?: string | null;
+  is_sp?: boolean;
+}
+
+export interface ProvenanceReview {
+  status?: string;
+  notes?: string[];
+}
+
+export interface Provenance {
+  version?: number;
+  review?: ProvenanceReview;
+}
+
 export interface Species {
   id: string;
   name: string;
@@ -26,6 +75,15 @@ export interface Species {
   image: string;
   created_at?: string;
   updated_at?: string;
+  // Extended Firestore fields
+  slug?: string;
+  input_label?: string;
+  normalized?: NormalizedInfo;
+  accepted_taxon?: AcceptedTaxon;
+  lookalikes?: string[];
+  risk?: RiskInfo;
+  distribution_v2?: DistributionV2;
+  provenance?: Provenance;
 }
 
 export interface SpeciesListResponse {
@@ -83,6 +141,7 @@ export interface ClassificationResult {
   rank: number;
   class_name: string;
   confidence: number;
+  species_id?: string;
 }
 
 export interface ClassificationResponse {
