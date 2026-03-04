@@ -22,20 +22,12 @@ export default function TabLayout() {
         options={{ title: 'Explore' }}
       />
       <Tabs.Screen
-        name="news"
-        options={{ title: 'News' }}
+        name="notification"
+        options={{ title: 'Notification' }}
       />
       <Tabs.Screen
         name="profile"
         options={{ title: 'Profile' }}
-      />
-      <Tabs.Screen
-        name="collection"
-        options={{ href: null }}
-      />
-      <Tabs.Screen
-        name="information"
-        options={{ href: null }}
       />
     </Tabs>
   );

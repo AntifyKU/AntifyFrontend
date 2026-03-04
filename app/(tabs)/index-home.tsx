@@ -31,14 +31,12 @@ import {
   featuredAntOfTheDay as staticAntOfTheDay,
   featuredSpeciesList as staticFeaturedList,
 } from "@/constants/AntData";
-import { ScreenHeader } from "@/components/molecule/ScreenHeader";
-import NotificationModal from "@/components/organism/modal/NotificationModal";
 import { useAuth } from "@/context/AuthContext";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
 export default function HomeScreen() {
   const [location, setLocation] = useState("Loading...");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
-  const [showNoti, setShowNoti] = useState(false);
   const { user } = useAuth();
 
   const {
@@ -247,18 +245,9 @@ export default function HomeScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="pt-4 pb-5">
-          <ScreenHeader
-            rightIcon="notifications-outline"
-            onRightPress={() => setShowNoti(true)}
-          />
+        <View className="pt-3 pb-5">
+          <ScreenHeader />
         </View>
-
-        <NotificationModal
-          visible={showNoti}
-          role={user?.role === "admin" ? "admin" : "user"}
-          onClose={() => setShowNoti(false)}
-        />
 
         {/* Your Location Section */}
         <Pressable

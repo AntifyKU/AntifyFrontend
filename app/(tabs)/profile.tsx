@@ -10,14 +10,12 @@ import {
   Platform,
   ActionSheetIOS,
   ScrollView,
-  Dimensions,
 } from "react-native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@/context/AuthContext";
-import { useFavoriteNews } from "@/hooks/useFavoriteNews";
 import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { authService } from "@/services/auth";
@@ -25,29 +23,16 @@ import { ScreenHeader, RightAction } from "@/components/molecule/ScreenHeader";
 import SettingsModal from "@/components/organism/modal/SettingModal";
 import { TabSwitcher } from "@/components/atom/TabSwitcher";
 import CollectionSection from "@/components/organism/CollectionSection";
-import FavoriteSection from "@/components/organism/FavoriteSection";
 import HistorySection from "@/components/organism/HistorySection";
-import NotificationModal from "@/components/organism/modal/NotificationModal";
 
-const { width } = Dimensions.get("window");
-const numColumns = 2;
-const gap = 12;
-const itemWidth = (width - 40 - gap) / numColumns;
-
-type TabType = "collection" | "favorite" | "history";
+type TabType = "collection" | "history";
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("collection");
   const [showSettings, setShowSettings] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [showNoti, setShowNoti] = useState(false);
   const { user, token, isAuthenticated, logout, refreshUser } = useAuth();
 
-  const {
-    favoriteNews,
-    refresh: refreshFavorites,
-    isLoading: fLoading,
-  } = useFavoriteNews();
   const {
     collection,
     refresh: refreshCollection,
@@ -59,12 +44,11 @@ export default function ProfileScreen() {
     isLoading: folLoading,
   } = useFolders();
 
-  const isLoading = fLoading || cLoading || folLoading;
+  const isLoading = cLoading || folLoading;
 
   useFocusEffect(
     useCallback(() => {
       if (isAuthenticated) {
-        refreshFavorites();
         refreshCollection();
         refreshFolders();
       }
@@ -72,7 +56,6 @@ export default function ProfileScreen() {
   );
 
   const headerActions: RightAction[] = [
-    { icon: "notifications-outline", onPress: () => setShowNoti(true) },
     { icon: "settings-outline", onPress: () => setShowSettings(true) },
   ];
 
@@ -206,11 +189,6 @@ export default function ProfileScreen() {
           onProfilePicturePress={() => {}}
           onLogout={handleLogout}
         />
-        <NotificationModal
-          visible={showNoti}
-          role={user?.role === "admin" ? "admin" : "user"}
-          onClose={() => setShowNoti(false)}
-        />
       </SafeAreaView>
     );
   }
@@ -226,11 +204,6 @@ export default function ProfileScreen() {
         isUploadingPhoto={isUploadingPhoto}
         onProfilePicturePress={handleProfilePicturePress}
         onLogout={handleLogout}
-      />
-      <NotificationModal
-        visible={showNoti}
-        role={user?.role === "admin" ? "admin" : "user"}
-        onClose={() => setShowNoti(false)}
       />
       <View className="pt-4 pb-5">
         <ScreenHeader title="Profile" rightActions={headerActions} />
@@ -266,11 +239,6 @@ export default function ProfileScreen() {
                 label: "Collection",
                 count: collection.length,
               },
-              {
-                value: "favorite",
-                label: "Favorite",
-                count: favoriteNews.length,
-              },
             ]}
             activeTab={activeTab}
             onTabChange={(tab) => setActiveTab(tab as TabType)}
@@ -278,7 +246,6 @@ export default function ProfileScreen() {
         </View>
         <View className="flex-1">
           {activeTab === "collection" && <CollectionSection />}
-          {activeTab === "favorite" && <FavoriteSection />}
           {activeTab === "history" && <HistorySection />}
         </View>
         <View className="h-24" />
