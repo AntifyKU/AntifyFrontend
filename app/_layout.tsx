@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import "../global.css";
 import ChatbotButton from "@/components/atom/ChatbotFAB";
+import "@/public/i18n";
 
 function RootLayoutNav() {
   const { isLoading } = useAuth();

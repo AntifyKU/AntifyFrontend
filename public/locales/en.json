@@ -1,0 +1,41 @@
+{
+  "common": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "success": "Success",
+    "error": "Error",
+    "openSettings": "Open Settings"
+  },
+  "preferences": {
+    "title": "App Preferences",
+    "saveButton": "Save Preferences",
+    "savingButton": "Saving...",
+    "saveSuccess": "Preferences saved successfully!",
+    "saveError": "Failed to save preferences",
+    "language": {
+      "title": "Language",
+      "english": "English",
+      "thai": "Thai"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "systemDetected": "System theme detected:",
+      "systemLight": "Light",
+      "systemDark": "Dark"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "enabled": "Receive updates about new species",
+      "disabled": "Enable to receive updates",
+      "permissionTitle": "Notification Permission Required",
+      "permissionMessage": "Please enable notifications in Settings to receive updates.",
+      "disableTitle": "Disable Notifications",
+      "disableMessage": "To turn off notifications, please go to Settings and change the permission.",
+      "errorOpening": "Unable to open settings. Please open Settings manually and find Antify."
+    }
+  }
+}
