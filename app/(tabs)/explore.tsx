@@ -18,16 +18,12 @@ import FilterModal from "@/components/organism/modal/FilterModal";
 import { useExploreFilters } from "@/hooks/useExploreFilters";
 import { useSpecies } from "@/hooks/useSpecies";
 import EmptyState from "@/components/molecule/EmptyState";
-import { useAuth } from "@/context/AuthContext";
-import NotificationModal from "@/components/organism/modal/NotificationModal";
 
 export default function ExploreScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSort, setShowSort] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
-  const [showNoti, setShowNoti] = useState(false);
-  const { user } = useAuth();
   const { species, loading, isUsingFallback } = useSpecies();
   const { appliedFilters, tempFilters, setApplied, setTemp, toggleFilter } =
     useExploreFilters();
@@ -155,19 +151,9 @@ export default function ExploreScreen() {
         onToggle={toggleFilter}
       />
 
-      <NotificationModal
-        visible={showNoti}
-        role={user?.role === "admin" ? "admin" : "user"}
-        onClose={() => setShowNoti(false)}
-      />
-
       {/* Header */}
       <View className="pt-4 pb-5">
-        <ScreenHeader
-          title="Explore"
-          rightIcon="notifications-outline"
-          onRightPress={() => {setShowNoti(true)}}
-        />
+        <ScreenHeader title="Explore" rightIcon="notifications-outline" />
       </View>
 
       {/* Search */}

@@ -20,6 +20,7 @@ export default function ChatbotButton() {
     "/forgotpassword",
     "/chatbot",
     "/requestformpage",
+    "/notification",
   ];
 
   if (

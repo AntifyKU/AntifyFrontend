@@ -1,15 +1,9 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Dimensions,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, Dimensions, TouchableOpacity } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openIdentifySheet } from "@/utils/identifyHelper";
-
 
 const { width } = Dimensions.get("window");
 
@@ -45,8 +39,8 @@ export default function TabBar({
       iconName = isFocused ? "home" : "home-outline";
     } else if (route.name === "explore") {
       iconName = isFocused ? "compass" : "compass-outline";
-    } else if (route.name === "news") {
-      iconName = isFocused ? "newspaper" : "newspaper-outline";
+    } else if (route.name === "notification") {
+      iconName = isFocused ? "notifications" : "notifications-outline";
     } else if (route.name === "profile") {
       iconName = isFocused ? "person" : "person-outline";
     }
