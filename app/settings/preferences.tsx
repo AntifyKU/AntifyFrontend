@@ -43,6 +43,7 @@ interface OptionButtonProps {
 function OptionButton({ label, selected, onPress }: OptionButtonProps) {
   return (
     <TouchableOpacity
+      activeOpacity={1}
       className={`flex-1 py-3 rounded-lg items-center ${
         selected ? "bg-[#22A45D]" : "bg-gray-100"
       }`}
