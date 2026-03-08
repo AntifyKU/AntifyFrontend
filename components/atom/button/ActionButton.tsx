@@ -5,11 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 type ActionType = "sort" | "filter";
 
 interface ActionButtonProps {
-  type: ActionType;
-  label: string;
-  onPress: () => void;
-  isOpen?: boolean;
-  badgeCount?: number;
+  readonly type: ActionType;
+  readonly label: string;
+  readonly onPress: () => void;
+  readonly isOpen?: boolean;
+  readonly badgeCount?: number;
 }
 
 const ACTION_CONFIG = {

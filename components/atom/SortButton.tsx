@@ -3,10 +3,10 @@ import { TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface SortButtonProps {
-  onPress: () => void;
-  label?: string;
-  showChevron?: boolean;
-  isOpen?: boolean;
+  readonly onPress: () => void;
+  readonly label?: string;
+  readonly showChevron?: boolean;
+  readonly isOpen?: boolean;
 }
 
 export default function SortButton({

@@ -14,13 +14,91 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { Section } from "@/components/atom/Section";
 
+type TermsContentProps = Readonly<{
+  t: (key: string) => string;
+}>;
+
+type PrivacyContentProps = Readonly<{
+  t: (key: string) => string;
+}>;
+
+function TermsContent({ t }: TermsContentProps) {
+  return (
+    <View className="py-6">
+      <Section
+        title={t("support.terms.sections.acceptance.title")}
+        content={t("support.terms.sections.acceptance.content")}
+      />
+      <Section
+        title={t("support.terms.sections.use.title")}
+        content={t("support.terms.sections.use.content")}
+      />
+      <Section
+        title={t("support.terms.sections.userContent.title")}
+        content={t("support.terms.sections.userContent.content")}
+      />
+      <Section
+        title={t("support.terms.sections.aiAccuracy.title")}
+        content={t("support.terms.sections.aiAccuracy.content")}
+      />
+      <Section
+        title={t("support.terms.sections.termination.title")}
+        content={t("support.terms.sections.termination.content")}
+      />
+      <View className="items-center py-4 mb-4">
+        <Text className="text-sm text-gray-400">
+          Last updated: February 2026
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function PrivacyContent({ t }: PrivacyContentProps) {
+  return (
+    <View className="py-6">
+      <Section
+        title={t("support.terms.sections.infoCollect.title")}
+        content={t("support.terms.sections.infoCollect.content")}
+      />
+      <Section
+        title={t("support.terms.sections.infoUse.title")}
+        content={t("support.terms.sections.infoUse.content")}
+      />
+      <Section
+        title={t("support.terms.sections.dataStorage.title")}
+        content={t("support.terms.sections.dataStorage.content")}
+      />
+      <Section
+        title={t("support.terms.sections.dataSharing.title")}
+        content={t("support.terms.sections.dataSharing.content")}
+      />
+      <Section
+        title={t("support.terms.sections.yourRights.title")}
+        content={t("support.terms.sections.yourRights.content")}
+      />
+      <Section
+        title={t("support.terms.sections.locationData.title")}
+        content={t("support.terms.sections.locationData.content")}
+      />
+      <View className="items-center py-4 mb-4">
+        <Text className="text-sm text-gray-400">
+          Last updated: February 2026
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 export default function SignupScreen() {
+  const { t } = useTranslation();
   const { signup, isLoading } = useAuth();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -39,50 +117,51 @@ export default function SignupScreen() {
     const newErrors: typeof errors = {};
 
     if (!username.trim()) {
-      newErrors.username = "Username is required";
+      newErrors.username = t("auth.signup.errorUsernameRequired");
     } else if (username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+      newErrors.username = t("auth.signup.errorUsernameTooShort");
     }
 
     if (!email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t("auth.signup.errorEmailRequired");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Please enter a valid email";
+      newErrors.email = t("auth.signup.errorEmailInvalid");
     }
 
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t("auth.signup.errorPasswordRequired");
     } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = t("auth.signup.errorPasswordTooShort");
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = t("auth.signup.errorConfirmRequired");
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = t("auth.signup.errorConfirmMismatch");
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handleSignup() {
+  const handleSignup = () => {
     if (!validateForm()) return;
-
-    try {
-      await signup(username, email, password);
-      Alert.alert(
-        "Account Created!",
-        "Your account has been created successfully.",
-      );
-      // Navigation is handled by _layout.tsx based on auth state
-    } catch (error: any) {
-      Alert.alert(
-        "Signup Failed",
-        error.message || "Unable to create account. Please try again.",
-      );
-    }
-  }
+    const run = async () => {
+      try {
+        await signup(username, email, password);
+        Alert.alert(
+          t("auth.signup.successTitle"),
+          t("auth.signup.successMessage"),
+        );
+      } catch (error: any) {
+        Alert.alert(
+          t("auth.signup.failedTitle"),
+          error.message || t("auth.signup.failedDefault"),
+        );
+      }
+    };
+    run();
+  };
 
   const openTerms = (type: "terms" | "privacy") => {
     setTermsType(type);
@@ -101,7 +180,6 @@ export default function SignupScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
           <View className="pt-6">
             <ScreenHeader
               title=""
@@ -110,25 +188,24 @@ export default function SignupScreen() {
             />
           </View>
 
-          {/* Content */}
           <View className="flex-1 px-6 pt-6">
             <View className="items-center mb-6">
               <View className="w-20 h-20 rounded-full bg-[#0A9D5C] items-center justify-center mb-4">
                 <Ionicons name="leaf" size={40} color="#FFFFFF" />
               </View>
               <Text className="text-3xl font-bold text-gray-800">
-                Create Account
+                {t("auth.signup.title")}
               </Text>
               <Text className="text-gray-500 mt-2 text-lg">
-                Join Antify today
+                {t("auth.signup.subtitle")}
               </Text>
             </View>
 
             <View className="mb-6">
               <TextInput
-                label="Username"
+                label={t("auth.signup.usernameLabel")}
                 icon="person-outline"
-                placeholder="Choose a username"
+                placeholder={t("auth.signup.usernamePlaceholder")}
                 value={username}
                 onChangeText={setUsername}
                 autoCapitalize="none"
@@ -136,11 +213,10 @@ export default function SignupScreen() {
                 error={errors.username}
                 containerStyle={{ marginBottom: 16 }}
               />
-
               <TextInput
-                label="Email"
+                label={t("auth.signup.emailLabel")}
                 icon="mail-outline"
-                placeholder="Enter your email"
+                placeholder={t("auth.signup.emailPlaceholder")}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -149,22 +225,20 @@ export default function SignupScreen() {
                 error={errors.email}
                 containerStyle={{ marginBottom: 16 }}
               />
-
               <TextInput
-                label="Password"
+                label={t("auth.signup.passwordLabel")}
                 icon="lock-closed-outline"
-                placeholder="Create a password"
+                placeholder={t("auth.signup.passwordPlaceholder")}
                 value={password}
                 onChangeText={setPassword}
                 isPassword
                 error={errors.password}
                 containerStyle={{ marginBottom: 16 }}
               />
-
               <TextInput
-                label="Confirm Password"
+                label={t("auth.signup.confirmPasswordLabel")}
                 icon="lock-closed-outline"
-                placeholder="Confirm your password"
+                placeholder={t("auth.signup.confirmPasswordPlaceholder")}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 isPassword
@@ -173,27 +247,30 @@ export default function SignupScreen() {
               />
             </View>
 
-            {/* Terms - Now clickable */}
             <Text className="text-gray-500 text-center text-sm mb-6">
-              By signing up, you agree to our{" "}
+              {t("auth.signup.termsPrefix")}{" "}
               <Text
                 className="text-[#0A9D5C] underline"
                 onPress={() => openTerms("terms")}
               >
-                Terms of Service
+                {t("auth.signup.termsLink")}
               </Text>{" "}
-              and{" "}
+              {t("auth.signup.termsAnd")}{" "}
               <Text
                 className="text-[#0A9D5C] underline"
                 onPress={() => openTerms("privacy")}
               >
-                Privacy Policy
+                {t("auth.signup.privacyLink")}
               </Text>
             </Text>
 
             <View className="mb-6">
               <PrimaryButton
-                title={isLoading ? "Creating Account..." : "Create Account"}
+                title={
+                  isLoading
+                    ? t("auth.signup.submittingButton")
+                    : t("auth.signup.submitButton")
+                }
                 onPress={handleSignup}
                 disabled={isLoading}
                 icon={isLoading ? undefined : "person-add-outline"}
@@ -201,24 +278,28 @@ export default function SignupScreen() {
             </View>
           </View>
 
-          {/* Footer */}
           <View className="px-6 pb-8">
             <View className="flex-row justify-center">
-              <Text className="text-gray-500">Already have an account? </Text>
+              <Text className="text-gray-500">
+                {t("auth.signup.hasAccount")}{" "}
+              </Text>
               <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
-                <Text className="text-[#0A9D5C] font-semibold">Sign In</Text>
+                <Text className="text-[#0A9D5C] font-semibold">
+                  {t("auth.signup.signIn")}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Loading Overlay */}
       {isLoading && (
         <View className="absolute inset-0 bg-black/20 items-center justify-center">
           <View className="bg-white rounded-2xl p-6">
             <ActivityIndicator size="large" color="#0A9D5C" />
-            <Text className="mt-3 text-gray-600">Creating account...</Text>
+            <Text className="mt-3 text-gray-600">
+              {t("auth.signup.creatingOverlay")}
+            </Text>
           </View>
         </View>
       )}
@@ -231,103 +312,24 @@ export default function SignupScreen() {
       >
         <SafeAreaView className="flex-1 bg-white">
           <StatusBar style="dark" />
-
-          {/* Modal Header */}
           <View className="py-6">
             <ScreenHeader
               title={
-                termsType === "terms" ? "Terms of Service" : "Privacy Policy"
+                termsType === "terms"
+                  ? t("auth.termsModal.termsTitle")
+                  : t("auth.termsModal.privacyTitle")
               }
               leftIcon="chevron-back"
               onLeftPress={() => setShowTermsModal(false)}
             />
           </View>
-
-          {/* Modal Content */}
           <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
             {termsType === "terms" ? (
-              <View className="py-6">
-                <Section
-                  title="1. Acceptance of Terms"
-                  content="By accessing and using Antify, you accept and agree to be bound by the terms and provision of this agreement."
-                />
-
-                <Section
-                  title="2. Use of Service"
-                  content="Antify is provided for personal, non-commercial use. You agree to use the app only for lawful purposes and in accordance with these Terms."
-                />
-
-                <Section
-                  title="3. User Content"
-                  content="You retain all rights to photos and content you upload. By uploading content, you grant Antify a license to use it solely for the purpose of species identification."
-                />
-
-                <Section
-                  title="4. AI Accuracy"
-                  content="While our AI strives for accuracy, species identification should be verified by experts for critical applications. We do not guarantee 100% accuracy."
-                />
-
-                <Section
-                  title="5. Account Termination"
-                  content="We reserve the right to terminate or suspend access to our service immediately, without prior notice, for conduct that we believe violates these Terms."
-                />
-
-                <View className="items-center py-4 mb-4">
-                  <Text className="text-sm text-gray-400">
-                    Last updated: February 2026
-                  </Text>
-                </View>
-              </View>
+              <TermsContent t={t} />
             ) : (
-              <View className="py-6">
-                <Section
-                  title="Information We Collect"
-                  content="We collect information you provide directly (email, username), usage data (photos for identification), and device information (location if enabled)."
-                />
-
-                <Section
-                  title="How We Use Your Information"
-                  content="Your data is used to: provide and improve our services, identify ant species, personalize your experience, and communicate with you about updates."
-                />
-
-                <Section
-                  title="Data Storage"
-                  content="Your photos and personal data are stored securely in the cloud. We use industry-standard encryption and security measures to protect your information."
-                />
-
-                <Section
-                  title="Data Sharing"
-                  content="We do not sell your personal information. We may share anonymized data with researchers to improve ant species databases and AI accuracy."
-                />
-
-                <Section
-                  title="Your Rights"
-                  content="You have the right to access, update, or delete your personal data at any time through your account settings or by contacting us."
-                />
-
-                <Section
-                  title="Location Data"
-                  content="Location data is used only to show nearby species and is never shared without your consent. You can disable location services in your device settings."
-                />
-
-                <View className="items-center py-4 mb-4">
-                  <Text className="text-sm text-gray-400">
-                    Last updated: February 2026
-                  </Text>
-                </View>
-              </View>
+              <PrivacyContent t={t} />
             )}
           </ScrollView>
-
-          {/* Close Button
-          <View className="px-6 pb-6">
-            <PrimaryButton
-              title="Close"
-              onPress={() => setShowTermsModal(false)}
-              variant="outlined"
-              style={{ borderRadius: 12 }}
-            />
-          </View> */}
         </SafeAreaView>
       </Modal>
     </SafeAreaView>

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { View, Text, ScrollView, StatusBar, Dimensions } from "react-native";
 import { Ionicons, AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import RequestBadge from "@/components/atom/badge/RequestBadge";
 import { MenuItem } from "@/components/atom/MenuItem";
@@ -58,6 +59,7 @@ const ROLE: Role = "admin";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function NotificationScreen() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [filter, setFilter] = useState<"all" | Status>("all");
   const [activeTab, setActiveTab] = useState<TabType>(
@@ -81,7 +83,7 @@ export default function NotificationScreen() {
 
       {/* Header */}
       <View className="pt-4 pb-5">
-        <ScreenHeader title="Notification" leftIcon="chevron-back" />
+        <ScreenHeader title={t("notification.title")} leftIcon="chevron-back" />
       </View>
 
       {/* Tab Switcher */}
@@ -91,12 +93,12 @@ export default function NotificationScreen() {
             tabs={[
               {
                 value: "request" as TabType,
-                label: "Requests",
+                label: t("notification.tabs.requests"),
                 count: countAll,
               },
               {
                 value: "system" as TabType,
-                label: "System",
+                label: t("notification.tabs.system"),
                 count: SYSTEM.length,
               },
             ]}
@@ -111,7 +113,9 @@ export default function NotificationScreen() {
           <>
             <View className="px-5 mb-3">
               <Text className="text-lg font-semibold text-gray-800">
-                {ROLE === "admin" ? "Requests" : "Your Requests"}
+                {ROLE === "admin"
+                  ? t("notification.requestsTitle")
+                  : t("notification.yourRequestsTitle")}
               </Text>
             </View>
 
@@ -126,25 +130,25 @@ export default function NotificationScreen() {
               }}
             >
               <RequestBadge
-                label="ALL"
+                label={t("notification.filter.all")}
                 isSelected={filter === "all"}
                 onPress={() => setFilter("all")}
                 count={countAll}
               />
               <RequestBadge
-                label="PENDING"
+                label={t("notification.filter.pending")}
                 isSelected={filter === "pending"}
                 onPress={() => setFilter("pending")}
                 count={countPending}
               />
               <RequestBadge
-                label="APPROVED"
+                label={t("notification.filter.approved")}
                 isSelected={filter === "approved"}
                 onPress={() => setFilter("approved")}
                 count={countApproved}
               />
               <RequestBadge
-                label="REJECTED"
+                label={t("notification.filter.rejected")}
                 isSelected={filter === "rejected"}
                 onPress={() => setFilter("rejected")}
                 count={countRejected}
@@ -154,7 +158,7 @@ export default function NotificationScreen() {
             {/* Count */}
             <View className="px-5 mb-4">
               <Text className="text-base text-gray-500">
-                {filtered.length} requests found
+                {t("notification.requestsFound", { count: filtered.length })}
               </Text>
             </View>
 
@@ -181,11 +185,16 @@ export default function NotificationScreen() {
               >
                 <AntDesign name="form" size={48} color="#9CA3AF" />
                 <Text className="mt-4 text-lg font-semibold text-gray-500">
-                  No requests found
+                  {t("notification.emptyRequests.title")}
                 </Text>
                 <Text className="mt-1 text-sm text-gray-400 text-center">
-                  There are no {filter === "all" ? "" : filter} requests at the
-                  moment
+                  {filter === "all"
+                    ? t("notification.emptyRequests.descriptionAll")
+                    : t("notification.emptyRequests.description", {
+                        filter: t(
+                          `notification.filter.${filter}`,
+                        ).toLowerCase(),
+                      })}
                 </Text>
               </View>
             )}
@@ -196,7 +205,7 @@ export default function NotificationScreen() {
           <>
             <View className="px-5 mb-2">
               <Text className="text-lg font-semibold text-gray-800">
-                System
+                {t("notification.systemTitle")}
               </Text>
             </View>
 
@@ -232,10 +241,10 @@ export default function NotificationScreen() {
                     color="#9CA3AF"
                   />
                   <Text className="mt-4 text-lg font-semibold text-gray-500">
-                    No system notifications
+                    {t("notification.emptySystem.title")}
                   </Text>
                   <Text className="mt-1 text-sm text-gray-400 text-center">
-                    You're all caught up!
+                    {t("notification.emptySystem.description")}
                   </Text>
                 </View>
               )}

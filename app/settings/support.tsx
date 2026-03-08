@@ -12,400 +12,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Constants from "expo-constants";
+import { useTranslation } from "react-i18next";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { MenuItem } from "@/components/atom/MenuItem";
-import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { Section } from "@/components/atom/Section";
 
 type SupportScreen = "main" | "about" | "howto" | "contact" | "terms";
 
-export default function SupportInfoScreen() {
-  const [currentScreen, setCurrentScreen] = useState<SupportScreen>("main");
-  const appVersion = Constants.expoConfig?.version || "1.0.0";
-  const email = "antifyapplication@gmail.com";
-
-  const handleContactEmail = async () => {
-    const url = `mailto:${email}`;
-    const canOpen = await Linking.canOpenURL(url);
-    if (!canOpen) {
-      Alert.alert("Email not available", "No email app found on this device.");
-      return;
-    }
-    await Linking.openURL(url);
-  };
-
-  const renderMainMenu = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
-      <View className="py-4">
-        <MenuItem
-          icon="information-circle-outline"
-          title="About Antify"
-          description="Learn more about our mission"
-          onPress={() => setCurrentScreen("about")}
-          iconColor="#22A45D"
-        />
-
-        <MenuItem
-          icon="help-circle-outline"
-          title="How to Use"
-          description="Get started with Antify"
-          onPress={() => setCurrentScreen("howto")}
-          iconColor="#22A45D"
-        />
-
-        <MenuItem
-          icon="mail-outline"
-          title="Contact"
-          description="Get in touch with our team"
-          onPress={() => setCurrentScreen("contact")}
-          iconColor="#22A45D"
-        />
-
-        <MenuItem
-          icon="document-text-outline"
-          title="Terms & Privacy"
-          description="View our policies"
-          onPress={() => setCurrentScreen("terms")}
-          iconColor="#22A45D"
-        />
-
-        {/* App Version */}
-        <View className="mt-8 mb-6 rounded-2xl p-6 items-center">
-          <Image
-            source={require("@/assets/images/icon.png")}
-            style={{ width: 140, height: 80 }}
-          />
-          <Text className="mt-4 text-base text-gray-500">App Version</Text>
-          <Text className="text-xl font-bold text-gray-800 mt-1">
-            {appVersion}
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderAbout = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
-      <View className="py-6">
-        {/* Logo/Icon */}
-        <View className="items-center mb-8">
-          <View className="w-24 h-24 rounded-full bg-[#22A45D] items-center justify-center mb-4">
-            <Ionicons name="leaf" size={48} color="#FFFFFF" />
-          </View>
-          <Text className="text-2xl font-bold text-gray-800">Antify</Text>
-          <Text className="text-base text-gray-500 mt-1">
-            Discover the World of Ants
-          </Text>
-        </View>
-
-        {/* Mission */}
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-gray-800 mb-3">
-            Our Mission
-          </Text>
-          <Text className="text-base text-gray-600 leading-6">
-            Antify is dedicated to helping people discover and identify ant
-            species in Thailand. We combine cutting-edge AI technology with
-            comprehensive species data to make ant identification accessible to
-            everyone.
-          </Text>
-        </View>
-
-        {/* Features */}
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-gray-800 mb-3">
-            What We Offer
-          </Text>
-          <FeatureItem
-            icon="camera-outline"
-            title="AI-Powered Identification"
-            description="Identify ant species instantly using your camera"
-          />
-          <FeatureItem
-            icon="book-outline"
-            title="Comprehensive Database"
-            description="Explore detailed information about Thai ant species"
-          />
-          <FeatureItem
-            icon="location-outline"
-            title="Location-Based Discovery"
-            description="Find ant species in your area"
-          />
-          <FeatureItem
-            icon="heart-outline"
-            title="Personal Collection"
-            description="Save and organize your discoveries"
-          />
-        </View>
-
-        {/* Team/Credits */}
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-gray-800 mb-3">
-            Developed By
-          </Text>
-          <Text className="text-base text-gray-600 leading-6">
-            Antify is developed with passion for entomology and technology. Our
-            team consists of developers, biologists, and ant enthusiasts working
-            together to create the best ant identification experience.
-          </Text>
-        </View>
-
-        {/* Copyright */}
-        <View className="items-center py-4 mb-4">
-          <Text className="text-sm text-gray-400">
-            © 2026 Antify. All rights reserved.
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderHowToUse = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
-      <View className="py-6">
-        <Text className="text-base text-gray-600 mb-6">
-          Get started with Antify in just a few simple steps:
-        </Text>
-
-        {/* Step-by-step guide */}
-        <StepItem
-          title="Take a Photo"
-          description="Use the camera button on the home screen to capture a clear photo of an ant. Make sure the ant is in focus and well-lit for best results."
-          icon="camera-outline"
-        />
-
-        <StepItem
-          title="AI Identification"
-          description="Our AI will analyze the image and identify the ant species. Wait a few seconds for the results to appear."
-          icon="sparkles-outline"
-        />
-
-        <StepItem
-          title="Explore Details"
-          description="View detailed information about the identified species, including scientific name, characteristics, habitat, and behavior."
-          icon="information-circle-outline"
-        />
-
-        <StepItem
-          title="Save to Collection"
-          description="Add species to your personal collection or mark them as favorites for easy access later."
-          icon="bookmark-outline"
-        />
-
-        <StepItem
-          title="Discover More"
-          description="Browse the species catalog, use filters to find specific ants, or explore species in your area."
-          icon="compass-outline"
-        />
-
-        {/* Tips section */}
-        <View className="mt-6 bg-[#E8F5E9] rounded-2xl p-5">
-          <View className="flex-row items-center mb-3">
-            <Ionicons name="bulb-outline" size={24} color="#22A45D" />
-            <Text className="text-lg font-semibold text-gray-800 ml-2">
-              Pro Tips
-            </Text>
-          </View>
-          <TipItem text="Take photos in natural daylight for better accuracy" />
-          <TipItem text="Get close to the ant but keep it in focus" />
-          <TipItem text="Capture different angles for better identification" />
-          <TipItem text="Use the location feature to find local species" />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderContact = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
-      <View className="py-6">
-        <Text className="text-base text-gray-600 mb-6">
-          Have questions, feedback, or need help? We'd love to hear from you!
-        </Text>
-
-        {/* Contact Methods */}
-        <View className="mb-6">
-          <MenuItem
-            icon="mail-outline"
-            title="Email Us"
-            description={email}
-            onPress={handleContactEmail}
-            iconColor="#22A45D"
-          />
-        </View>
-
-        {/* Feedback section */}
-        <View className="bg-[#E8F5E9] rounded-2xl p-5">
-          <View className="flex-row items-center mb-3">
-            <Ionicons name="star-outline" size={24} color="#22A45D" />
-            <Text className="text-lg font-semibold text-gray-800 ml-2">
-              Love Antify?
-            </Text>
-          </View>
-          <Text className="text-base text-gray-600 mb-4">
-            Help us improve by leaving a review or sharing your feedback. Your
-            input helps us make Antify better for everyone!
-          </Text>
-          <PrimaryButton
-            title="Rate on App Store"
-            icon="star"
-            size="medium"
-            onPress={() => {
-              Alert.alert(
-                "Rate Antify",
-                "Thank you for your support! We'll redirect you to the App Store.",
-                [{ text: "OK" }],
-              );
-              // TODO:
-              // Replace with actual App Store URL when published
-              // Linking.openURL('https://apps.apple.com/app/antify/id...');
-            }}
-            style={{ shadowColor: "transparent", elevation: 0 }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderTermsPrivacy = () => (
-    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
-      <View className="py-6">
-        {/* Terms of Service */}
-        <View className="mb-8">
-          <Text className="text-xl font-bold text-green-700 mb-4">
-            Terms of Service
-          </Text>
-
-          <Section
-            title="1. Acceptance of Terms"
-            content="By accessing and using Antify, you accept and agree to be bound by the terms and provision of this agreement."
-          />
-
-          <Section
-            title="2. Use of Service"
-            content="Antify is provided for personal, non-commercial use. You agree to use the app only for lawful purposes and in accordance with these Terms."
-          />
-
-          <Section
-            title="3. User Content"
-            content="You retain all rights to photos and content you upload. By uploading content, you grant Antify a license to use it solely for the purpose of species identification."
-          />
-
-          <Section
-            title="4. AI Accuracy"
-            content="While our AI strives for accuracy, species identification should be verified by experts for critical applications. We do not guarantee 100% accuracy."
-          />
-
-          <Section
-            title="5. Account Termination"
-            content="We reserve the right to terminate or suspend access to our service immediately, without prior notice, for conduct that we believe violates these Terms."
-          />
-        </View>
-
-        {/* Privacy Policy */}
-        <View className="mb-8">
-          <Text className="text-xl font-bold text-gray-800 mb-4">
-            Privacy Policy
-          </Text>
-
-          <Section
-            title="Information We Collect"
-            content="We collect information you provide directly (email, username), usage data (photos for identification), and device information (location if enabled)."
-          />
-
-          <Section
-            title="How We Use Your Information"
-            content="Your data is used to: provide and improve our services, identify ant species, personalize your experience, and communicate with you about updates."
-          />
-
-          <Section
-            title="Data Storage"
-            content="Your photos and personal data are stored securely in the cloud. We use industry-standard encryption and security measures to protect your information."
-          />
-
-          <Section
-            title="Data Sharing"
-            content="We do not sell your personal information. We may share anonymized data with researchers to improve ant species databases and AI accuracy."
-          />
-
-          <Section
-            title="Your Rights"
-            content="You have the right to access, update, or delete your personal data at any time through your account settings or by contacting us."
-          />
-
-          <Section
-            title="Location Data"
-            content="Location data is used only to show nearby species and is never shared without your consent. You can disable location services in your device settings."
-          />
-        </View>
-
-        {/* Last Updated */}
-        <View className="items-center py-4 mb-4">
-          <Text className="text-sm text-gray-400">
-            Last updated: February 2026
-          </Text>
-        </View>
-
-        {/* Contact for Legal */}
-        <View className="rounded-2xl p-5 mb-6">
-          <Text className="text-base text-gray-600 text-center">
-            Questions about our Terms or Privacy Policy?
-          </Text>
-          <Text
-            className="text-base text-[#22A45D] font-semibold text-center mt-2"
-            onPress={handleContactEmail}
-          >
-            Contact us at {email}
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const getScreenTitle = () => {
-    switch (currentScreen) {
-      case "about":
-        return "About Antify";
-      case "howto":
-        return "How to Use";
-      case "contact":
-        return "Contact";
-      case "terms":
-        return "Terms & Privacy";
-      default:
-        return "Support & Info";
-    }
-  };
-
-  return (
-    <SafeAreaView className="flex-1 bg-white">
-      <StatusBar barStyle="dark-content" />
-
-      {/* Header */}
-      <View className="py-6">
-        <ScreenHeader
-          title={getScreenTitle()}
-          leftIcon="chevron-back"
-          onLeftPress={() => {
-            if (currentScreen === "main") {
-              router.back();
-            } else {
-              setCurrentScreen("main");
-            }
-          }}
-        />
-      </View>
-
-      {/* Content */}
-      {currentScreen === "main" && renderMainMenu()}
-      {currentScreen === "about" && renderAbout()}
-      {currentScreen === "howto" && renderHowToUse()}
-      {currentScreen === "contact" && renderContact()}
-      {currentScreen === "terms" && renderTermsPrivacy()}
-    </SafeAreaView>
-  );
-}
-
-// sub component
 const FeatureItem = ({
   icon,
   title,
@@ -427,27 +40,20 @@ const FeatureItem = ({
 );
 
 const StepItem = ({
-  number,
   title,
   description,
   icon,
 }: {
-  number?: number;
   title: string;
   description: string;
   icon: string;
 }) => (
   <View className="mb-6">
     <View className="flex-row items-center mb-2">
-      {number && (
-        <View className="w-8 h-8 rounded-full bg-[#22A45D] items-center justify-center mr-3">
-          <Text className="text-white font-bold">{number}</Text>
-        </View>
-      )}
       <Ionicons name={icon as any} size={24} color="#22A45D" />
       <Text className="text-lg font-semibold text-gray-800 ml-2">{title}</Text>
     </View>
-    <Text className="text-base text-gray-600 leading-6 ml-11">
+    <Text className="text-base text-gray-600 leading-6 ml-8">
       {description}
     </Text>
   </View>
@@ -459,3 +65,327 @@ const TipItem = ({ text }: { text: string }) => (
     <Text className="text-base text-gray-700 flex-1">{text}</Text>
   </View>
 );
+
+export default function SupportInfoScreen() {
+  const { t } = useTranslation();
+  const [currentScreen, setCurrentScreen] = useState<SupportScreen>("main");
+  const appVersion = Constants.expoConfig?.version || "1.0.0";
+  const email = "antifyapplication@gmail.com";
+
+  const handleContactEmail = () => {
+    const open = async () => {
+      const url = `mailto:${email}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        Alert.alert(
+          t("support.contact.email.errorTitle"),
+          t("support.contact.email.errorMessage"),
+        );
+        return;
+      }
+      await Linking.openURL(url);
+    };
+    open();
+  };
+
+  const renderMainMenu = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
+      <View className="py-4">
+        <MenuItem
+          icon="information-circle-outline"
+          title={t("support.menu.about.title")}
+          description={t("support.menu.about.description")}
+          onPress={() => setCurrentScreen("about")}
+          iconColor="#22A45D"
+        />
+        <MenuItem
+          icon="help-circle-outline"
+          title={t("support.menu.howto.title")}
+          description={t("support.menu.howto.description")}
+          onPress={() => setCurrentScreen("howto")}
+          iconColor="#22A45D"
+        />
+        <MenuItem
+          icon="mail-outline"
+          title={t("support.menu.contact.title")}
+          description={t("support.menu.contact.description")}
+          onPress={() => setCurrentScreen("contact")}
+          iconColor="#22A45D"
+        />
+        <MenuItem
+          icon="document-text-outline"
+          title={t("support.menu.terms.title")}
+          description={t("support.menu.terms.description")}
+          onPress={() => setCurrentScreen("terms")}
+          iconColor="#22A45D"
+        />
+
+        <View className="mt-8 mb-6 rounded-2xl p-6 items-center">
+          <Image
+            source={require("@/assets/images/icon.png")}
+            style={{ width: 140, height: 80 }}
+          />
+          <Text className="mt-4 text-base text-gray-500">App Version</Text>
+          <Text className="text-xl font-bold text-gray-800 mt-1">
+            {appVersion}
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const renderAbout = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
+      <View className="py-6">
+        <View className="items-center mb-8">
+          <View className="w-24 h-24 rounded-full bg-[#22A45D] items-center justify-center mb-4">
+            <Ionicons name="leaf" size={48} color="#FFFFFF" />
+          </View>
+          <Text className="text-2xl font-bold text-gray-800">Antify</Text>
+          <Text className="text-base text-gray-500 mt-1">
+            {t("support.about.tagline")}
+          </Text>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-gray-800 mb-3">
+            {t("support.about.mission.title")}
+          </Text>
+          <Text className="text-base text-gray-600 leading-6">
+            {t("support.about.mission.content")}
+          </Text>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-gray-800 mb-3">
+            {t("support.about.features.title")}
+          </Text>
+          <FeatureItem
+            icon="camera-outline"
+            title={t("support.about.features.ai.title")}
+            description={t("support.about.features.ai.description")}
+          />
+          <FeatureItem
+            icon="book-outline"
+            title={t("support.about.features.database.title")}
+            description={t("support.about.features.database.description")}
+          />
+          <FeatureItem
+            icon="location-outline"
+            title={t("support.about.features.location.title")}
+            description={t("support.about.features.location.description")}
+          />
+          <FeatureItem
+            icon="heart-outline"
+            title={t("support.about.features.collection.title")}
+            description={t("support.about.features.collection.description")}
+          />
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-gray-800 mb-3">
+            {t("support.about.team.title")}
+          </Text>
+          <Text className="text-base text-gray-600 leading-6">
+            {t("support.about.team.content")}
+          </Text>
+        </View>
+
+        <View className="items-center py-4 mb-4">
+          <Text className="text-sm text-gray-400">
+            © 2026 Antify. All rights reserved.
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const renderHowToUse = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
+      <View className="py-6">
+        <Text className="text-base text-gray-600 mb-6">
+          {t("support.howto.intro")}
+        </Text>
+
+        <StepItem
+          title={t("support.howto.steps.photo.title")}
+          description={t("support.howto.steps.photo.description")}
+          icon="camera-outline"
+        />
+        <StepItem
+          title={t("support.howto.steps.ai.title")}
+          description={t("support.howto.steps.ai.description")}
+          icon="sparkles-outline"
+        />
+        <StepItem
+          title={t("support.howto.steps.details.title")}
+          description={t("support.howto.steps.details.description")}
+          icon="information-circle-outline"
+        />
+        <StepItem
+          title={t("support.howto.steps.save.title")}
+          description={t("support.howto.steps.save.description")}
+          icon="bookmark-outline"
+        />
+        <StepItem
+          title={t("support.howto.steps.discover.title")}
+          description={t("support.howto.steps.discover.description")}
+          icon="compass-outline"
+        />
+
+        <View className="mt-6 bg-[#E8F5E9] rounded-2xl p-5">
+          <View className="flex-row items-center mb-3">
+            <Ionicons name="bulb-outline" size={24} color="#22A45D" />
+            <Text className="text-lg font-semibold text-gray-800 ml-2">
+              {t("support.howto.tips.title")}
+            </Text>
+          </View>
+          <TipItem text={t("support.howto.tips.light")} />
+          <TipItem text={t("support.howto.tips.close")} />
+          <TipItem text={t("support.howto.tips.angles")} />
+          <TipItem text={t("support.howto.tips.location")} />
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const renderContact = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
+      <View className="py-6">
+        <Text className="text-base text-gray-600 mb-6">
+          {t("support.contact.intro")}
+        </Text>
+
+        <View className="mb-6">
+          <MenuItem
+            icon="mail-outline"
+            title={t("support.contact.email.title")}
+            description={email}
+            onPress={handleContactEmail}
+            iconColor="#22A45D"
+          />
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const renderTermsPrivacy = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
+      <View className="py-6">
+        {/* Terms of Service */}
+        <View className="mb-8">
+          <Text className="text-xl font-bold text-green-700 mb-4">
+            {t("support.terms.termsTitle")}
+          </Text>
+          <Section
+            title={t("support.terms.sections.acceptance.title")}
+            content={t("support.terms.sections.acceptance.content")}
+          />
+          <Section
+            title={t("support.terms.sections.use.title")}
+            content={t("support.terms.sections.use.content")}
+          />
+          <Section
+            title={t("support.terms.sections.userContent.title")}
+            content={t("support.terms.sections.userContent.content")}
+          />
+          <Section
+            title={t("support.terms.sections.aiAccuracy.title")}
+            content={t("support.terms.sections.aiAccuracy.content")}
+          />
+          <Section
+            title={t("support.terms.sections.termination.title")}
+            content={t("support.terms.sections.termination.content")}
+          />
+        </View>
+
+        {/* Privacy Policy */}
+        <View className="mb-8">
+          <Text className="text-xl font-bold text-gray-800 mb-4">
+            {t("support.terms.privacyTitle")}
+          </Text>
+          <Section
+            title={t("support.terms.sections.infoCollect.title")}
+            content={t("support.terms.sections.infoCollect.content")}
+          />
+          <Section
+            title={t("support.terms.sections.infoUse.title")}
+            content={t("support.terms.sections.infoUse.content")}
+          />
+          <Section
+            title={t("support.terms.sections.dataStorage.title")}
+            content={t("support.terms.sections.dataStorage.content")}
+          />
+          <Section
+            title={t("support.terms.sections.dataSharing.title")}
+            content={t("support.terms.sections.dataSharing.content")}
+          />
+          <Section
+            title={t("support.terms.sections.yourRights.title")}
+            content={t("support.terms.sections.yourRights.content")}
+          />
+          <Section
+            title={t("support.terms.sections.locationData.title")}
+            content={t("support.terms.sections.locationData.content")}
+          />
+        </View>
+
+        <View className="items-center py-4 mb-4">
+          <Text className="text-sm text-gray-400">
+            Last updated: February 2026
+          </Text>
+        </View>
+
+        <View className="rounded-2xl p-5 mb-6">
+          <Text className="text-base text-gray-600 text-center">
+            {t("support.terms.contactPrompt")}
+          </Text>
+          <Text
+            className="text-base text-[#22A45D] font-semibold text-center mt-2"
+            onPress={handleContactEmail}
+          >
+            {t("support.terms.contactLink", { email })}
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const getScreenTitle = () => {
+    switch (currentScreen) {
+      case "about":
+        return t("support.about.title");
+      case "howto":
+        return t("support.menu.howto.title");
+      case "contact":
+        return t("support.contact.title");
+      case "terms":
+        return t("support.terms.title");
+      default:
+        return t("support.title");
+    }
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" />
+
+      <View className="py-6">
+        <ScreenHeader
+          title={getScreenTitle()}
+          leftIcon="chevron-back"
+          onLeftPress={() => {
+            if (currentScreen === "main") router.back();
+            else setCurrentScreen("main");
+          }}
+        />
+      </View>
+
+      {currentScreen === "main" && renderMainMenu()}
+      {currentScreen === "about" && renderAbout()}
+      {currentScreen === "howto" && renderHowToUse()}
+      {currentScreen === "contact" && renderContact()}
+      {currentScreen === "terms" && renderTermsPrivacy()}
+    </SafeAreaView>
+  );
+}

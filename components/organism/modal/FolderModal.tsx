@@ -4,15 +4,16 @@ import { Ionicons } from "@expo/vector-icons";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { FOLDER_COLORS, Folder } from "@/services/folders";
 import TextInput from "@/components/atom/TextInput";
+import { useTranslation } from "react-i18next";
 
 interface FolderModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onSubmit: (name: string, color: string) => void;
-  initialName?: string;
-  initialColor?: string;
-  title?: string;
-  submitLabel?: string;
+  readonly visible: boolean;
+  readonly onClose: () => void;
+  readonly onSubmit: (name: string, color: string) => void;
+  readonly initialName?: string;
+  readonly initialColor?: string;
+  readonly title?: string;
+  readonly submitLabel?: string;
 }
 
 export default function FolderModal({
@@ -21,12 +22,12 @@ export default function FolderModal({
   onSubmit,
   initialName = "",
   initialColor,
-  title = "Create Folder",
-  submitLabel = "Save",
+  title,
+  submitLabel,
 }: FolderModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [color, setColor] = useState<string | null>(null);
-
   const [nameError, setNameError] = useState("");
   const [colorError, setColorError] = useState(false);
 
@@ -43,7 +44,7 @@ export default function FolderModal({
     let valid = true;
 
     if (!name.trim()) {
-      setNameError("Please enter a collection name");
+      setNameError(t("collection.folder.nameRequired"));
       valid = false;
     }
 
@@ -64,13 +65,15 @@ export default function FolderModal({
         <View className="bg-white w-full rounded-2xl p-5" style={modalShadow}>
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold">{title}</Text>
+            <Text className="text-lg font-bold">
+              {title ?? t("collection.folder.createTitle")}
+            </Text>
           </View>
 
           {/* Name */}
           <TextInput
-            label="Folder Name"
-            placeholder="Enter your folder name"
+            label={t("collection.folder.folderName")}
+            placeholder={t("collection.folder.namePlaceholder")}
             value={name}
             onChangeText={(t) => {
               setName(t);
@@ -84,12 +87,19 @@ export default function FolderModal({
 
           {/* Color */}
           <Text className="text-base text-gray-600 font-medium mb-2">
-            Color
+            {t("collection.folder.colorLabel")}
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {FOLDER_COLORS.map((c) => {
               const isSelected = color === c.hex;
+
+              let borderColor = "transparent";
+              if (isSelected) {
+                borderColor = "#0A9D5C";
+              } else if (colorError) {
+                borderColor = "#EF4444";
+              }
 
               return (
                 <TouchableOpacity
@@ -104,11 +114,7 @@ export default function FolderModal({
                     className="w-10 h-10 rounded-full border-2"
                     style={{
                       backgroundColor: c.hex,
-                      borderColor: isSelected
-                        ? "#0A9D5C"
-                        : colorError
-                          ? "#EF4444"
-                          : "transparent",
+                      borderColor: borderColor,
                     }}
                   />
                 </TouchableOpacity>
@@ -124,7 +130,7 @@ export default function FolderModal({
                 marginTop: 6,
               }}
             >
-              Please select a color
+              {t("collection.folder.colorRequired")}
             </Text>
           )}
 
@@ -132,7 +138,7 @@ export default function FolderModal({
           <View className="flex-row mt-6">
             <View className="flex-1 mr-2">
               <PrimaryButton
-                title="Cancel"
+                title={t("common.cancel")}
                 onPress={onClose}
                 size="small"
                 variant="outlined"
@@ -143,7 +149,7 @@ export default function FolderModal({
 
             <View className="flex-1">
               <PrimaryButton
-                title={submitLabel}
+                title={submitLabel ?? t("common.save")}
                 onPress={handleSubmit}
                 size="small"
                 fullWidth
@@ -164,19 +170,23 @@ export const modalShadow = {
   shadowRadius: 4,
 };
 
+interface FolderActionModalProps {
+  readonly folder: Folder;
+  readonly visible: boolean;
+  readonly onClose: () => void;
+  readonly onEdit: () => void;
+  readonly onDelete: () => void;
+}
+
 export function FolderActionModal({
   folder,
   visible,
   onClose,
   onEdit,
   onDelete,
-}: {
-  folder: Folder;
-  visible: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
+}: FolderActionModalProps) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -188,7 +198,7 @@ export function FolderActionModal({
         <View className="bg-white w-full rounded-2xl p-5" style={modalShadow}>
           <Text className="text-lg font-bold mb-0.5">{folder.name}</Text>
           <Text className="text-sm text-gray-500 mb-5">
-            Manage this collection
+            {t("collection.folder.manageSubtitle")}
           </Text>
 
           <TouchableOpacity
@@ -198,7 +208,9 @@ export function FolderActionModal({
             <View className="w-9 h-9 rounded-full bg-blue-50 items-center justify-center mr-3">
               <Ionicons name="pencil-outline" size={18} color="#3B82F6" />
             </View>
-            <Text className="text-base text-gray-800">Edit folder</Text>
+            <Text className="text-base text-gray-800">
+              {t("collection.folder.editAction")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -208,11 +220,14 @@ export function FolderActionModal({
             <View className="w-9 h-9 rounded-full bg-red-50 items-center justify-center mr-3">
               <Ionicons name="trash-outline" size={18} color="#EF4444" />
             </View>
-            <Text className="text-base text-red-500">Delete folder</Text>
+            <Text className="text-base text-red-500">
+              {t("collection.folder.deleteAction")}
+            </Text>
           </TouchableOpacity>
+
           <View className="mt-3">
             <PrimaryButton
-              title="Cancel"
+              title={t("common.cancel")}
               onPress={onClose}
               size="small"
               variant="outlined"

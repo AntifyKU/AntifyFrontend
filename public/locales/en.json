@@ -5,27 +5,285 @@
     "cancel": "Cancel",
     "success": "Success",
     "error": "Error",
-    "openSettings": "Open Settings"
+    "openSettings": "Open Settings",
+    "ok": "OK",
+    "comingSoon": "Coming Soon",
+    "comingSoonMessage": "{{title}} will be available soon.",
+    "delete": "Delete",
+    "create": "Create",
+    "confirm": "Confirm",
+    "clearAll": "Clear All",
+    "updating": "Updating...",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "emailPlaceholder": "Enter your email",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "passwordRequired": "Password is required",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "signIn": "Sign In",
+    "loading": "Loading...",
+    "logout": "Log Out"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to continue",
+      "emailLabel": "$t(common.email)",
+      "emailPlaceholder": "$t(common.emailPlaceholder)",
+      "passwordLabel": "$t(common.password)",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot Password?",
+      "submitButton": "Sign In",
+      "submittingButton": "Signing in...",
+      "failedTitle": "Login Failed",
+      "failedDefault": "Unable to log in. Please check your credentials and try again.",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign Up",
+      "errorEmailRequired": "$t(common.emailRequired)",
+      "errorEmailInvalid": "$t(common.emailInvalid)",
+      "errorPasswordRequired": "$t(common.passwordRequired)",
+      "errorPasswordTooShort": "$t(common.passwordTooShort)"
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join Antify today",
+      "usernameLabel": "$t(common.username)",
+      "usernamePlaceholder": "Choose a username",
+      "emailLabel": "$t(common.email)",
+      "emailPlaceholder": "$t(common.emailPlaceholder)",
+      "passwordLabel": "$t(common.password)",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "termsPrefix": "By signing up, you agree to our",
+      "termsLink": "Terms of Service",
+      "termsAnd": "and",
+      "privacyLink": "Privacy Policy",
+      "submitButton": "Create Account",
+      "submittingButton": "Creating Account...",
+      "successTitle": "Account Created!",
+      "successMessage": "Your account has been created successfully.",
+      "failedTitle": "Signup Failed",
+      "failedDefault": "Unable to create account. Please try again.",
+      "hasAccount": "Already have an account?",
+      "signIn": "$t(common.signIn)",
+      "creatingOverlay": "Creating account...",
+      "errorUsernameRequired": "Username is required",
+      "errorUsernameTooShort": "Username must be at least 3 characters",
+      "errorEmailRequired": "$t(common.emailRequired)",
+      "errorEmailInvalid": "$t(common.emailInvalid)",
+      "errorPasswordRequired": "$t(common.passwordRequired)",
+      "errorPasswordTooShort": "$t(common.passwordTooShort)",
+      "errorConfirmRequired": "Please confirm your password",
+      "errorConfirmMismatch": "Passwords do not match"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email address and we'll send you a link to reset your password",
+      "emailLabel": "$t(common.email)",
+      "emailPlaceholder": "$t(common.emailPlaceholder)",
+      "submitButton": "Send Reset Link",
+      "submittingButton": "Sending...",
+      "infoBox": "You will receive an email with a secure link to reset your password. The link will expire in 1 hour.",
+      "sentTitle": "Check Your Email",
+      "sentSubtitle": "We've sent a password reset link to",
+      "backToLogin": "Back to Login",
+      "resendEmail": "Resend Email",
+      "rememberPassword": "Remember your password?",
+      "signIn": "$t(common.signIn)",
+      "successTitle": "Email Sent!",
+      "successMessage": "We've sent a password reset link to your email. Please check your inbox and follow the instructions.",
+      "sendingOverlay": "Sending reset email...",
+      "errorEmailRequired": "$t(common.emailRequired)",
+      "errorEmailInvalid": "$t(common.emailInvalid)",
+      "errorDefault": "Failed to send reset email. Please try again.",
+      "errorUserNotFound": "No account found with this email address.",
+      "errorInvalidEmail": "Invalid email address.",
+      "errorTooManyRequests": "Too many attempts. Please try again later.",
+      "errorNetwork": "Network error. Please check your connection."
+    },
+    "termsModal": {
+      "termsTitle": "Terms of Service",
+      "privacyTitle": "Privacy Policy"
+    }
+  },
+  "sort": {
+    "title": "Sort By",
+    "nameAsc": "Name (A-Z)",
+    "nameDesc": "Name (Z-A)",
+    "newest": "Newest First",
+    "oldest": "Oldest First"
+  },
+  "collection": {
+    "unfiledTitle": "Not in any folder ({{count}})",
+    "empty": {
+      "title": "No collections yet",
+      "description": "Explore the ant species to save as a collection",
+      "button": "Explore"
+    },
+    "folder": {
+      "createTitle": "Create Folder",
+      "editTitle": "Edit Folder",
+      "editSubmit": "Update",
+      "deleteTitle": "Delete collection",
+      "deleteMessage": "Are you sure to delete this collection? This action cannot be undone.",
+      "folderName": "Folder Name",
+      "namePlaceholder": "Enter your folder name",
+      "nameRequired": "Please enter a collection name",
+      "colorLabel": "Color",
+      "colorRequired": "Please select a color",
+      "manageSubtitle": "Manage this collection",
+      "editAction": "Edit folder",
+      "deleteAction": "Delete folder",
+      "folderNotFound": "Folder not found",
+      "removeTitle": "Remove from Folder",
+      "removeConfirm": "Remove \"{{name}}\" from this folder?",
+      "removeButton": "Remove",
+      "removing": "Removing...",
+      "removeFromFolder": "Remove from folder",
+      "speciesCount": "{{count}} species",
+      "emptyTitle": "No species in this folder",
+      "emptyDescription": "Add species from your collection to organize them",
+      "goToCollection": "Go to Collection",
+      "removeError": "Failed to remove from folder"
+    },
+    "item": {
+      "addToFolder": "Add to folder",
+      "removeFromCollection": "Remove from collection",
+      "removeTitle": "Remove from Collection",
+      "removeMessage": "Are you sure you want to remove \"{{name}}\" from your collection?",
+      "removeButton": "Remove",
+      "removeError": "Failed to remove from collection",
+      "addToFolderTitle": "Add to Folder",
+      "addToFolderSubtitle": "Select folders for {{name}}",
+      "addToFolderError": "Failed to add to folders"
+    }
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "Your identification history",
+    "confidence": "{{value}}% confidence",
+    "loading": "$t(common.loading)",
+    "empty": {
+      "title": "No history yet",
+      "description": "Your identification history will appear here",
+      "button": "Identify Now"
+    },
+    "deleteTitle": "Delete History",
+    "deleteMessage": "Are you sure you want to delete this item?",
+    "deleteError": "Failed to delete item",
+    "clearAllTitle": "Clear All History",
+    "clearAllMessage": "Are you sure you want to delete all history? This cannot be undone.",
+    "clearAllError": "Failed to clear history",
+    "viewDetails": "View details",
+    "deleteFromHistory": "Delete from history",
+    "timeJustNow": "Just now",
+    "timeMinutes": "{{count}}m ago",
+    "timeHours": "{{count}}h ago",
+    "timeDays": "{{count}}d ago"
+  },
+  "profile": {
+    "title": "Profile",
+    "tabs": {
+      "history": "History",
+      "collection": "Collection"
+    },
+    "profilePicture": {
+      "sheetTitle": "Profile Picture",
+      "sheetMessage": "Choose an option",
+      "takePhoto": "Take Photo",
+      "chooseFromLibrary": "Choose from Library",
+      "remove": "Remove"
+    },
+    "logout": {
+      "title": "$t(common.logout)",
+      "message": "Are you sure?",
+      "confirm": "$t(common.logout)",
+      "successMessage": "You have logged out successfully!"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "guestUser": "Guest User",
+    "menu": {
+      "account": "Account",
+      "preferences": "App Preferences",
+      "privacy": "Privacy & Security",
+      "support": "Support & Info"
+    },
+    "logout": "$t(common.logout)",
+    "login": "$t(common.signIn)"
+  },
+  "account": {
+    "title": "Account Settings",
+    "menu": {
+      "username": {
+        "title": "$t(common.username)",
+        "description": "Manage your account username"
+      },
+      "email": {
+        "title": "$t(common.email)",
+        "description": "Manage your email address"
+      },
+      "password": {
+        "title": "Change Password",
+        "description": "Update your password"
+      }
+    },
+    "deleteAccount": {
+      "button": "Delete Account",
+      "confirmTitle": "Delete Account",
+      "confirmMessage": "Are you sure you want to delete your account? This action cannot be undone.",
+      "successMessage": "Your account has been deleted!",
+      "errorMessage": "Failed to delete account"
+    },
+    "username": {
+      "screenTitle": "$t(common.username)",
+      "currentLabel": "Current username",
+      "newLabel": "New username",
+      "placeholder": "Enter new username",
+      "updateButton": "Update Username",
+      "successMessage": "Username updated successfully!",
+      "errorRequired": "Username is required",
+      "errorTooShort": "Username must be at least 3 characters",
+      "errorSame": "Username is the same as current",
+      "errorFailed": "Failed to update username"
+    },
+    "email": {
+      "screenTitle": "$t(common.email)",
+      "currentLabel": "Current email",
+      "newLabel": "New email",
+      "placeholder": "Enter new email",
+      "updateButton": "Update Email",
+      "successMessage": "Email updated successfully!",
+      "errorRequired": "$t(common.emailRequired)",
+      "errorInvalid": "$t(common.emailInvalid)",
+      "errorSame": "Email is the same as current",
+      "errorFailed": "Failed to update email"
+    },
+    "password": {
+      "screenTitle": "Change Password",
+      "newLabel": "New password",
+      "newPlaceholder": "Enter new password",
+      "confirmPlaceholder": "Confirm new password",
+      "updateButton": "Update Password",
+      "successMessage": "Password updated successfully!",
+      "errorRequired": "$t(common.passwordRequired)",
+      "errorTooShort": "$t(common.passwordTooShort)",
+      "errorMismatch": "Passwords do not match",
+      "errorFailed": "Failed to update password"
+    }
   },
   "preferences": {
     "title": "App Preferences",
-    "saveButton": "Save Preferences",
-    "savingButton": "Saving...",
     "saveSuccess": "Preferences saved successfully!",
     "saveError": "Failed to save preferences",
     "language": {
       "title": "Language",
       "english": "English",
       "thai": "Thai"
-    },
-    "theme": {
-      "title": "Theme",
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System",
-      "systemDetected": "System theme detected:",
-      "systemLight": "Light",
-      "systemDark": "Dark"
     },
     "notifications": {
       "title": "Notifications",
@@ -37,5 +295,272 @@
       "disableMessage": "To turn off notifications, please go to Settings and change the permission.",
       "errorOpening": "Unable to open settings. Please open Settings manually and find Antify."
     }
+  },
+  "privacy": {
+    "title": "Privacy & Security",
+    "location": {
+      "title": "Location Permission",
+      "enabled": "Show nearby ant species",
+      "disabled": "Enable to see nearby species",
+      "permissionTitle": "Location Permission Required",
+      "permissionMessage": "Please enable location access in Settings to use this feature.",
+      "disableTitle": "Disable Location Access",
+      "disableMessage": "To turn off location access, please go to Settings and change the permission.",
+      "errorOpening": "Unable to open settings. Please open Settings manually and find Antify."
+    },
+    "clearHistory": {
+      "menuTitle": "Clear History",
+      "menuDescription": "Delete all search and scan history",
+      "screenTitle": "Clear All History",
+      "screenDescription": "This will permanently delete all your search history, scan history, and recent activity from this device.",
+      "warningTitle": "This action cannot be undone",
+      "warningMessage": "Your saved collection and favorites will not be affected by this action.",
+      "confirmTitle": "Clear History",
+      "confirmMessage": "Are you sure you want to clear all your search and scan history? This action cannot be undone.",
+      "clearingButton": "Clearing...",
+      "clearButton": "Clear All History",
+      "successTitle": "Success",
+      "successMessage": "Your history has been cleared successfully.",
+      "errorMessage": "Failed to clear history. Please try again."
+    },
+    "dataUsage": {
+      "menuTitle": "Data Usage",
+      "menuDescription": "How we use your data",
+      "screenTitle": "How We Use Your Data",
+      "screenDescription": "Your privacy and data security are our top priorities.",
+      "storage": {
+        "title": "Data Storage",
+        "content": "All your personal data is stored securely on your device and in the cloud. We use industry-standard encryption to protect your information. Your photos and scan results are only accessible to you."
+      },
+      "whatWeCollect": {
+        "title": "What We Collect",
+        "account": "Account information (username, email)",
+        "photos": "Photos you upload for identification",
+        "location": "Location data (if enabled)",
+        "usage": "App usage and activity"
+      },
+      "howWeUse": {
+        "title": "How We Use Data",
+        "content": "Your data is used solely to provide and improve our ant identification service. We use your photos to identify species, your location to show nearby ants, and usage data to make the app better."
+      },
+      "whatWeDont": {
+        "title": "What We Don't Do",
+        "content": "We never sell your personal information to third parties. We don't share your data with advertisers. We don't track you across other apps or websites."
+      },
+      "yourRights": {
+        "title": "Your Rights",
+        "access": "Access your data anytime",
+        "update": "Update or correct your information",
+        "delete": "Delete your account and all data",
+        "export": "Export your data"
+      }
+    }
+  },
+  "support": {
+    "title": "Support & Info",
+    "menu": {
+      "about": {
+        "title": "About Antify",
+        "description": "Learn more about our mission"
+      },
+      "howto": {
+        "title": "How to Use",
+        "description": "Get started with Antify"
+      },
+      "contact": {
+        "title": "Contact",
+        "description": "Get in touch with our team"
+      },
+      "terms": {
+        "title": "Terms & Privacy",
+        "description": "View our policies"
+      }
+    },
+    "about": {
+      "title": "About Antify",
+      "tagline": "Discover the World of Ants",
+      "mission": {
+        "title": "Our Mission",
+        "content": "Antify is dedicated to helping people discover and identify ant species in Thailand. We combine cutting-edge AI technology with comprehensive species data to make ant identification accessible to everyone."
+      },
+      "features": {
+        "title": "What We Offer",
+        "ai": {
+          "title": "AI-Powered Identification",
+          "description": "Identify ant species instantly using your camera"
+        },
+        "database": {
+          "title": "Comprehensive Database",
+          "description": "Explore detailed information about Thai ant species"
+        },
+        "location": {
+          "title": "Location-Based Discovery",
+          "description": "Find ant species in your area"
+        },
+        "collection": {
+          "title": "Personal Collection",
+          "description": "Save and organize your discoveries"
+        }
+      },
+      "team": {
+        "title": "Developed By",
+        "content": "Antify is developed with passion for entomology and technology. Our team consists of developers, biologists, and ant enthusiasts working together to create the best ant identification experience."
+      }
+    },
+    "howto": {
+      "title": "How to Use",
+      "intro": "Get started with Antify in just a few simple steps",
+      "steps": {
+        "photo": {
+          "title": "Take a Photo",
+          "description": "Use the camera button on the home screen to capture a clear photo of an ant. Make sure the ant is in focus and well-lit for best results."
+        },
+        "ai": {
+          "title": "AI Identification",
+          "description": "Our AI will analyze the image and identify the ant species. Wait a few seconds for the results to appear."
+        },
+        "details": {
+          "title": "Explore Details",
+          "description": "View detailed information about the identified species, including scientific name, characteristics, habitat, and behavior."
+        },
+        "save": {
+          "title": "Save to Collection",
+          "description": "Add species to your personal collection or mark them as favorites for easy access later."
+        },
+        "discover": {
+          "title": "Discover More",
+          "description": "Browse the species catalog, use filters to find specific ants, or explore species in your area."
+        }
+      },
+      "tips": {
+        "title": "Pro Tips",
+        "light": "Take photos in natural daylight for better accuracy",
+        "close": "Get close to the ant but keep it in focus",
+        "angles": "Capture different angles for better identification",
+        "location": "Use the location feature to find local species"
+      }
+    },
+    "contact": {
+      "title": "Contact",
+      "intro": "Have questions, feedback, or need help? We'd love to hear from you!",
+      "email": {
+        "title": "Email Us",
+        "errorTitle": "Email not available",
+        "errorMessage": "No email app found on this device."
+      }
+    },
+    "terms": {
+      "title": "Terms & Privacy",
+      "termsTitle": "Terms of Service",
+      "privacyTitle": "Privacy Policy",
+      "contactPrompt": "Questions about our Terms or Privacy Policy?",
+      "contactLink": "Contact us at {{email}}",
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing and using Antify, you accept and agree to be bound by the terms and provision of this agreement."
+        },
+        "use": {
+          "title": "2. Use of Service",
+          "content": "Antify is provided for personal, non-commercial use. You agree to use the app only for lawful purposes and in accordance with these Terms."
+        },
+        "userContent": {
+          "title": "3. User Content",
+          "content": "You retain all rights to photos and content you upload. By uploading content, you grant Antify a license to use it solely for the purpose of species identification."
+        },
+        "aiAccuracy": {
+          "title": "4. AI Accuracy",
+          "content": "While our AI strives for accuracy, species identification should be verified by experts for critical applications. We do not guarantee 100% accuracy."
+        },
+        "termination": {
+          "title": "5. Account Termination",
+          "content": "We reserve the right to terminate or suspend access to our service immediately, without prior notice, for conduct that we believe violates these Terms."
+        },
+        "infoCollect": {
+          "title": "Information We Collect",
+          "content": "We collect information you provide directly (email, username), usage data (photos for identification), and device information (location if enabled)."
+        },
+        "infoUse": {
+          "title": "How We Use Your Information",
+          "content": "Your data is used to: provide and improve our services, identify ant species, personalize your experience, and communicate with you about updates."
+        },
+        "dataStorage": {
+          "title": "Data Storage",
+          "content": "Your photos and personal data are stored securely in the cloud. We use industry-standard encryption and security measures to protect your information."
+        },
+        "dataSharing": {
+          "title": "Data Sharing",
+          "content": "We do not sell your personal information. We may share anonymized data with researchers to improve ant species databases and AI accuracy."
+        },
+        "yourRights": {
+          "title": "Your Rights",
+          "content": "You have the right to access, update, or delete your personal data at any time through your account settings or by contacting us."
+        },
+        "locationData": {
+          "title": "Location Data",
+          "content": "Location data is used only to show nearby species and is never shared without your consent. You can disable location services in your device settings."
+        }
+      }
+    }
+  },
+  "explore": {
+    "title": "Explore",
+    "searchPlaceholder": "Search ant species...",
+    "filterLabel": "Filter",
+    "offlineBanner": "Using offline data",
+    "speciesFound": "{{count}} species found",
+    "loadingSpecies": "Loading species...",
+    "emptyTitle": "No species found",
+    "emptyDescription": "Try adjusting your search"
+  },
+  "notification": {
+    "title": "Notification",
+    "tabs": {
+      "requests": "Requests",
+      "system": "System"
+    },
+    "requestsTitle": "Requests",
+    "yourRequestsTitle": "Your Requests",
+    "requestsFound": "{{count}} requests found",
+    "filter": {
+      "all": "ALL",
+      "pending": "PENDING",
+      "approved": "APPROVED",
+      "rejected": "REJECTED"
+    },
+    "emptyRequests": {
+      "title": "No requests found",
+      "description": "There are no {{filter}} requests at the moment",
+      "descriptionAll": "There are no requests at the moment"
+    },
+    "systemTitle": "System",
+    "emptySystem": {
+      "title": "No system notifications",
+      "description": "You're all caught up!"
+    }
+  },
+  "chatbot": {
+    "statusConnecting": "Connecting...",
+    "inputPlaceholder": "Write a message",
+    "defaultImageMessage": "What can you tell me about this image?"
+  },
+  "helpImprove": {
+    "title": "Help Improve AI",
+    "matchPercentage": "{{value}}% Match",
+    "questionTitle": "Was this identification correct?",
+    "questionSubtitle": "Your feedback helps train our AI to be more accurate",
+    "correct": "Yes, Correct",
+    "incorrect": "No, Incorrect",
+    "selectSpecies": "Select the correct species:",
+    "searchPlaceholder": "Search species...",
+    "notInList": "Species not in list",
+    "rateTitle": "Rate this prediction quality",
+    "notesTitle": "Additional notes (optional):",
+    "notesPlaceholder": "Describe what helped you identify this ant, or what the AI got wrong...",
+    "submitButton": "Submit Feedback",
+    "submittingButton": "Submitting...",
+    "footerNote": "Your feedback is anonymous and used solely to improve species identification accuracy.",
+    "validationTitle": "Selection Required",
+    "validationMessage": "Please indicate if the identification was correct."
   }
 }

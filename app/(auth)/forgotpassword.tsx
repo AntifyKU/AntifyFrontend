@@ -14,12 +14,14 @@ import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { useTranslation } from "react-i18next";
 import { auth } from "@/config/firebase";
 import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -29,61 +31,56 @@ export default function ForgotPasswordScreen() {
     const newErrors: { email?: string } = {};
 
     if (!email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t("auth.forgotPassword.errorEmailRequired");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Please enter a valid email";
+      newErrors.email = t("auth.forgotPassword.errorEmailInvalid");
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handleResetPassword() {
+  const handleResetPassword = () => {
     if (!validateEmail()) return;
-
-    setIsLoading(true);
-    try {
-      await sendPasswordResetEmail(auth, email.trim());
-
-      setEmailSent(true);
-      Alert.alert(
-        "Email Sent!",
-        "We've sent a password reset link to your email. Please check your inbox and follow the instructions.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(auth)/login"),
-          },
-        ],
-      );
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-
-      let errorMessage = "Failed to send reset email. Please try again.";
-
-      switch (error.code) {
-        case "auth/user-not-found":
-          errorMessage = "No account found with this email address.";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "Invalid email address.";
-          break;
-        case "auth/too-many-requests":
-          errorMessage = "Too many attempts. Please try again later.";
-          break;
-        case "auth/network-request-failed":
-          errorMessage = "Network error. Please check your connection.";
-          break;
+    const run = async () => {
+      setIsLoading(true);
+      try {
+        await sendPasswordResetEmail(auth, email.trim());
+        setEmailSent(true);
+        Alert.alert(
+          t("auth.forgotPassword.successTitle"),
+          t("auth.forgotPassword.successMessage"),
+          [
+            {
+              text: t("common.ok"),
+              onPress: () => router.replace("/(auth)/login"),
+            },
+          ],
+        );
+      } catch (error: any) {
+        console.error("Password reset error:", error);
+        const message = getResetErrorMessage(error.code);
+        Alert.alert(t("common.error"), message);
+      } finally {
+        setIsLoading(false);
       }
+    };
+    run();
+  };
 
-      Alert.alert("Error", errorMessage);
-    } finally {
-      setIsLoading(false);
+  function getResetErrorMessage(code: string): string {
+    switch (code) {
+      case "auth/user-not-found":
+        return t("auth.forgotPassword.errorUserNotFound");
+      case "auth/invalid-email":
+        return t("auth.forgotPassword.errorInvalidEmail");
+      case "auth/too-many-requests":
+        return t("auth.forgotPassword.errorTooManyRequests");
+      case "auth/network-request-failed":
+        return t("auth.forgotPassword.errorNetwork");
+      default:
+        return t("auth.forgotPassword.errorDefault");
     }
-  }
-
-  function handleBack() {
-    router.back();
   }
 
   return (
@@ -98,37 +95,67 @@ export default function ForgotPasswordScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
           <View className="pt-6">
             <ScreenHeader
               title=""
               leftIcon="chevron-back"
-              onLeftPress={handleBack}
+              onLeftPress={() => router.back()}
             />
           </View>
 
-          {/* Content */}
           <View className="flex-1 px-6 pt-8">
-            {!emailSent ? (
+            {emailSent ? (
+              <View className="items-center">
+                <View className="w-24 h-24 rounded-full bg-green-100 items-center justify-center mb-6">
+                  <Ionicons name="checkmark-circle" size={60} color="#0A9D5C" />
+                </View>
+                <Text className="text-2xl font-bold text-gray-800 mb-3">
+                  {t("auth.forgotPassword.sentTitle")}
+                </Text>
+                <Text className="text-gray-500 text-center text-base px-4 mb-6">
+                  {t("auth.forgotPassword.sentSubtitle")}
+                </Text>
+                <Text className="text-[#0A9D5C] font-semibold text-base mb-8">
+                  {email}
+                </Text>
+
+                <View className="w-full mb-6">
+                  <PrimaryButton
+                    title={t("auth.forgotPassword.backToLogin")}
+                    onPress={() => router.replace("/(auth)/login")}
+                    icon="arrow-back"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleResetPassword}
+                  disabled={isLoading}
+                  className="py-3"
+                >
+                  <Text className="text-[#0A9D5C] font-medium">
+                    {t("auth.forgotPassword.resendEmail")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
               <>
                 <View className="items-center mb-8">
                   <View className="w-20 h-20 rounded-full bg-[#0A9D5C] items-center justify-center mb-4">
                     <Ionicons name="mail" size={40} color="#FFFFFF" />
                   </View>
                   <Text className="text-3xl font-bold text-gray-800">
-                    Forgot Password?
+                    {t("auth.forgotPassword.title")}
                   </Text>
                   <Text className="text-gray-500 mt-2 text-center text-base px-4">
-                    Enter your email address and we&apos;ll send you a link to
-                    reset your password
+                    {t("auth.forgotPassword.subtitle")}
                   </Text>
                 </View>
 
                 <View className="mb-6">
                   <TextInput
-                    label="Email"
+                    label={t("auth.forgotPassword.emailLabel")}
                     icon="mail-outline"
-                    placeholder="Enter your email"
+                    placeholder={t("auth.forgotPassword.emailPlaceholder")}
                     value={email}
                     onChangeText={(text) => {
                       setEmail(text);
@@ -142,14 +169,17 @@ export default function ForgotPasswordScreen() {
                   />
 
                   <PrimaryButton
-                    title={isLoading ? "Sending..." : "Send Reset Link"}
+                    title={
+                      isLoading
+                        ? t("auth.forgotPassword.submittingButton")
+                        : t("auth.forgotPassword.submitButton")
+                    }
                     onPress={handleResetPassword}
                     disabled={isLoading}
                     icon={isLoading ? undefined : "send"}
                   />
                 </View>
 
-                {/* Info Box */}
                 <View className="bg-green-50 p-4 rounded-2xl mb-6">
                   <View className="flex-row items-start">
                     <Ionicons
@@ -159,55 +189,24 @@ export default function ForgotPasswordScreen() {
                       style={{ marginTop: 2, marginRight: 8 }}
                     />
                     <Text className="flex-1 text-sm text-gray-700 leading-5">
-                      You will receive an email with a secure link to reset your
-                      password. The link will expire in 1 hour.
+                      {t("auth.forgotPassword.infoBox")}
                     </Text>
                   </View>
                 </View>
               </>
-            ) : (
-              <View className="items-center">
-                <View className="w-24 h-24 rounded-full bg-green-100 items-center justify-center mb-6">
-                  <Ionicons name="checkmark-circle" size={60} color="#0A9D5C" />
-                </View>
-                <Text className="text-2xl font-bold text-gray-800 mb-3">
-                  Check Your Email
-                </Text>
-                <Text className="text-gray-500 text-center text-base px-4 mb-6">
-                  We&apos;ve sent a password reset link to
-                </Text>
-                <Text className="text-[#0A9D5C] font-semibold text-base mb-8">
-                  {email}
-                </Text>
-
-                <View className="w-full mb-6">
-                  <PrimaryButton
-                    title="Back to Login"
-                    onPress={() => router.replace("/(auth)/login")}
-                    icon="arrow-back"
-                  />
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleResetPassword}
-                  disabled={isLoading}
-                  className="py-3"
-                >
-                  <Text className="text-[#0A9D5C] font-medium">
-                    Resend Email
-                  </Text>
-                </TouchableOpacity>
-              </View>
             )}
           </View>
 
-          {/* Footer */}
           {!emailSent && (
             <View className="px-6 pb-8">
               <View className="flex-row justify-center">
-                <Text className="text-gray-500">Remember your password? </Text>
+                <Text className="text-gray-500">
+                  {t("auth.forgotPassword.rememberPassword")}{" "}
+                </Text>
                 <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
-                  <Text className="text-[#0A9D5C] font-semibold">Sign In</Text>
+                  <Text className="text-[#0A9D5C] font-semibold">
+                    {t("auth.forgotPassword.signIn")}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -219,7 +218,9 @@ export default function ForgotPasswordScreen() {
         <View className="absolute inset-0 bg-black/20 items-center justify-center">
           <View className="bg-white rounded-2xl p-6">
             <ActivityIndicator size="large" color="#0A9D5C" />
-            <Text className="mt-3 text-gray-600">Sending reset email...</Text>
+            <Text className="mt-3 text-gray-600">
+              {t("auth.forgotPassword.sendingOverlay")}
+            </Text>
           </View>
         </View>
       )}
