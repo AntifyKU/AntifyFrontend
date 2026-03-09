@@ -7,6 +7,7 @@ import {
   StatusBar,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -18,6 +19,9 @@ import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import RiskTags from "@/components/molecule/RiskTags";
 import { useSpecies } from "@/hooks/useSpecies";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { useLocation } from "@/hooks/useLocation";
+import LocationSpeciesCard from "@/components/molecule/LocationSpeciesCard";
+import { useProvinceSpecies } from "@/hooks/useProvinceSpecies";
 
 // Define the type for route params
 type IdentificationParams = {
@@ -41,6 +45,12 @@ export default function IdentificationResultsScreen() {
   // Fetch full species list to enrich predictions
   const { species: allSpecies } = useSpecies();
 
+  // Get user location for the species-in-area card
+  const { province, loading: locationLoading, permissionDenied } = useLocation();
+
+  // Fetch Firestore species confirmed in user's province (fires once province is known)
+  const { provinceSpecies, loading: loadingProvinceSpecies } = useProvinceSpecies(province);
+
   // State for processed results
   const [hasIdentified, setHasIdentified] = useState(false);
 
@@ -55,46 +65,68 @@ export default function IdentificationResultsScreen() {
   // Process identification results
   const { bestMatch, otherMatches, totalMatches } =
     useMemo(() => {
+      // Labels the AI emits when it can't identify the species
+      const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
+      const isJunk = (name: string) =>
+        JUNK_LABELS.has(name.toLowerCase().replace(/_/g, " ").trim());
+
       // If we have API results from the new species details endpoint
       if (speciesResult?.success && speciesResult.predictions && speciesResult.predictions.length > 0) {
-        const predictions = speciesResult.predictions;
-        const info = speciesInfo;
+        // Strip junk predictions first, then pick best from what remains
+        const predictions = speciesResult.predictions.filter(
+          (p) => !isJunk(p.class_name)
+        );
 
-        // Build best match from top prediction + Firestore info
-        const bestPrediction = predictions[0];
-        const bestMatchItem = {
-          id: info?.id ?? `prediction-0`,
-          name: info?.name ?? bestPrediction.class_name.replace(/_/g, " "),
-          scientificName: info?.scientific_name ?? bestPrediction.class_name,
-          image: info?.image ?? "",
-          matchPercentage: Math.round(bestPrediction.confidence * 100),
-          riskInfo: info?.risk,
-        };
+        if (predictions.length === 0) {
+          // All predictions were junk — fall through to static fallback
+        } else {
+          // Build best match: use speciesInfo only if the top prediction didn't change
+          // AND the speciesInfo itself doesn't have a junk name (e.g. "Life" from Firestore)
+          const bestPrediction = predictions[0];
+          const isOriginalTop = bestPrediction.class_name === speciesResult.predictions[0].class_name;
+          const speciesInfoIsJunk = speciesInfo ? isJunk(speciesInfo.name) : false;
+          const effectiveInfo = (isOriginalTop && !speciesInfoIsJunk) ? speciesInfo : null;
 
-        // Other predictions (try to enrich from allSpecies)
-        const otherMatchItems = predictions.slice(1).map((pred, index) => {
-          const matchedSpecies = allSpecies.find((s) =>
-            s.scientific_name === pred.class_name ||
-            s.id === pred.species_id ||
-            s.name.toLowerCase() === pred.class_name.replace(/_/g, " ").toLowerCase()
-          );
+          const bestMatchItem = {
+            id: effectiveInfo?.id ?? `prediction-0`,
+            name: effectiveInfo?.name ?? bestPrediction.class_name.replace(/_/g, " "),
+            scientificName: effectiveInfo?.scientific_name ?? bestPrediction.class_name,
+            image: effectiveInfo?.image ?? "",
+            matchPercentage: Math.round(bestPrediction.confidence * 100),
+            riskInfo: effectiveInfo?.risk,
+            isInDatabase: effectiveInfo !== null,  // true only when we have real Firestore data
+          };
+
+          // Other predictions (try to enrich from allSpecies)
+          // Also discard any matched species whose name is itself a junk label
+          const otherMatchItems = predictions.slice(1).map((pred, index) => {
+            const matchedSpecies = allSpecies.find((s) =>
+              s.scientific_name === pred.class_name ||
+              s.id === pred.species_id ||
+              s.name.toLowerCase() === pred.class_name.replace(/_/g, " ").toLowerCase()
+            );
+
+            // Reject matched species if its name is a junk label
+            const validSpecies = matchedSpecies && !isJunk(matchedSpecies.name) ? matchedSpecies : null;
+            const displayName = validSpecies?.name ?? pred.class_name.replace(/_/g, " ");
+
+            return {
+              id: validSpecies?.id ?? pred.species_id ?? `prediction-${index + 1}`,
+              name: displayName,
+              scientificName: validSpecies?.scientific_name ?? pred.class_name,
+              image: validSpecies?.image ?? "",
+              matchPercentage: Math.round(pred.confidence * 100),
+              riskInfo: validSpecies?.risk,
+            };
+          }).filter((item) => !isJunk(item.name)); // final safety net
 
           return {
-            id: matchedSpecies?.id ?? pred.species_id ?? `prediction-${index + 1}`,
-            name: matchedSpecies?.name ?? pred.class_name.replace(/_/g, " "),
-            scientificName: matchedSpecies?.scientific_name ?? pred.class_name,
-            image: matchedSpecies?.image ?? "",
-            matchPercentage: Math.round(pred.confidence * 100),
-            riskInfo: matchedSpecies?.risk,
+            bestMatch: bestMatchItem,
+            otherMatches: otherMatchItems,
+            totalMatches: predictions.length,
+            isUsingFallback: false,
           };
-        });
-
-        return {
-          bestMatch: bestMatchItem,
-          otherMatches: otherMatchItems,
-          totalMatches: predictions.length,
-          isUsingFallback: false,
-        };
+        }
       }
 
       // Fallback to static mock data
@@ -111,6 +143,28 @@ export default function IdentificationResultsScreen() {
   };
 
   const handleConfirmAndViewDetails = (antId: string) => {
+    // Show alert if we have no real Firestore species data:
+    // - antId is missing or is a placeholder ("prediction-X")
+    // - isInDatabase is explicitly false (junk prediction filtered) OR undefined (static fallback)
+    const isUnidentified =
+      !antId ||
+      antId.startsWith("prediction-") ||
+      (bestMatch as any).isInDatabase !== true;
+
+    if (isUnidentified) {
+      Alert.alert(
+        "Species Not in Database",
+        "We couldn't match this ant to a known species in our database yet. This could be a rare or undocumented species, or the photo may need better lighting / angle for a more accurate result.",
+        [
+          {
+            text: "Help Improve AI",
+            onPress: handleProvideFeedback,
+          },
+          { text: "OK", style: "cancel" },
+        ]
+      );
+      return;
+    }
     // Navigate directly to detail page, feedback will be shown on back press
     router.push({
       pathname: "/detail/[id]",
@@ -361,6 +415,33 @@ export default function IdentificationResultsScreen() {
             </View>
           </View>
         </View>
+
+        {/* Location Species Card */}
+        <LocationSpeciesCard
+          predictions={[
+            {
+              id: bestMatch.id,
+              name: bestMatch.name,
+              scientificName: bestMatch.scientificName,
+              image: bestMatch.image,
+              matchPercentage: bestMatch.matchPercentage ?? 0,
+              distribution: (bestMatch as any).distribution,
+            },
+            ...otherMatches.map((ant) => ({
+              id: ant.id,
+              name: ant.name,
+              scientificName: ant.scientificName,
+              image: ant.image,
+              matchPercentage: ant.matchPercentage ?? 0,
+              distribution: (ant as any).distribution,
+            })),
+          ]}
+          province={province}
+          loadingLocation={locationLoading}
+          permissionDenied={permissionDenied}
+          provinceSpecies={provinceSpecies}
+          loadingProvinceSpecies={loadingProvinceSpecies}
+        />
 
         {/* Help Improve AI Section */}
         <View className="mx-4 mt-6">

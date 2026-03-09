@@ -12,20 +12,21 @@ import type { Species, SpeciesListResponse, SpeciesFilters } from '@/types/api';
  */
 export async function getSpecies(filters?: SpeciesFilters): Promise<SpeciesListResponse> {
   const params = new URLSearchParams();
-  
+
   if (filters?.search) params.append('search', filters.search);
   if (filters?.tags) params.append('tags', filters.tags);
   if (filters?.colors) params.append('colors', filters.colors);
   if (filters?.habitat) params.append('habitat', filters.habitat);
   if (filters?.distribution) params.append('distribution', filters.distribution);
+  if (filters?.province) params.append('province', filters.province);
   if (filters?.page) params.append('page', filters.page.toString());
   if (filters?.limit) params.append('limit', filters.limit.toString());
-  
+
   const queryString = params.toString();
-  const endpoint = queryString 
-    ? `${API_ENDPOINTS.species}?${queryString}` 
+  const endpoint = queryString
+    ? `${API_ENDPOINTS.species}?${queryString}`
     : API_ENDPOINTS.species;
-    
+
   return apiClient.get<SpeciesListResponse>(endpoint);
 }
 

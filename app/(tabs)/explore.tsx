@@ -39,7 +39,11 @@ export default function ExploreScreen() {
     appliedFilters.distributions.length;
 
   const filteredAndSortedSpecies = useMemo(() => {
+    const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
+
     let result = species.filter((item) => {
+      // Hide junk taxonomy labels
+      if (JUNK_LABELS.has(item.name.toLowerCase().trim())) return false;
       // Search
       const query = searchQuery.toLowerCase().trim();
       if (query) {
@@ -166,7 +170,7 @@ export default function ExploreScreen() {
         <ScreenHeader
           title="Explore"
           rightIcon="notifications-outline"
-          onRightPress={() => {setShowNoti(true)}}
+          onRightPress={() => { setShowNoti(true) }}
         />
       </View>
 

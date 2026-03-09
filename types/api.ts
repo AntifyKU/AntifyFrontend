@@ -99,6 +99,7 @@ export interface SpeciesFilters {
   colors?: string;
   habitat?: string;
   distribution?: string;
+  province?: string;  // Filters by distribution_v2.provinces
   page?: number;
   limit?: number;
 }
