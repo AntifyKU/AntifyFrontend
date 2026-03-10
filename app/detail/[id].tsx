@@ -23,6 +23,7 @@ import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { useState } from "react";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import EmptyState from "@/components/molecule/EmptyState";
 
 // Define the type for route params
 type DetailParams = {
@@ -39,7 +40,15 @@ const BUTTON_HEIGHT = 52;
 
 export default function DetailScreen() {
   const params = useLocalSearchParams<DetailParams>();
-  const { id, fromIdentification, antName, scientificName, matchPercentage, imageUri, source } = params;
+  const {
+    id,
+    fromIdentification,
+    antName,
+    scientificName,
+    matchPercentage,
+    imageUri,
+    source,
+  } = params;
 
   // Auth and data hooks
   const { isAuthenticated } = useAuth();
@@ -60,20 +69,20 @@ export default function DetailScreen() {
   // Transform API species to display format
   const currentAnt = species
     ? {
-      id: species.id,
-      name: species.name,
-      scientificName: species.scientific_name,
-      classification: species.classification,
-      tags: species.tags,
-      about: species.about,
-      characteristics: species.characteristics,
-      colors: species.colors,
-      habitat: species.habitat,
-      distribution: species.distribution,
-      behavior: species.behavior,
-      ecologicalRole: species.ecological_role,
-      image: species.image || "",
-    }
+        id: species.id,
+        name: species.name,
+        scientificName: species.scientific_name,
+        classification: species.classification,
+        tags: species.tags,
+        about: species.about,
+        characteristics: species.characteristics,
+        colors: species.colors,
+        habitat: species.habitat,
+        distribution: species.distribution,
+        behavior: species.behavior,
+        ecologicalRole: species.ecological_role,
+        image: species.image || "",
+      }
     : antSpeciesData[0];
 
   const handleBackPress = () => {
@@ -200,28 +209,20 @@ export default function DetailScreen() {
             className="m-4 w-10 h-10 rounded-full bg-white/80 items-center justify-center"
             style={({ pressed }) => pressed && styles.pressed}
           >
-            <Ionicons name="chevron-back" size={24} color="#0A9D5C" />
+            <Ionicons name="chevron-back" size={24} color="#333" />
           </Pressable>
         </SafeAreaView>
         <View className="flex-1 items-center justify-center px-8">
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={64}
-            color="#9CA3AF"
+          <EmptyState
+            icon="alert-circle-outline"
+            iconColor="#9CA3AF"
+            title={"Species Not Found"}
+            titleStyle={{ fontWeight: "600", color: "#333" }}
+            description={"Unable to load species details. Please try again."}
+            descriptionStyle={{ color: "#374151" }}
+            buttonTitle={"Go Back"}
+            onButtonPress={handleBackPress}
           />
-          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            Species Not Found
-          </Text>
-          <Text className="mt-2 text-gray-500 text-center">
-            Unable to load species details. Please try again.
-          </Text>
-          <Pressable
-            onPress={handleBackPress}
-            className="mt-6 bg-[#0A9D5C] rounded-full px-6 py-3"
-            style={({ pressed }) => pressed && styles.pressed}
-          >
-            <Text className="text-white font-semibold">Go Back</Text>
-          </Pressable>
         </View>
       </View>
     );
@@ -244,7 +245,7 @@ export default function DetailScreen() {
         >
           <Pressable
             className="bg-white rounded-2xl mx-6 w-[90%] max-w-[340px]"
-            onPress={() => { }}
+            onPress={() => {}}
           >
             <View className="p-6">
               <Text className="text-xl font-bold text-center text-gray-800 mb-2">
@@ -262,8 +263,9 @@ export default function DetailScreen() {
                     return (
                       <TouchableOpacity
                         key={folder.id}
-                        className={`flex-row items-center p-3 rounded-lg mb-2 ${isSelected ? "bg-green-50" : "bg-gray-50"
-                          }`}
+                        className={`flex-row items-center p-3 rounded-lg mb-2 ${
+                          isSelected ? "bg-green-50" : "bg-gray-50"
+                        }`}
                         onPress={() => toggleFolderSelection(folder.id)}
                       >
                         <View
@@ -435,7 +437,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={color}
-                  onPress={() => { }}
+                  onPress={() => {}}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -453,7 +455,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={hab}
-                  onPress={() => { }}
+                  onPress={() => {}}
                   size="small"
                   showCloseIcon={false}
                 />
@@ -471,7 +473,7 @@ export default function DetailScreen() {
                 <Badge
                   key={index}
                   label={dist}
-                  onPress={() => { }}
+                  onPress={() => {}}
                   size="small"
                   showCloseIcon={false}
                 />
