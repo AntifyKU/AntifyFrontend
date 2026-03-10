@@ -562,5 +562,14 @@
     "footerNote": "Your feedback is anonymous and used solely to improve species identification accuracy.",
     "validationTitle": "Selection Required",
     "validationMessage": "Please indicate if the identification was correct."
+  },
+  "identify": {
+    "title": "Identify Ant",
+    "chooseOption": "Choose an option",
+    "takePhoto": "Take Photo",
+    "chooseGallery": "Choose from Gallery",
+    "permissionDenied": "Permission Denied",
+    "cameraPermission": "You need camera permission.",
+    "galleryPermission": "You need gallery permission."
   }
 }

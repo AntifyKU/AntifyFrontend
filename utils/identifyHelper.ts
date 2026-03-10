@@ -1,11 +1,13 @@
 import { Alert, ActionSheetIOS, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
+import i18n from "@/public/i18n";
 
 export async function takePhoto() {
+  const t = i18n.t;
   const { status } = await ImagePicker.requestCameraPermissionsAsync();
   if (status !== "granted") {
-    Alert.alert("Permission Denied", "You need camera permission.");
+    Alert.alert(t("identify.permissionDenied"), t("identify.cameraPermission"));
     return;
   }
 
@@ -25,15 +27,19 @@ export async function takePhoto() {
 }
 
 export async function uploadPhoto() {
-  const { status } =
-    await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const t = i18n.t;
+
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== "granted") {
-    Alert.alert("Permission Denied", "You need gallery permission.");
+    Alert.alert(
+      t("identify.permissionDenied"),
+      t("identify.galleryPermission"),
+    );
     return;
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: ["images"],
     allowsEditing: true,
     aspect: [4, 3],
     quality: 1,
@@ -49,10 +55,16 @@ export async function uploadPhoto() {
 }
 
 export function openIdentifySheet() {
+  const t = i18n.t;
+
   if (Platform.OS === "ios") {
     ActionSheetIOS.showActionSheetWithOptions(
       {
-        options: ["Cancel", "Take Photo", "Choose from Gallery"],
+        options: [
+          t("common.cancel"),
+          t("identify.takePhoto"),
+          t("identify.chooseGallery"),
+        ],
         cancelButtonIndex: 0,
       },
       (index) => {
@@ -61,10 +73,10 @@ export function openIdentifySheet() {
       },
     );
   } else {
-    Alert.alert("Identify Ant", "Choose an option", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Take Photo", onPress: takePhoto },
-      { text: "Choose from Gallery", onPress: uploadPhoto },
+    Alert.alert(t("identify.title"), t("identify.chooseOption"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("identify.takePhoto"), onPress: () => void takePhoto() },
+      { text: t("identify.chooseGallery"), onPress: () => void uploadPhoto() },
     ]);
   }
 }
