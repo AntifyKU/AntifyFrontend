@@ -308,21 +308,6 @@
       "disableMessage": "To turn off location access, please go to Settings and change the permission.",
       "errorOpening": "Unable to open settings. Please open Settings manually and find Antify."
     },
-    "clearHistory": {
-      "menuTitle": "Clear History",
-      "menuDescription": "Delete all search and scan history",
-      "screenTitle": "Clear All History",
-      "screenDescription": "This will permanently delete all your search history, scan history, and recent activity from this device.",
-      "warningTitle": "This action cannot be undone",
-      "warningMessage": "Your saved collection and favorites will not be affected by this action.",
-      "confirmTitle": "Clear History",
-      "confirmMessage": "Are you sure you want to clear all your search and scan history? This action cannot be undone.",
-      "clearingButton": "Clearing...",
-      "clearButton": "Clear All History",
-      "successTitle": "Success",
-      "successMessage": "Your history has been cleared successfully.",
-      "errorMessage": "Failed to clear history. Please try again."
-    },
     "dataUsage": {
       "menuTitle": "Data Usage",
       "menuDescription": "How we use your data",
