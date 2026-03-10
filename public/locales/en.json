@@ -37,6 +37,8 @@
       "forgotPassword": "Forgot Password?",
       "submitButton": "Sign In",
       "submittingButton": "Signing in...",
+      "successTitle": "Login Successful",
+      "successMessage": "Welcome back!",
       "failedTitle": "Login Failed",
       "failedDefault": "Unable to log in. Please check your credentials and try again.",
       "noAccount": "Don't have an account?",

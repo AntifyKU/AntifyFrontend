@@ -53,6 +53,11 @@ export default function LoginScreen() {
     const run = async () => {
       try {
         await login(email, password);
+        Alert.alert(
+          t("auth.login.successTitle"),
+          t("auth.login.successMessage"),
+          [{ text: t("common.ok"), onPress: navigate }],
+        );
       } catch (error: any) {
         Alert.alert(
           t("auth.login.failedTitle"),
@@ -63,8 +68,8 @@ export default function LoginScreen() {
     run();
   };
 
-  function handleBack() {
-    if (from === "onboarding") {
+  function navigate() {
+    if (from === "onboarding" || !router.canGoBack()) {
       router.replace("/(tabs)");
     } else {
       router.back();
@@ -87,7 +92,7 @@ export default function LoginScreen() {
             <ScreenHeader
               title=""
               leftIcon="chevron-back"
-              onLeftPress={handleBack}
+              onLeftPress={navigate}
             />
           </View>
 

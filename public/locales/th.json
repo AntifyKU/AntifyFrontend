@@ -37,6 +37,8 @@
       "forgotPassword": "ลืมรหัสผ่าน?",
       "submitButton": "เข้าสู่ระบบ",
       "submittingButton": "กำลังเข้าสู่ระบบ...",
+      "successTitle": "เข้าสู่ระบบสำเร็จ",
+      "successMessage": "ยินดีต้อนรับกลับมา!",
       "failedTitle": "เข้าสู่ระบบไม่สำเร็จ",
       "failedDefault": "ไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบข้อมูลและลองอีกครั้ง",
       "noAccount": "ยังไม่มีบัญชี?",
