@@ -7,8 +7,6 @@ import {
   Pressable,
   StatusBar,
   Alert,
-  ActionSheetIOS,
-  Platform,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
@@ -19,7 +17,6 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import SectionHeader from "@/components/molecule/SectionHeader";
 import AntCard from "@/components/molecule/AntCard";
@@ -33,6 +30,7 @@ import {
 } from "@/constants/AntData";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { openIdentifySheet } from "@/utils/identifyHelper";
 
 export default function HomeScreen() {
   const [location, setLocation] = useState("Loading...");
@@ -124,99 +122,6 @@ export default function HomeScreen() {
     });
   };
 
-  const handleTakePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "You need to grant camera permission to use this feature.",
-        );
-        return;
-      }
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const capturedImage = result.assets[0];
-        router.push({
-          pathname: "/identification-results",
-          params: { imageUri: capturedImage.uri, source: "camera" },
-        });
-      }
-    } catch (error) {
-      console.error("Error taking photo:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem taking the photo. Please try again.",
-      );
-    }
-  };
-
-  const handleUploadPhoto = async () => {
-    try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "You need to grant gallery access to use this feature.",
-        );
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const selectedImage = result.assets[0];
-        router.push({
-          pathname: "/identification-results",
-          params: { imageUri: selectedImage.uri, source: "gallery" },
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading photo:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem selecting the photo. Please try again.",
-      );
-    }
-  };
-
-  const handleIdentifyAnt = () => {
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Take Photo", "Choose from Gallery"],
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            handleTakePhoto();
-          } else if (buttonIndex === 2) {
-            handleUploadPhoto();
-          }
-        },
-      );
-    } else {
-      Alert.alert(
-        "Identify Ant",
-        "Choose an option",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Take Photo", onPress: handleTakePhoto },
-          { text: "Choose from Gallery", onPress: handleUploadPhoto },
-        ],
-        { cancelable: true },
-      );
-    }
-  };
-
   const handleCategoryPress = (categoryName: string) => {
     router.push({
       pathname: "/(tabs)/explore",
@@ -275,7 +180,7 @@ export default function HomeScreen() {
           <PrimaryButton
             title="Identify Ant"
             icon="camera"
-            onPress={handleIdentifyAnt}
+            onPress={openIdentifySheet}
             size="large"
           />
         </View>
