@@ -13,21 +13,21 @@ import { useTranslation } from "react-i18next";
 import ListCard from "@/components/ListCard";
 import SortModal from "@/components/molecule/SortModal";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
-import { SortOption, getSortLabel } from "@/utils/sort";
 import ActionButton from "@/components/atom/button/ActionButton";
 import EmptyState from "@/components/molecule/EmptyState";
 import { useHistory } from "@/hooks/useHistory";
-import { HistoryItem } from "@/types/api";
-import { openIdentifySheet } from "@/utils/identifyHelper";
 import { useAuth } from "@/context/AuthContext";
+import { SortOption, getSortLabel } from "@/utils/sort";
+import { openIdentifySheet } from "@/utils/identifyHelper";
+import type { HistoryRecord } from "@/types/api";
 
-const modalShadow = {
+const MODAL_SHADOW = {
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.15,
   shadowRadius: 12,
   elevation: 8,
-};
+} as const;
 
 interface ConfidenceTextProps {
   readonly confidence: number;
@@ -42,92 +42,9 @@ function ConfidenceText({ confidence }: ConfidenceTextProps) {
   );
 }
 
-const HistorySection: React.FC = () => {
+function useFormatDate() {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const { history, isLoading, deleteItem, clearAll } = useHistory();
-  const [showSort, setShowSort] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
-  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
-  const [showActionModal, setShowActionModal] = useState(false);
-
-  const sortedHistory = useMemo(() => {
-    return [...history].sort((a, b) => {
-      switch (sortOption) {
-        case "newest":
-          return (
-            new Date(b.identified_at).getTime() -
-            new Date(a.identified_at).getTime()
-          );
-        case "oldest":
-          return (
-            new Date(a.identified_at).getTime() -
-            new Date(b.identified_at).getTime()
-          );
-        case "name-asc":
-          return a.top_prediction.localeCompare(b.top_prediction);
-        case "name-desc":
-          return b.top_prediction.localeCompare(a.top_prediction);
-        default:
-          return 0;
-      }
-    });
-  }, [history, sortOption]);
-
-  const handleItemMore = (item: HistoryItem) => {
-    setSelectedItem(item);
-    setShowActionModal(true);
-  };
-
-  const handleDelete = () => {
-    if (!selectedItem) return;
-    setShowActionModal(false);
-    Alert.alert(t("history.deleteTitle"), t("history.deleteMessage"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.delete"),
-        style: "destructive",
-        onPress: () => {
-          const run = async () => {
-            try {
-              await deleteItem(selectedItem.id);
-            } catch {
-              Alert.alert(t("common.error"), t("history.deleteError"));
-            }
-          };
-          run();
-        },
-      },
-    ]);
-  };
-
-  const handleViewDetails = () => {
-    if (!selectedItem) return;
-    setShowActionModal(false);
-    router.push({ pathname: "/detail/[id]", params: { id: selectedItem.id } });
-  };
-
-  const handleClearAll = () => {
-    Alert.alert(t("history.clearAllTitle"), t("history.clearAllMessage"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.clearAll"),
-        style: "destructive",
-        onPress: () => {
-          const run = async () => {
-            try {
-              await clearAll();
-            } catch {
-              Alert.alert(t("common.error"), t("history.clearAllError"));
-            }
-          };
-          run();
-        },
-      },
-    ]);
-  };
-
-  const formatDate = (dateString: string): string => {
+  return (dateString: string): string => {
     const date = new Date(dateString);
     const diffMs = Date.now() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -140,9 +57,105 @@ const HistorySection: React.FC = () => {
     if (diffDays < 7) return t("history.timeDays", { count: diffDays });
     return date.toLocaleDateString();
   };
+}
+
+function sortRecords(
+  records: HistoryRecord[],
+  option: SortOption,
+): HistoryRecord[] {
+  return [...records].sort((a, b) => {
+    switch (option) {
+      case "newest":
+        return (
+          new Date(b.identifiedAt).getTime() -
+          new Date(a.identifiedAt).getTime()
+        );
+      case "oldest":
+        return (
+          new Date(a.identifiedAt).getTime() -
+          new Date(b.identifiedAt).getTime()
+        );
+      case "name-asc":
+        return a.speciesName.localeCompare(b.speciesName);
+      case "name-desc":
+        return b.speciesName.localeCompare(a.speciesName);
+      default:
+        return 0;
+    }
+  });
+}
+
+const HistorySection: React.FC = () => {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const formatDate = useFormatDate();
+
+  const { records, loading, removeRecord, clearHistory } = useHistory();
+
+  const [showSort, setShowSort] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [selectedItem, setSelectedItem] = useState<HistoryRecord | null>(null);
+  const [showActionModal, setShowActionModal] = useState(false);
+
+  const sortedRecords = useMemo(
+    () => sortRecords(records, sortOption),
+    [records, sortOption],
+  );
+
+  const handleItemMore = (item: HistoryRecord) => {
+    setSelectedItem(item);
+    setShowActionModal(true);
+  };
+
+  const handleCardPress = (item: HistoryRecord) => {
+    const speciesId =
+      item.topPredictions?.find((p) => p.rank === 1)?.speciesId ??
+      item.speciesInfo?.id ??
+      null;
+
+    if (!speciesId) {
+      Alert.alert(t("common.error"), t("history.noSpeciesId"));
+      return;
+    }
+
+    router.push({ pathname: "/detail/[id]", params: { id: speciesId } });
+  };
+
+  const handleDelete = () => {
+    if (!selectedItem) return;
+    setShowActionModal(false);
+    Alert.alert(t("history.deleteTitle"), t("history.deleteMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: () => {
+          removeRecord(selectedItem.id).catch(() => {
+            Alert.alert(t("common.error"), t("history.deleteError"));
+          });
+        },
+      },
+    ]);
+  };
+
+  const handleClearAll = () => {
+    Alert.alert(t("history.clearAllTitle"), t("history.clearAllMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.clearAll"),
+        style: "destructive",
+        onPress: () => {
+          clearHistory().catch(() => {
+            Alert.alert(t("common.error"), t("history.clearAllError"));
+          });
+        },
+      },
+    ]);
+  };
 
   return (
     <View className="flex-1">
+      {/* Guest header */}
       {!user && (
         <View className="items-center mt-6 mb-4">
           <Text className="text-xl font-semibold text-gray-800 text-center">
@@ -152,6 +165,7 @@ const HistorySection: React.FC = () => {
         </View>
       )}
 
+      {/* Sort modal */}
       <SortModal
         visible={showSort}
         selected={sortOption}
@@ -162,7 +176,7 @@ const HistorySection: React.FC = () => {
         }}
       />
 
-      {/* Action Modal */}
+      {/* Action modal */}
       <Modal
         visible={showActionModal}
         transparent
@@ -170,26 +184,17 @@ const HistorySection: React.FC = () => {
         onRequestClose={() => setShowActionModal(false)}
       >
         <View className="flex-1 bg-black/40 justify-center items-center px-8">
-          <View className="bg-white w-full rounded-2xl p-5" style={modalShadow}>
+          <View
+            className="bg-white w-full rounded-2xl p-5"
+            style={MODAL_SHADOW}
+          >
             <Text className="text-lg font-bold mb-0.5">
-              {selectedItem?.top_prediction}
+              {selectedItem?.speciesName}
             </Text>
-            <ConfidenceText confidence={selectedItem?.top_confidence ?? 0} />
+            <ConfidenceText confidence={selectedItem?.confidence ?? 0} />
 
             <TouchableOpacity
               className="flex-row items-center py-3 border-b border-gray-100"
-              onPress={handleViewDetails}
-            >
-              <View className="w-9 h-9 rounded-full bg-blue-50 items-center justify-center mr-3">
-                <Ionicons name="eye-outline" size={18} color="#3B82F6" />
-              </View>
-              <Text className="text-base text-gray-800">
-                {t("history.viewDetails")}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-row items-center py-3"
               onPress={handleDelete}
             >
               <View className="w-9 h-9 rounded-full bg-red-50 items-center justify-center mr-3">
@@ -215,7 +220,7 @@ const HistorySection: React.FC = () => {
       </Modal>
 
       {/* Sort + Clear All row */}
-      {!isLoading && history.length > 0 && (
+      {!loading && records.length > 0 && (
         <View className="flex-row items-center justify-between px-5 mb-4">
           <ActionButton
             type="sort"
@@ -236,7 +241,7 @@ const HistorySection: React.FC = () => {
       )}
 
       {/* Loading */}
-      {isLoading && (
+      {loading && (
         <View className="items-center py-8">
           <ActivityIndicator size="large" color="#0A9D5C" />
           <Text className="mt-2 text-gray-500">{t("history.loading")}</Text>
@@ -244,40 +249,24 @@ const HistorySection: React.FC = () => {
       )}
 
       {/* Content */}
-      {!isLoading && (
+      {!loading && (
         <View className="px-5">
-          {sortedHistory.length > 0 ? (
+          {sortedRecords.length > 0 ? (
             <>
               <Text className="text-gray-500 text-sm mb-3 text-center">
                 {t("history.subtitle")}
               </Text>
-              {sortedHistory.map((item) => (
+              {sortedRecords.map((item) => (
                 <View key={item.id} className="relative">
                   <ListCard
                     id={item.id}
-                    title={item.top_prediction}
-                    description={`${Math.round(item.top_confidence * 100)}% confidence • ${formatDate(item.identified_at)}`}
-                    image={item.image_uri}
-                    onPress={handleViewDetails}
+                    title={item.speciesName}
+                    description={`${Math.round(item.confidence * 100)}% confidence • ${formatDate(item.identifiedAt)}`}
+                    image={item.imageBase64}
+                    onPress={() => handleCardPress(item)}
+                    onMore={() => handleItemMore(item)}
                     showChevron={false}
                   />
-                  <TouchableOpacity
-                    onPress={() => handleItemMore(item)}
-                    className="absolute top-2 right-2 w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
-                    style={{
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 3,
-                      elevation: 3,
-                    }}
-                  >
-                    <Ionicons
-                      name="ellipsis-vertical"
-                      size={18}
-                      color="#6B7280"
-                    />
-                  </TouchableOpacity>
                 </View>
               ))}
             </>

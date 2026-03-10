@@ -111,7 +111,6 @@ export interface SpeciesDetailsResponse {
 }
 
 // Collection & Favorites Types
-
 export interface CollectionItem {
   id: string;
   species_id: string;
@@ -247,24 +246,28 @@ export interface HealthResponse {
 }
 
 // History Types
-export interface HistoryPrediction {
+export interface PredictionSnapshot {
   rank: number;
-  species_id?: string;
-  class_name: string;
+  speciesName: string;
   confidence: number;
+  speciesId: string | null;
 }
 
-export interface HistoryItem {
+export interface HistoryRecord {
   id: string;
-  image_uri: string;
-  top_prediction: string;
-  top_confidence: number;
-  predictions: HistoryPrediction[];
-  identified_at: string;
-  notes?: string;
+  imageBase64: string;
+  imageMimeType: string;
+  speciesName: string;
+  commonName: string | null;
+  confidence: number;
+  identifiedAt: string;
+  speciesInfo: Species | null;
+  topPredictions: PredictionSnapshot[];
 }
 
-export interface HistoryListResponse {
-  items: HistoryItem[];
-  total: number;
+export type NewHistoryRecord = Omit<HistoryRecord, 'id' | 'identifiedAt'>;
+
+export interface HistoryFilter {
+  search?: string;
+  limit?: number;
 }

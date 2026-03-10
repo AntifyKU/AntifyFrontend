@@ -3,24 +3,27 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 
 interface ListCardProps {
-  id: string;
-  title: string;
-  description: string;
-  image?: string;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  onDelete?: () => void;
-  showChevron?: boolean;
-  badge?: React.ReactNode;
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly image?: string;
+  readonly onPress?: () => void;
+  readonly onLongPress?: () => void;
+  readonly onDelete?: () => void;
+  readonly onMore?: () => void;
+  readonly showChevron?: boolean;
+  readonly badge?: React.ReactNode;
 }
 
 export default function ListCard({
+  id,
   title,
   description,
   image,
   onPress,
   onLongPress,
   onDelete,
+  onMore,
   showChevron = false,
   badge,
 }: ListCardProps) {
@@ -62,7 +65,21 @@ export default function ListCard({
           </Text>
         </View>
 
-        {/* Delete button - shown when onDelete is provided */}
+        {/* More button */}
+        {onMore && (
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              onMore();
+            }}
+            className="justify-center items-center w-12"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="ellipsis-vertical" size={18} color="#6B7280" />
+          </TouchableOpacity>
+        )}
+
+        {/* Delete button */}
         {onDelete && (
           <TouchableOpacity
             onPress={(e) => {
@@ -76,7 +93,7 @@ export default function ListCard({
           </TouchableOpacity>
         )}
 
-        {/* Chevron - only shown if no delete button */}
+        {/* Chevron */}
         {showChevron && !onDelete && (
           <View className="justify-center pr-4">
             <Ionicons name="chevron-forward" size={22} color="#94A3B8" />
