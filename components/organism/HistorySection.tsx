@@ -228,15 +228,29 @@ const HistorySection: React.FC = () => {
             isOpen={showSort}
             onPress={() => setShowSort(true)}
           />
-          <TouchableOpacity
+          <PrimaryButton
+            title={t("common.clearAll")}
+            icon="trash-outline"
+            size="small"
+            variant="filled"
+            fullWidth={false}
             onPress={handleClearAll}
-            className="flex-row items-center px-4 py-2 bg-red-50 rounded-xl"
-          >
-            <Ionicons name="trash-outline" size={16} color="#EF4444" />
-            <Text className="ml-2 text-sm font-semibold text-red-500">
-              {t("common.clearAll")}
-            </Text>
-          </TouchableOpacity>
+            style={{
+              backgroundColor: "#FEF2F2",
+              borderRadius: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              shadowColor: "transparent",
+              minHeight: 40,
+            }}
+            textStyle={{
+              color: "#EF4444",
+              fontSize: 14,
+              fontWeight: "600",
+              marginLeft: 4,
+            }}
+            iconColor="#EF4444"
+          />
         </View>
       )}
 
