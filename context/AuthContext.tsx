@@ -1,10 +1,11 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
-  useState,
   useEffect,
-  ReactNode,
+  useMemo,
   useRef,
+  useState,
 } from "react";
 import * as SecureStore from "expo-secure-store";
 import { authService, UserProfile } from "@/services/auth";
@@ -12,6 +13,8 @@ import { authService, UserProfile } from "@/services/auth";
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
 const REFRESH_KEY = "auth_refresh";
+const REFRESH_INTERVAL = 55 * 60 * 1000; // 55 minutes, refresh before 1-hour expiry
+const FIREBASE_API_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -24,6 +27,55 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
+interface FirebaseRefreshResponse {
+  id_token: string;
+  refresh_token?: string;
+}
+
+interface AuthProviderProps {
+  readonly children: React.ReactNode;
+}
+
+async function refreshFirebaseToken(
+  refToken: string,
+): Promise<FirebaseRefreshResponse> {
+  const response = await fetch(
+    `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "refresh_token",
+        refresh_token: refToken,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh token");
+  }
+
+  return response.json();
+}
+
+async function saveToStore(
+  token: string,
+  refreshToken: string | undefined,
+  user: UserProfile,
+) {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+  if (refreshToken) {
+    await SecureStore.setItemAsync(REFRESH_KEY, refreshToken);
+  }
+}
+
+async function clearStore() {
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(USER_KEY);
+  await SecureStore.deleteItemAsync(REFRESH_KEY);
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth() {
@@ -34,10 +86,6 @@ export function useAuth() {
   return context;
 }
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -45,246 +93,221 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load stored auth state on mount
-  useEffect(() => {
-    loadStoredAuth();
+  const applyTokenData = useCallback(async (data: FirebaseRefreshResponse) => {
+    setToken(data.id_token);
+    await SecureStore.setItemAsync(TOKEN_KEY, data.id_token);
+    if (data.refresh_token) {
+      setRefreshToken(data.refresh_token);
+      await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
+    }
   }, []);
 
-  // Set up automatic token refresh
-  useEffect(() => {
-    if (token && refreshToken) {
-      scheduleTokenRefresh();
+  const clearStoredAuth = useCallback(async () => {
+    await clearStore();
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
     }
+    setToken(null);
+    setUser(null);
+    setRefreshToken(null);
+  }, []);
+
+  /**
+   * Silently refreshes the id_token using the stored refresh_token.
+   * Returns the new id_token on success, or null if the refresh_token has expired.
+   */
+  const silentRefresh = useCallback(
+    async (storedRefreshToken: string): Promise<string | null> => {
+      try {
+        const data = await refreshFirebaseToken(storedRefreshToken);
+        await applyTokenData(data);
+        return data.id_token;
+      } catch (err) {
+        // refresh_token expired or revoked, user must re-login
+        console.log("Refresh token expired, user must re-login:", err);
+        await clearStoredAuth();
+        return null;
+      }
+    },
+    [applyTokenData, clearStoredAuth],
+  );
+
+  /**
+   * Tries to fetch the user profile with the current token.
+   * Falls back to a silent refresh if the token has expired.
+   * If offline with no refresh token, keeps the cached session.
+   */
+  const validateAndSync = useCallback(
+    async (currentToken: string, currentRefreshToken: string | null) => {
+      try {
+        const freshUser = await authService.getCurrentUser(currentToken);
+        setUser(freshUser);
+        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
+      } catch (err) {
+        // id_token expired (every 1 hour), attempt silent refresh
+        if (!currentRefreshToken) {
+          // Offline or no refresh token, keep cached session, retry on next action
+          console.log("Token validation failed, keeping cached session:", err);
+          return;
+        }
+
+        console.log("Token expired, attempting silent refresh...");
+        const newToken = await silentRefresh(currentRefreshToken);
+
+        if (newToken) {
+          const freshUser = await authService.getCurrentUser(newToken);
+          setUser(freshUser);
+          await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
+          console.log("Silent refresh successful");
+        }
+      }
+    },
+    [silentRefresh],
+  );
+
+  const scheduleTokenRefresh = useCallback(
+    (currentRefreshToken: string) => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+
+      refreshTimerRef.current = setTimeout(async () => {
+        console.log("Auto-refreshing token...");
+        const newToken = await silentRefresh(currentRefreshToken);
+        if (newToken) {
+          console.log("Token auto-refreshed successfully");
+        }
+      }, REFRESH_INTERVAL);
+    },
+    [silentRefresh],
+  );
+
+  const loadStoredAuth = useCallback(async () => {
+    try {
+      const [storedToken, storedUser, storedRefreshToken] = await Promise.all([
+        SecureStore.getItemAsync(TOKEN_KEY),
+        SecureStore.getItemAsync(USER_KEY),
+        SecureStore.getItemAsync(REFRESH_KEY),
+      ]);
+
+      if (!storedToken || !storedUser) return;
+
+      // Restore from cache immediately, prevents flicker to login screen
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+      if (storedRefreshToken) {
+        setRefreshToken(storedRefreshToken);
+      }
+
+      // Validate token and sync fresh user data in background
+      await validateAndSync(storedToken, storedRefreshToken ?? null);
+    } catch (err) {
+      console.error("Error loading stored auth:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [validateAndSync]);
+
+  useEffect(() => {
+    loadStoredAuth();
+  }, [loadStoredAuth]);
+
+  useEffect(() => {
+    if (!token || !refreshToken) return;
+    scheduleTokenRefresh(refreshToken);
     return () => {
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
       }
     };
-  }, [token, refreshToken]);
+  }, [token, refreshToken, scheduleTokenRefresh]);
 
-  async function loadStoredAuth() {
-    try {
-      const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
-      const storedUser = await SecureStore.getItemAsync(USER_KEY);
-      const storedRefreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
-
-      if (storedToken && storedUser && storedRefreshToken) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        setRefreshToken(storedRefreshToken);
-
-        // Try to validate/refresh the token
-        try {
-          // Try to use the stored token first
-          const currentUser = await authService.getCurrentUser(storedToken);
-          setUser(currentUser);
-          await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
-        } catch (error) {
-          // If token is expired, try to refresh it
-          console.log("Token expired, attempting refresh...");
-          try {
-            const newToken = await refreshIdToken(storedRefreshToken);
-            setToken(newToken);
-            await SecureStore.setItemAsync(TOKEN_KEY, newToken);
-            
-            // Fetch user with new token
-            const currentUser = await authService.getCurrentUser(newToken);
-            setUser(currentUser);
-            await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
-          } catch (refreshError) {
-            // Refresh failed, clear auth
-            console.log("Token refresh failed, clearing auth");
-            await clearStoredAuth();
-          }
-        }
+  const saveAuth = useCallback(
+    async (
+      authToken: string,
+      authRefreshToken: string | undefined,
+      userProfile: UserProfile,
+    ) => {
+      await saveToStore(authToken, authRefreshToken, userProfile);
+      setToken(authToken);
+      setUser(userProfile);
+      if (authRefreshToken) {
+        setRefreshToken(authRefreshToken);
       }
-    } catch (error) {
-      console.error("Error loading stored auth:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    },
+    [],
+  );
 
-  async function refreshIdToken(refToken: string): Promise<string> {
-    // Firebase REST API to refresh ID token
-    const FIREBASE_API_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
-    
-    const response = await fetch(
-      `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          grant_type: "refresh_token",
-          refresh_token: refToken,
-        }),
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setIsLoading(true);
+      try {
+        const response = await authService.login(email, password);
+        const userProfile = await authService.getCurrentUser(response.id_token);
+        await saveAuth(response.id_token, response.refresh_token, userProfile);
+      } finally {
+        setIsLoading(false);
       }
-    );
+    },
+    [saveAuth],
+  );
 
-    if (!response.ok) {
-      throw new Error("Failed to refresh token");
-    }
+  const signup = useCallback(
+    async (username: string, email: string, password: string) => {
+      setIsLoading(true);
+      try {
+        await authService.signup({ username, email, password });
+        // Backend signup doesn't return a token, login right after
+        const loginResponse = await authService.login(email, password);
+        const userProfile = await authService.getCurrentUser(
+          loginResponse.id_token,
+        );
 
-    const data = await response.json();
-    
-    // Update refresh token if a new one is provided
-    if (data.refresh_token) {
-      setRefreshToken(data.refresh_token);
-      await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
-    }
-    
-    return data.id_token;
-  }
-
-  function scheduleTokenRefresh() {
-    // Clear existing timer
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-    }
-
-    // Refresh token 5 minutes before it expires (55 minutes)
-    const REFRESH_INTERVAL = 55 * 60 * 1000; // 55 minutes in milliseconds
-
-    refreshTimerRef.current = setTimeout(async () => {
-      if (refreshToken) {
-        try {
-          console.log("Auto-refreshing token...");
-          const newToken = await refreshIdToken(refreshToken);
-          setToken(newToken);
-          await SecureStore.setItemAsync(TOKEN_KEY, newToken);
-          console.log("Token refreshed successfully");
-        } catch (error) {
-          console.error("Auto-refresh failed:", error);
-          // Don't logout on auto-refresh failure, just log it
-          // The next API call will fail and can trigger a manual refresh
-        }
+        await saveAuth(
+          loginResponse.id_token,
+          loginResponse.refresh_token,
+          userProfile,
+        );
+      } finally {
+        setIsLoading(false);
       }
-    }, REFRESH_INTERVAL);
-  }
+    },
+    [saveAuth],
+  );
 
-  async function saveAuth(
-    authToken: string,
-    authRefreshToken: string | undefined,
-    userProfile: UserProfile,
-  ) {
-    await SecureStore.setItemAsync(TOKEN_KEY, authToken);
-
-    if (authRefreshToken) {
-      await SecureStore.setItemAsync(REFRESH_KEY, authRefreshToken);
-      setRefreshToken(authRefreshToken);
-    }
-
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userProfile));
-
-    setToken(authToken);
-    setUser(userProfile);
-  }
-
-  async function clearStoredAuth() {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_KEY);
-    await SecureStore.deleteItemAsync(REFRESH_KEY);
-    
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-    }
-    
-    setToken(null);
-    setUser(null);
-    setRefreshToken(null);
-  }
-
-  async function login(email: string, password: string) {
-    setIsLoading(true);
-    try {
-      const response = await authService.login(email, password);
-      const userProfile = await authService.getCurrentUser(response.id_token);
-
-      await saveAuth(response.id_token, response.refresh_token, userProfile);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function signup(username: string, email: string, password: string) {
-    setIsLoading(true);
-    try {
-      // First create the account
-      await authService.signup({ username, email, password });
-
-      // Then login to get the token (backend signup doesn't return token)
-      const loginResponse = await authService.login(email, password);
-
-      // Fetch full user profile
-      const userProfile = await authService.getCurrentUser(
-        loginResponse.id_token,
-      );
-
-      await saveAuth(
-        loginResponse.id_token,
-        loginResponse.refresh_token,
-        userProfile,
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function logout() {
+  const logout = useCallback(async () => {
     setIsLoading(true);
     try {
       if (token) {
         await authService.logout(token);
       }
-    } catch (error) {
-      // Ignore logout errors, still clear local state
-      console.log("Logout API error (ignored):", error);
+    } catch (err) {
+      // Ignore server-side logout errors, always clear local state
+      console.log("Logout API error (ignored):", err);
     } finally {
       await clearStoredAuth();
       setIsLoading(false);
     }
-  }
+  }, [token, clearStoredAuth]);
 
-  async function refreshUser() {
+  const refreshUser = useCallback(async () => {
     if (!token) return;
+    await validateAndSync(token, refreshToken);
+  }, [token, refreshToken, validateAndSync]);
 
-    try {
-      const currentUser = await authService.getCurrentUser(token);
-      setUser(currentUser);
-      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
-    } catch (error) {
-      console.error("Error refreshing user:", error);
-      
-      // If token is invalid, try to refresh it
-      if (refreshToken) {
-        try {
-          const newToken = await refreshIdToken(refreshToken);
-          setToken(newToken);
-          await SecureStore.setItemAsync(TOKEN_KEY, newToken);
-          
-          const currentUser = await authService.getCurrentUser(newToken);
-          setUser(currentUser);
-          await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
-        } catch (refreshError) {
-          console.error("Token refresh failed:", refreshError);
-          await clearStoredAuth();
-        }
-      }
-    }
-  }
-
-  const value: AuthContextType = {
-    user,
-    token,
-    isLoading,
-    isAuthenticated: !!token && !!user,
-    login,
-    signup,
-    logout,
-    refreshUser,
-  };
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      token,
+      isLoading,
+      isAuthenticated: !!token && !!user,
+      login,
+      signup,
+      logout,
+      refreshUser,
+    }),
+    [user, token, isLoading, login, signup, logout, refreshUser],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
