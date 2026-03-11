@@ -40,8 +40,8 @@ export default function ExploreScreen() {
     appliedFilters.quickFilters.length +
     appliedFilters.colors.length +
     appliedFilters.habitats.length +
-    (appliedFilters.risks?.length || 0) +
-    appliedFilters.distributions.length;
+    appliedFilters.distributions.length +
+    appliedFilters.risks.length;
 
   // Helper functions for filtering
   const JUNK_LABELS = useMemo(
@@ -100,18 +100,15 @@ export default function ExploreScreen() {
 
       // Risk
       if (appliedFilters.risks && appliedFilters.risks.length > 0) {
-        // Because a risk choice is essentially an OR filter among mutually exclusive or overlapping traits,
-        // we might want to check if ANY selected risk matches, OR we can stick to EVERY.
-        // Let's use EVERY to match how colors and habitats work, ensuring the ant meets ALL selected risk criteria.
         const ok = appliedFilters.risks.every((r) => {
-          if (r === "Venomous") {
+          const lowerR = r.toLowerCase();
+          if (lowerR === "venomous") {
             return item.risk?.venom?.has_venom === true;
           }
-          if (r === "Bites") {
-            // Some entries might have "bite_only" or "sting_and_bite"
+          if (lowerR === "bites" || lowerR === "bite") {
             return item.risk?.sting_or_bite?.toLowerCase().includes("bite");
           }
-          if (r === "Sting") {
+          if (lowerR === "sting") {
             return item.risk?.sting_or_bite?.toLowerCase().includes("sting");
           }
           return false;
@@ -188,8 +185,8 @@ export default function ExploreScreen() {
             colors: [],
             sizes: [],
             habitats: [],
-            risks: [],
             distributions: [],
+            risks: [],
           })
         }
         onToggle={toggleFilter}

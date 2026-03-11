@@ -14,6 +14,7 @@ export type FilterState = {
   habitats: string[];
   risks: string[];
   distributions: string[];
+  risks: string[];
 };
 
 type Props = {
@@ -79,6 +80,14 @@ export default function FilterModal({
             </ScrollView>
           </View>
 
+          {/* Risk */}
+          <FilterSection
+            title="Risk"
+            options={filterOptions.risks}
+            selected={tempFilters.risks}
+            onToggle={(v) => onToggle("risks", v)}
+          />
+          
           {/* Color */}
           <FilterSection
             title="Color"

@@ -92,7 +92,7 @@ export default function IdentificationResultsScreen() {
             name: effectiveInfo?.name ?? bestPrediction.class_name.replace(/_/g, " "),
             scientificName: effectiveInfo?.scientific_name ?? bestPrediction.class_name,
             image: effectiveInfo?.image ?? "",
-            matchPercentage: Number((bestPrediction.confidence * 100).toFixed(2)),
+            matchPercentage: Number((bestPrediction.confidence * 100).toFixed(1)),
             riskInfo: effectiveInfo?.risk,
             isInDatabase: effectiveInfo !== null,  // true only when we have real Firestore data
           };
@@ -115,7 +115,7 @@ export default function IdentificationResultsScreen() {
               name: displayName,
               scientificName: validSpecies?.scientific_name ?? pred.class_name,
               image: validSpecies?.image ?? "",
-              matchPercentage: Number((pred.confidence * 100).toFixed(2)),
+              matchPercentage: Number((pred.confidence * 100).toFixed(1)),
               riskInfo: validSpecies?.risk,
             };
           }).filter((item) => !isJunk(item.name)); // final safety net

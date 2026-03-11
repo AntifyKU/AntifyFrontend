@@ -9,6 +9,7 @@ export function useExploreFilters() {
     habitats: [],
     risks: [],
     distributions: [],
+    risks: [],
   });
 
   const [tempFilters, setTempFilters] = useState<FilterState>(appliedFilters);
