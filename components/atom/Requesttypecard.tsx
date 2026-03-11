@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface RequestTypeCardProps {
-  type: "update" | "new";
-  selected: boolean;
-  onPress: () => void;
+  readonly type: "update" | "new";
+  readonly selected: boolean;
+  readonly onPress: () => void;
 }
 
 export default function RequestTypeCard({

@@ -1,8 +1,3 @@
-/**
- * API Response Types
- * TypeScript types matching backend schemas
- */
-
 // Species Types
 export interface SpeciesClassification {
   family: string;
@@ -43,24 +38,6 @@ export interface SpeciesFilters {
   distribution?: string;
   page?: number;
   limit?: number;
-}
-
-// News Types
-export interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  link: string;
-  image?: string;
-  source: string;
-  published_at?: string;
-  fetched_at?: string;
-}
-
-export interface NewsListResponse {
-  items: NewsItem[];
-  total: number;
-  last_updated?: string;
 }
 
 // Identification Types
@@ -110,7 +87,7 @@ export interface SpeciesDetailsResponse {
   model?: string;
 }
 
-// Collection & Favorites Types
+// Collection Types
 export interface CollectionItem {
   id: string;
   species_id: string;
@@ -132,47 +109,6 @@ export interface AddToCollectionRequest {
   notes?: string;
   location?: string;
   image_url?: string;
-}
-
-export interface FavoriteItem {
-  id: string;
-  species_id: string;
-  species_name: string;
-  scientific_name: string;
-  image_url?: string;
-  added_at: string;
-}
-
-export interface FavoritesListResponse {
-  favorites: FavoriteItem[];
-  total: number;
-}
-
-// News Favorites Types
-export interface FavoriteNewsItem {
-  id: string;
-  news_id: string;
-  news_title: string;
-  news_description: string;
-  news_link: string;
-  news_image?: string;
-  news_source: string;
-  news_published_at?: string;
-  added_at: string;
-}
-
-export interface FavoriteNewsListResponse {
-  items: FavoriteNewsItem[];
-  total: number;
-}
-
-export interface AddFavoriteNewsRequest {
-  news_id: string;
-}
-
-export interface CheckFavoriteNewsResponse {
-  is_favorite: boolean;
-  favorite_id?: string;
 }
 
 // Feedback Types
@@ -265,7 +201,7 @@ export interface HistoryRecord {
   topPredictions: PredictionSnapshot[];
 }
 
-export type NewHistoryRecord = Omit<HistoryRecord, 'id' | 'identifiedAt'>;
+export type NewHistoryRecord = Omit<HistoryRecord, "id" | "identifiedAt">;
 
 export interface HistoryFilter {
   search?: string;

@@ -26,13 +26,17 @@ export default function TextInput({
   isPassword = false,
   style,
   ...props
-}: CustomTextInputProps) {
+}: Readonly<CustomTextInputProps>) {
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const borderColor = error ? "#EF4444" : isFocused ? "#0A9D5C" : "#E5E7EB";
+  let borderColor = "#E5E7EB";
+  if (error) {
+    borderColor = "#EF4444";
+  } else if (isFocused) {
+    borderColor = "#0A9D5C";
+  }
 
-  // Password-specific props to prevent yellow autofill box
   const passwordProps: Partial<TextInputProps> = isPassword
     ? {
         autoComplete: "off",

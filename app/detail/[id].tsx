@@ -18,7 +18,6 @@ import { antSpeciesData } from "@/constants/AntData";
 import Badge from "@/components/atom/badge/Badge";
 import { useSpeciesDetail } from "@/hooks/useSpeciesDetail";
 import { useAuth } from "@/context/AuthContext";
-import { useFavorites } from "@/hooks/useFavorites";
 import { useCollection } from "@/hooks/useCollection";
 import { useFolders } from "@/hooks/useFolders";
 import { useState } from "react";
@@ -52,13 +51,11 @@ export default function DetailScreen() {
 
   // Auth and data hooks
   const { isAuthenticated } = useAuth();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { isInCollection, addToCollection, removeFromCollection } =
     useCollection();
   const { folders } = useFolders();
 
   // Local loading states for buttons
-  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
   const [showFolderSelect, setShowFolderSelect] = useState(false);
   const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([]);
@@ -101,30 +98,6 @@ export default function DetailScreen() {
       });
     } else {
       router.back();
-    }
-  };
-
-  const handleFavoritePress = async () => {
-    if (!isAuthenticated) {
-      Alert.alert("Login Required", "Please log in to add favorites", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Log In", onPress: () => router.push("/(auth)/login") },
-      ]);
-      return;
-    }
-
-    console.log("[Detail] Favorite button pressed for species:", id);
-    console.log("[Detail] Current isFavorite status:", isFavorite(id));
-
-    setIsFavoriteLoading(true);
-    try {
-      await toggleFavorite(id);
-      console.log("[Detail] toggleFavorite completed successfully");
-    } catch (error: any) {
-      console.error("[Detail] toggleFavorite error:", error);
-      Alert.alert("Error", error.message || "Failed to update favorites");
-    } finally {
-      setIsFavoriteLoading(false);
     }
   };
 
@@ -184,7 +157,6 @@ export default function DetailScreen() {
   };
 
   // Check current status
-  const isCurrentFavorite = isAuthenticated && isFavorite(id);
   const isCurrentInCollection = isAuthenticated && isInCollection(id);
 
   // Show loading state

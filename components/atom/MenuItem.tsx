@@ -34,6 +34,24 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 }) => {
   const hasSwitch = typeof switchValue === "boolean";
 
+  let rightElement = null;
+  if (hasSwitch) {
+    rightElement = (
+      <Switch
+        value={switchValue}
+        onValueChange={onSwitchChange}
+        trackColor={{ false: "#D1D5DB", true: "#86EFAC" }}
+        thumbColor={switchValue ? "#22A45D" : "#F3F4F6"}
+        ios_backgroundColor="#D1D5DB"
+        disabled={disabled}
+      />
+    );
+  } else if (showChevron) {
+    rightElement = (
+      <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+    );
+  }
+
   return (
     <TouchableOpacity
       className="flex-row items-center py-4 border-b border-gray-100"
@@ -42,13 +60,12 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       disabled={disabled}
     >
       <View className="mr-3">
-        {leftSlot ? (
-          leftSlot
-        ) : icon ? (
+        {leftSlot}
+        {!leftSlot && icon && (
           <View className="w-10 h-10 rounded-full items-center justify-center">
             <Ionicons name={icon} size={22} color={iconColor} />
           </View>
-        ) : null}
+        )}
       </View>
 
       <View className="flex-1">
@@ -68,18 +85,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
         )}
       </View>
 
-      {hasSwitch ? (
-        <Switch
-          value={switchValue}
-          onValueChange={onSwitchChange}
-          trackColor={{ false: "#D1D5DB", true: "#86EFAC" }}
-          thumbColor={switchValue ? "#22A45D" : "#F3F4F6"}
-          ios_backgroundColor="#D1D5DB"
-          disabled={disabled}
-        />
-      ) : showChevron ? (
-        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-      ) : null}
+      {rightElement}
     </TouchableOpacity>
   );
 };

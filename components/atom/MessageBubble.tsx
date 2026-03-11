@@ -2,9 +2,9 @@ import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 
 interface Props {
-  text: string;
-  isUser: boolean;
-  isStreaming?: boolean;
+  readonly text: string;
+  readonly isUser: boolean;
+  readonly isStreaming?: boolean;
 }
 
 export default function MessageBubble({ text, isUser, isStreaming }: Props) {

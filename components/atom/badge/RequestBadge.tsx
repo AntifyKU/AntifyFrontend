@@ -2,10 +2,10 @@ import React from "react";
 import { TouchableOpacity, Text, View } from "react-native";
 
 interface RequestBadgeProps {
-  label: string;
-  isSelected?: boolean;
-  onPress: () => void;
-  count?: number;
+  readonly label: string;
+  readonly isSelected?: boolean;
+  readonly onPress: () => void;
+  readonly count?: number;
 }
 
 export default function RequestBadge({

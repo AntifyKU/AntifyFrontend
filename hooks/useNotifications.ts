@@ -1,17 +1,12 @@
-/**
- * useNotifications Hook
- * Manages push notification registration and handling
- */
-
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import { useAuth } from '@/context/AuthContext';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Platform } from "react-native";
+import * as Notifications from "expo-notifications";
+import { useAuth } from "@/context/AuthContext";
 import {
   notificationService,
   registerForPushNotifications,
   configureAndroidChannel,
-} from '@/services/notifications';
+} from "@/services/notifications";
 
 interface UseNotificationsResult {
   expoPushToken: string | null;
@@ -24,23 +19,26 @@ interface UseNotificationsResult {
 export function useNotifications(): UseNotificationsResult {
   const { token: authToken, isAuthenticated, user } = useAuth();
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-  const [notification, setNotification] = useState<Notifications.Notification | null>(null);
+  const [notification, setNotification] =
+    useState<Notifications.Notification | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const notificationListener = useRef<Notifications.EventSubscription>();
-  const responseListener = useRef<Notifications.EventSubscription>();
+  const notificationListener = useRef<Notifications.EventSubscription | null>(
+    null,
+  );
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   // Register for push notifications
   const registerForNotifications = useCallback(async () => {
     if (!isAuthenticated || !authToken) {
-      setError('Must be logged in to register for notifications');
+      setError("Must be logged in to register for notifications");
       return;
     }
 
     // Check if user has notifications enabled
     if (user?.preferences?.notifications_enabled === false) {
-      console.log('User has notifications disabled');
+      console.log("User has notifications disabled");
       return;
     }
 
@@ -49,7 +47,7 @@ export function useNotifications(): UseNotificationsResult {
 
     try {
       // Configure Android channel
-      if (Platform.OS === 'android') {
+      if (Platform.OS === "android") {
         await configureAndroidChannel();
       }
 
@@ -62,15 +60,15 @@ export function useNotifications(): UseNotificationsResult {
         // Register with backend
         try {
           await notificationService.registerTokenWithBackend(authToken, token);
-          console.log('Push token registered with backend');
+          console.log("Push token registered with backend");
         } catch (err) {
-          console.error('Failed to register token with backend:', err);
+          console.error("Failed to register token with backend:", err);
           // Don't fail - local notifications will still work
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to register for notifications');
-      console.error('Notification registration error:', err);
+      setError(err.message || "Failed to register for notifications");
+      console.error("Notification registration error:", err);
     } finally {
       setIsRegistering(false);
     }
@@ -79,22 +77,20 @@ export function useNotifications(): UseNotificationsResult {
   // Set up listeners on mount
   useEffect(() => {
     // Listen for incoming notifications
-    notificationListener.current = notificationService.addNotificationReceivedListener(
-      (notification) => {
+    notificationListener.current =
+      notificationService.addNotificationReceivedListener((notification) => {
         setNotification(notification);
-      }
-    );
+      });
 
     // Listen for notification responses (user taps)
-    responseListener.current = notificationService.addNotificationResponseListener(
-      (response) => {
+    responseListener.current =
+      notificationService.addNotificationResponseListener((response) => {
         const data = response.notification.request.content.data;
-        console.log('Notification tapped:', data);
-        
+        console.log("Notification tapped:", data);
+
         // Handle navigation based on notification data
         // Example: if (data.type === 'species') { router.push(`/detail/${data.speciesId}`); }
-      }
-    );
+      });
 
     return () => {
       if (notificationListener.current) {
@@ -111,7 +107,11 @@ export function useNotifications(): UseNotificationsResult {
     if (isAuthenticated && user?.preferences?.notifications_enabled !== false) {
       registerForNotifications();
     }
-  }, [isAuthenticated, registerForNotifications]);
+  }, [
+    isAuthenticated,
+    registerForNotifications,
+    user?.preferences?.notifications_enabled,
+  ]);
 
   return {
     expoPushToken,

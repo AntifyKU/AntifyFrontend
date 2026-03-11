@@ -1,8 +1,3 @@
-/**
- * API Configuration
- * Central configuration for API endpoints
- */
-
 // Base URL for the backend API
 // For development:
 // - iOS Simulator: use 'localhost'
@@ -16,10 +11,6 @@ export const API_ENDPOINTS = {
   species: '/api/species',
   speciesById: (id: string) => `/api/species/${id}`,
 
-  // News
-  news: '/api/news',
-  newsRefresh: '/api/news/refresh',
-
   // Identification
   identify: '/api/identify',
   identifyBase64: '/api/identify/base64',
@@ -27,13 +18,10 @@ export const API_ENDPOINTS = {
   identifyHealth: '/api/identify/health',
   identifySpeciesDetails: '/api/identify/species/details',
 
-  // User Collection & Favorites
+  // User Collection
   collection: '/api/users/me/collection',
   collectionItem: (id: string) => `/api/users/me/collection/${id}`,
   collectionCheck: (speciesId: string) => `/api/users/me/collection/${speciesId}/check`,
-  favorites: '/api/users/me/favorites',
-  favoritesItem: (id: string) => `/api/users/me/favorites/${id}`,
-  favoritesCheck: (speciesId: string) => `/api/users/me/favorites/${speciesId}/check`,
 
   // Feedback
   feedback: '/api/feedback',

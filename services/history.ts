@@ -66,7 +66,8 @@ export async function getRecords(
   const index = await _getIndex();
   if (index.length === 0) return [];
 
-  const pairs = await AsyncStorage.multiGet(index.map(RECORD_KEY));
+  const idsToFetch = search ? index : index.slice(0, limit);
+  const pairs = await AsyncStorage.multiGet(idsToFetch.map(RECORD_KEY));
   let records: HistoryRecord[] = pairs
     .map(([, value]) => (value ? (JSON.parse(value) as HistoryRecord) : null))
     .filter((r): r is HistoryRecord => r !== null);

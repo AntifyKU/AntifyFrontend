@@ -24,7 +24,7 @@ export default function AntCard({
   onPress,
   variant = "vertical",
   showMatchPercentage = false,
-}: AntCardProps) {
+}: Readonly<AntCardProps>) {
   const [imageError, setImageError] = useState(false);
   const showImage = image && !imageError;
 

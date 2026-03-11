@@ -3,11 +3,11 @@ import { View, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface SearchBarProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  containerClassName?: string;
-  showBorder?: boolean;
+  readonly value: string;
+  readonly onChangeText: (text: string) => void;
+  readonly placeholder?: string;
+  readonly containerClassName?: string;
+  readonly showBorder?: boolean;
 }
 
 export default function SearchBar({

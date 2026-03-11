@@ -11,7 +11,7 @@ export default function TabBar({
   state,
   descriptors,
   navigation,
-}: BottomTabBarProps) {
+}: Readonly<BottomTabBarProps>) {
   const insets = useSafeAreaInsets();
 
   const activeColor = "#22A45D";
@@ -24,6 +24,24 @@ export default function TabBar({
   const leftTabs = visibleRoutes.slice(0, 2);
   const rightTabs = visibleRoutes.slice(2, 4);
 
+  const getIconName = (
+    routeName: string,
+    isFocused: boolean,
+  ): keyof typeof Ionicons.glyphMap => {
+    switch (routeName) {
+      case "index-home":
+        return isFocused ? "home" : "home-outline";
+      case "explore":
+        return isFocused ? "compass" : "compass-outline";
+      case "notification":
+        return isFocused ? "notifications" : "notifications-outline";
+      case "profile":
+        return isFocused ? "person" : "person-outline";
+      default:
+        return "help-circle-outline";
+    }
+  };
+
   const renderTab = (route: (typeof state.routes)[0]) => {
     const { options } = descriptors[route.key];
     const label =
@@ -34,16 +52,7 @@ export default function TabBar({
     const routeIndex = state.routes.findIndex((r) => r.key === route.key);
     const isFocused = state.index === routeIndex;
 
-    let iconName: keyof typeof Ionicons.glyphMap | undefined;
-    if (route.name === "index-home") {
-      iconName = isFocused ? "home" : "home-outline";
-    } else if (route.name === "explore") {
-      iconName = isFocused ? "compass" : "compass-outline";
-    } else if (route.name === "notification") {
-      iconName = isFocused ? "notifications" : "notifications-outline";
-    } else if (route.name === "profile") {
-      iconName = isFocused ? "person" : "person-outline";
-    }
+    const iconName = getIconName(route.name, isFocused);
 
     const onPress = () => {
       const event = navigation.emit({
@@ -70,7 +79,7 @@ export default function TabBar({
         }}
       >
         <Ionicons
-          name={iconName || "help-circle-outline"}
+          name={iconName}
           size={26}
           color={isFocused ? activeColor : inactiveColor}
           style={{ marginBottom: 4 }}

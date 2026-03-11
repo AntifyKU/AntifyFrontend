@@ -202,11 +202,11 @@ export async function refreshIdToken(refreshToken: string) {
     `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
         grant_type: "refresh_token",
         refresh_token: refreshToken,
-      }),
+      }).toString(),
     },
   );
 

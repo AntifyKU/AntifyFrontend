@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FilterState } from "@/components/organism/modal/FilterModal";
 
 export function useExploreFilters() {
-  const [appliedFilters, setApplied] = useState<FilterState>({
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
     quickFilters: [],
     colors: [],
     sizes: [],
@@ -10,15 +10,16 @@ export function useExploreFilters() {
     distributions: [],
   });
 
-  const [tempFilters, setTemp] = useState(appliedFilters);
+  const [tempFilters, setTempFilters] = useState<FilterState>(appliedFilters);
 
   useEffect(() => {
-    setTemp(appliedFilters);
+    setTempFilters(appliedFilters);
   }, [appliedFilters]);
 
   const toggleFilter = (category: keyof FilterState, value: string) => {
-    setTemp((prev) => {
+    setTempFilters((prev) => {
       const current = prev[category];
+
       return {
         ...prev,
         [category]: current.includes(value)
@@ -31,8 +32,8 @@ export function useExploreFilters() {
   return {
     appliedFilters,
     tempFilters,
-    setApplied,
-    setTemp,
+    setAppliedFilters,
+    setTempFilters,
     toggleFilter,
   };
 }

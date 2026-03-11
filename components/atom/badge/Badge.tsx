@@ -3,16 +3,16 @@ import { TouchableOpacity, Text } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface BadgeProps {
-  label: string;
-  isSelected?: boolean;
-  onPress: () => void;
-  icon?: string;
-  iconType?: "ionicons" | "material-community";
-  iconColor?: string;
-  selectedBackgroundColor?: string;
-  unselectedBackgroundColor?: string;
-  showCloseIcon?: boolean;
-  size?: "small" | "medium" | "large";
+  readonly label: string;
+  readonly isSelected?: boolean;
+  readonly onPress: () => void;
+  readonly icon?: string;
+  readonly iconType?: "ionicons" | "material-community";
+  readonly iconColor?: string;
+  readonly selectedBackgroundColor?: string;
+  readonly unselectedBackgroundColor?: string;
+  readonly showCloseIcon?: boolean;
+  readonly size?: "small" | "medium" | "large";
 }
 
 export default function Badge({
@@ -39,7 +39,14 @@ export default function Badge({
     large: "text-lg",
   };
 
-  const iconSize = size === "small" ? 12 : size === "medium" ? 16 : 20;
+  let iconSize: number;
+  if (size === "small") {
+    iconSize = 12;
+  } else if (size === "medium") {
+    iconSize = 16;
+  } else {
+    iconSize = 20;
+  }
 
   const backgroundColor = isSelected
     ? selectedBackgroundColor

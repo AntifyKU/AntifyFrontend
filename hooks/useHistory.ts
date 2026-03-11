@@ -20,6 +20,7 @@ function _notify() {
 
 export function invalidateHistoryCache() {
   _cache = null;
+  _cacheCount = 0;
 }
 
 export function prependToHistoryCache(record: HistoryRecord) {

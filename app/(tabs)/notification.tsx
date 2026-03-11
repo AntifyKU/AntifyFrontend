@@ -83,7 +83,7 @@ export default function NotificationScreen() {
 
       {/* Header */}
       <View className="pt-4 pb-5">
-        <ScreenHeader title={t("notification.title")} leftIcon="chevron-back" />
+        <ScreenHeader title={t("notification.title")} />
       </View>
 
       {/* Tab Switcher */}

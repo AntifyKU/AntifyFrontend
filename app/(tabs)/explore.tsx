@@ -159,10 +159,7 @@ export default function ExploreScreen() {
 
       {/* Header */}
       <View className="pt-4 pb-5">
-        <ScreenHeader
-          title={t("explore.title")}
-          rightIcon="notifications-outline"
-        />
+        <ScreenHeader title={t("explore.title")} />
       </View>
 
       {/* Search */}

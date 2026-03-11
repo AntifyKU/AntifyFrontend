@@ -179,9 +179,7 @@ export default function CollectionSection() {
             : t("collection.folder.createTitle")
         }
         submitLabel={
-          editingFolder
-            ? t("collection.folder.editSubmit")
-            : t("common.create")
+          editingFolder ? t("collection.folder.editSubmit") : t("common.create")
         }
         initialName={editingFolder?.name}
         initialColor={editingFolder?.color}
