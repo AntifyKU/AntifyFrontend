@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, ActivityIndicator } from "react-native";
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import type { Species } from "@/types/api";
 
@@ -111,9 +111,20 @@ export default function LocationSpeciesCard({
 
     return (
         <View style={{ marginHorizontal: 16, marginTop: 24 }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937", marginBottom: 12 }}>
-                Predicted & Found Near You
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>
+                    Predicted & Found Near You
+                </Text>
+                <TouchableOpacity
+                    onPress={() => Alert.alert(
+                        "Confidence Score",
+                        "This score combines the AI prediction confidence with a 40% boost for species confirmed to live in your current province."
+                    )}
+                    style={{ padding: 4 }}
+                >
+                    <Ionicons name="information-circle-outline" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+            </View>
 
             <View
                 style={{
