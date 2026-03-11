@@ -13,6 +13,44 @@ const REFRESH_KEY = "auth_refresh";
 // Re-export for other modules to use
 export { API_BASE_URL };
 
+let refreshPromise: Promise<string> | null = null;
+
+async function getRefreshedToken(): Promise<string> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const storedRefreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
+      if (!storedRefreshToken) throw new Error("No refresh token");
+
+      const data = await refreshIdToken(storedRefreshToken);
+
+      await SecureStore.setItemAsync(TOKEN_KEY, data.id_token);
+      if (data.refresh_token) {
+        await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
+      }
+
+      // Notify AuthContext so its in-memory token state stays in sync
+      tokenRefreshListeners.forEach((cb) => cb(data.id_token));
+
+      return data.id_token;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+// AuthContext subscribes here so its in-memory token is updated after a refresh
+type TokenRefreshListener = (newToken: string) => void;
+const tokenRefreshListeners = new Set<TokenRefreshListener>();
+
+export function subscribeToTokenRefresh(cb: TokenRefreshListener): () => void {
+  tokenRefreshListeners.add(cb);
+  return () => tokenRefreshListeners.delete(cb);
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -43,12 +81,10 @@ async function request<T>(
 
   const url = `${API_BASE_URL}${endpoint}`;
 
-  // Build headers object, handling the case where customHeaders might be various types
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
 
-  // Safely merge custom headers if they exist and are a plain object
   if (
     customHeaders &&
     typeof customHeaders === "object" &&
@@ -67,7 +103,6 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
-  // Create abort controller for timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -82,31 +117,31 @@ async function request<T>(
 
     if (!response.ok) {
       if (response.status === 401) {
-        const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
-        if (refreshToken) {
-          try {
-            const data = await refreshIdToken(refreshToken);
-            await SecureStore.setItemAsync(TOKEN_KEY, data.id_token);
-            await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
+        try {
+          const newToken = await getRefreshedToken();
 
-            const retryHeaders = {
-              ...headers,
-              Authorization: `Bearer ${data.id_token}`,
-            };
+          const retryRes = await fetch(url, {
+            ...fetchOptions,
+            headers: { ...headers, Authorization: `Bearer ${newToken}` },
+          });
 
-            const retryRes = await fetch(url, {
-              ...fetchOptions,
-              headers: retryHeaders,
-            });
-
-            if (!retryRes.ok) {
-              throw new ApiError(401, "Unauthorized", "Session expired");
-            }
-
-            return (await retryRes.json()) as T;
-          } catch {
-            throw new ApiError(401, "Unauthorized", "Session expired");
+          if (!retryRes.ok) {
+            throw new ApiError(
+              401,
+              "Unauthorized",
+              "Session expired. Please log in again.",
+            );
           }
+
+          const retryText = await retryRes.text();
+          return (retryText ? JSON.parse(retryText) : {}) as T;
+        } catch (err) {
+          if (err instanceof ApiError) throw err;
+          throw new ApiError(
+            401,
+            "Unauthorized",
+            "Session expired. Please log in again.",
+          );
         }
       }
 
@@ -118,7 +153,6 @@ async function request<T>(
       );
     }
 
-    // Handle empty responses
     const text = await response.text();
     if (!text) {
       return {} as T;

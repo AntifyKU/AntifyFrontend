@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import * as SecureStore from "expo-secure-store";
 import { authService, UserProfile } from "@/services/auth";
+import { subscribeToTokenRefresh } from "@/services/api";
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
@@ -222,6 +223,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [token, refreshToken, scheduleTokenRefresh]);
 
+  // Keep AuthContext token in sync when api.ts silently refreshes a 401
+  useEffect(() => {
+    const unsubscribe = subscribeToTokenRefresh((newToken) => {
+      setToken(newToken);
+      SecureStore.setItemAsync(TOKEN_KEY, newToken);
+    });
+    return unsubscribe;
+  }, []);
+
   const saveAuth = useCallback(
     async (
       authToken: string,
@@ -257,6 +267,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       try {
         await authService.signup({ username, email, password });
+
         // Backend signup doesn't return a token, login right after
         const loginResponse = await authService.login(email, password);
         const userProfile = await authService.getCurrentUser(
