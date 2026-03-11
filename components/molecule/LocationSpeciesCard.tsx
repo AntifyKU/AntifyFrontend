@@ -58,7 +58,7 @@ function isInProvince(pred: LocationSpeciesPrediction, provinceSpecies: Species[
 }
 
 function computeWeightedScore(aiPercent: number): number {
-    return Math.min(Math.round(aiPercent * (1 + LOCAL_BOOST)), 100);
+    return Math.min(Number((aiPercent * (1 + LOCAL_BOOST)).toFixed(2)), 100);
 }
 
 function ConfidenceBar({ weighted, raw }: { weighted: number; raw: number }) {
@@ -83,13 +83,13 @@ function ConfidenceBar({ weighted, raw }: { weighted: number; raw: number }) {
                     {pct > 0 && <View style={{ flex: pct, backgroundColor: barColor }} />}
                     {remainder > 0 && <View style={{ flex: remainder, backgroundColor: "#E5E7EB" }} />}
                 </View>
-                <Text style={{ color: barColor, fontSize: 13, fontWeight: "700", width: 40, textAlign: "right" }}>
-                    {weighted}%
+                <Text style={{ color: barColor, fontSize: 13, fontWeight: "700", width: 60, textAlign: "right" }}>
+                    {weighted.toFixed(2)}%
                 </Text>
             </View>
             {weighted !== raw && (
                 <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
-                    AI confidence: {raw}%
+                    AI confidence: {raw.toFixed(2)}%
                 </Text>
             )}
         </View>

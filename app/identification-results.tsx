@@ -92,7 +92,7 @@ export default function IdentificationResultsScreen() {
             name: effectiveInfo?.name ?? bestPrediction.class_name.replace(/_/g, " "),
             scientificName: effectiveInfo?.scientific_name ?? bestPrediction.class_name,
             image: effectiveInfo?.image ?? "",
-            matchPercentage: Math.round(bestPrediction.confidence * 100),
+            matchPercentage: Number((bestPrediction.confidence * 100).toFixed(2)),
             riskInfo: effectiveInfo?.risk,
             isInDatabase: effectiveInfo !== null,  // true only when we have real Firestore data
           };
@@ -115,7 +115,7 @@ export default function IdentificationResultsScreen() {
               name: displayName,
               scientificName: validSpecies?.scientific_name ?? pred.class_name,
               image: validSpecies?.image ?? "",
-              matchPercentage: Math.round(pred.confidence * 100),
+              matchPercentage: Number((pred.confidence * 100).toFixed(2)),
               riskInfo: validSpecies?.risk,
             };
           }).filter((item) => !isJunk(item.name)); // final safety net
@@ -143,6 +143,8 @@ export default function IdentificationResultsScreen() {
   };
 
   const handleConfirmAndViewDetails = (antId: string) => {
+    if (!bestMatch) return;
+
     // Show alert if we have no real Firestore species data:
     // - antId is missing or is a placeholder ("prediction-X")
     // - isInDatabase is explicitly false (junk prediction filtered) OR undefined (static fallback)
@@ -175,12 +177,14 @@ export default function IdentificationResultsScreen() {
         fromIdentification: "true",
         antName: bestMatch.name,
         scientificName: bestMatch.scientificName,
-        matchPercentage: bestMatch.matchPercentage?.toString(),
+        matchPercentage: bestMatch.matchPercentage?.toFixed(2),
       },
     });
   };
 
   const handleProvideFeedback = () => {
+    if (!bestMatch) return;
+    
     router.push({
       pathname: "/help-improve-ai",
       params: {
@@ -393,7 +397,7 @@ export default function IdentificationResultsScreen() {
                 {bestMatch.scientificName}
               </Text>
               <Text className="text-[#0A9D5C] font-semibold mt-1">
-                {bestMatch.matchPercentage}% Match
+                {bestMatch.matchPercentage.toFixed(2)}% Match
               </Text>
 
               {/* Added RiskTags for Best Match */}
