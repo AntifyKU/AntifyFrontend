@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,10 @@ import {
   Alert,
   Linking,
   Platform,
+  AppState,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
@@ -47,25 +48,17 @@ interface InfoCardProps {
   color: "blue" | "green" | "red";
 }
 
+const colorMap = {
+  blue: { bg: "bg-blue-50", text: "text-blue-700" },
+  green: { bg: "bg-green-50", text: "text-green-700" },
+  red: { bg: "bg-red-50", text: "text-red-700" },
+};
+
 const InfoCard = ({ content, color }: InfoCardProps) => {
-  const getBgColor = () => {
-    if (color === "blue") return "bg-blue-50";
-    if (color === "green") return "bg-green-50";
-    return "bg-red-50";
-  };
-
-  const getTextColor = () => {
-    if (color === "blue") return "text-blue-700";
-    if (color === "green") return "text-green-700";
-    return "text-red-700";
-  };
-
-  const bgColor = getBgColor();
-  const textColor = getTextColor();
-
+  const { bg, text } = colorMap[color];
   return (
-    <View className={`${bgColor} rounded-2xl p-5`}>
-      <Text className={`text-base ${textColor} leading-6`}>{content}</Text>
+    <View className={`${bg} rounded-2xl p-5`}>
+      <Text className={`text-base ${text} leading-6`}>{content}</Text>
     </View>
   );
 };
@@ -76,43 +69,44 @@ export default function PrivacySecurityScreen() {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
 
-  const checkLocationPermission = async () => {
+  const checkLocationPermission = useCallback(async () => {
     try {
       const { status } = await Location.getForegroundPermissionsAsync();
       setLocationEnabled(status === "granted");
     } catch (error) {
       console.error("Error checking location permission:", error);
     }
-  };
-
-  useEffect(() => {
-    checkLocationPermission();
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (currentScreen === "main") checkLocationPermission();
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [currentScreen]);
+  useFocusEffect(
+    useCallback(() => {
+      checkLocationPermission();
+    }, [checkLocationPermission]),
+  );
 
-  const openAppSettings = () => {
-    const open = async () => {
-      try {
-        if (Platform.OS === "ios") {
-          await Linking.openURL("app-settings:");
-        } else {
-          await IntentLauncher.startActivityAsync(
-            IntentLauncher.ActivityAction.APPLICATION_DETAILS_SETTINGS,
-            { data: "package:com.antify.antifyApp" },
-          );
-        }
-      } catch (error) {
-        console.error("Error opening settings:", error);
-        Alert.alert(t("common.error"), t("privacy.location.errorOpening"));
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active" && currentScreen === "main") {
+        checkLocationPermission();
       }
-    };
-    open();
+    });
+    return () => subscription.remove();
+  }, [currentScreen, checkLocationPermission]);
+
+  const openAppSettings = async () => {
+    try {
+      if (Platform.OS === "ios") {
+        await Linking.openURL("app-settings:");
+      } else {
+        await IntentLauncher.startActivityAsync(
+          IntentLauncher.ActivityAction.APPLICATION_DETAILS_SETTINGS,
+          { data: "package:com.antify.antifyApp" },
+        );
+      }
+    } catch (error) {
+      console.error("Error opening settings:", error);
+      Alert.alert(t("common.error"), t("privacy.location.errorOpening"));
+    }
   };
 
   const handleEnableLocation = async () => {
@@ -128,7 +122,12 @@ export default function PrivacySecurityScreen() {
           t("privacy.location.permissionMessage"),
           [
             { text: t("common.cancel"), style: "cancel" },
-            { text: t("common.openSettings"), onPress: openAppSettings },
+            {
+              text: t("common.openSettings"),
+              onPress: () => {
+                openAppSettings();
+              },
+            },
           ],
         );
       }
@@ -146,7 +145,12 @@ export default function PrivacySecurityScreen() {
       t("privacy.location.disableMessage"),
       [
         { text: t("common.cancel"), style: "cancel" },
-        { text: t("common.openSettings"), onPress: openAppSettings },
+        {
+          text: t("common.openSettings"),
+          onPress: () => {
+            openAppSettings();
+          },
+        },
       ],
     );
   };
@@ -165,13 +169,7 @@ export default function PrivacySecurityScreen() {
           iconColor="#22A45D"
           switchValue={locationEnabled}
           onSwitchChange={
-            locationEnabled
-              ? () => {
-                  handleDisableLocation();
-                }
-              : () => {
-                  handleEnableLocation();
-                }
+            locationEnabled ? handleDisableLocation : handleEnableLocation
           }
           disabled={isCheckingPermission}
         />
@@ -269,12 +267,10 @@ export default function PrivacySecurityScreen() {
     </ScrollView>
   );
 
-  const getScreenTitle = () => {
-    if (currentScreen === "data-usage") {
-      return t("privacy.dataUsage.menuTitle");
-    }
-    return t("privacy.title");
-  };
+  const screenTitle =
+    currentScreen === "data-usage"
+      ? t("privacy.dataUsage.menuTitle")
+      : t("privacy.title");
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -282,7 +278,7 @@ export default function PrivacySecurityScreen() {
 
       <View className="py-6">
         <ScreenHeader
-          title={getScreenTitle()}
+          title={screenTitle}
           leftIcon="chevron-back"
           onLeftPress={() => {
             if (currentScreen === "main") router.back();

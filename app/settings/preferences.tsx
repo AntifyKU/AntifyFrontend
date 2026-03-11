@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,11 @@ import {
   Alert,
   Linking,
   Platform,
+  AppState,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as Notifications from "expo-notifications";
 import * as IntentLauncher from "expo-intent-launcher";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -93,23 +94,29 @@ export default function PreferencesScreen() {
     loadPreferences();
   }, [user]);
 
-  const checkNotificationPermission = async () => {
+  const checkNotificationPermission = useCallback(async () => {
     try {
       const { status } = await Notifications.getPermissionsAsync();
       setNotificationsEnabled(status === "granted");
     } catch (error) {
       console.error("Error checking notification permission:", error);
     }
-  };
-
-  useEffect(() => {
-    checkNotificationPermission();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      checkNotificationPermission();
+    }, [checkNotificationPermission]),
+  );
+
   useEffect(() => {
-    const interval = setInterval(checkNotificationPermission, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        checkNotificationPermission();
+      }
+    });
+    return () => subscription.remove();
+  }, [checkNotificationPermission]);
 
   const persistPreferences = async (updated: Partial<AppPreferences>) => {
     try {
@@ -136,26 +143,23 @@ export default function PreferencesScreen() {
     await persistPreferences({ language: lang });
   };
 
-  const openAppSettings = () => {
-    const open = async () => {
-      try {
-        if (Platform.OS === "ios") {
-          await Linking.openURL("app-settings:");
-        } else {
-          await IntentLauncher.startActivityAsync(
-            IntentLauncher.ActivityAction.APPLICATION_DETAILS_SETTINGS,
-            { data: "package:com.antify.antifyApp" },
-          );
-        }
-      } catch (error) {
-        console.error("Error opening settings:", error);
-        Alert.alert(
-          t("common.error"),
-          t("preferences.notifications.errorOpening"),
+  const openAppSettings = async () => {
+    try {
+      if (Platform.OS === "ios") {
+        await Linking.openURL("app-settings:");
+      } else {
+        await IntentLauncher.startActivityAsync(
+          IntentLauncher.ActivityAction.APPLICATION_DETAILS_SETTINGS,
+          { data: "package:com.antify.antifyApp" },
         );
       }
-    };
-    open();
+    } catch (error) {
+      console.error("Error opening settings:", error);
+      Alert.alert(
+        t("common.error"),
+        t("preferences.notifications.errorOpening"),
+      );
+    }
   };
 
   const handleEnableNotifications = async () => {
@@ -172,7 +176,12 @@ export default function PreferencesScreen() {
           t("preferences.notifications.permissionMessage"),
           [
             { text: t("common.cancel"), style: "cancel" },
-            { text: t("common.openSettings"), onPress: openAppSettings },
+            {
+              text: t("common.openSettings"),
+              onPress: () => {
+                openAppSettings();
+              },
+            },
           ],
         );
       }
@@ -190,7 +199,12 @@ export default function PreferencesScreen() {
       t("preferences.notifications.disableMessage"),
       [
         { text: t("common.cancel"), style: "cancel" },
-        { text: t("common.openSettings"), onPress: openAppSettings },
+        {
+          text: t("common.openSettings"),
+          onPress: () => {
+            openAppSettings();
+          },
+        },
       ],
     );
   };
@@ -245,12 +259,8 @@ export default function PreferencesScreen() {
           switchValue={notificationsEnabled}
           onSwitchChange={
             notificationsEnabled
-              ? () => {
-                  handleDisableNotifications();
-                }
-              : () => {
-                  handleEnableNotifications();
-                }
+              ? handleDisableNotifications
+              : handleEnableNotifications
           }
           disabled={isCheckingPermission}
         />
