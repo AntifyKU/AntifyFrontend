@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { AppState, AppStateStatus } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { authService, UserProfile } from "@/services/auth";
 import { subscribeToTokenRefresh } from "@/services/api";
@@ -14,7 +15,11 @@ import { subscribeToTokenRefresh } from "@/services/api";
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
 const REFRESH_KEY = "auth_refresh";
-const REFRESH_INTERVAL = 55 * 60 * 1000; // 55 minutes, refresh before 1-hour expiry
+const TOKEN_EXPIRY_KEY = "auth_token_expiry";
+
+// Refresh 5 minutes before expiry (tokens last 1 hour)
+const TOKEN_LIFETIME_MS = 60 * 60 * 1000;
+const REFRESH_BEFORE_EXPIRY_MS = 5 * 60 * 1000;
 const FIREBASE_API_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
 
 interface AuthContextType {
@@ -44,16 +49,17 @@ async function refreshFirebaseToken(
     `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
         grant_type: "refresh_token",
         refresh_token: refToken,
-      }),
+      }).toString(),
     },
   );
 
   if (!response.ok) {
-    throw new Error("Failed to refresh token");
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body?.error?.message || "Failed to refresh token");
   }
 
   return response.json();
@@ -64,17 +70,24 @@ async function saveToStore(
   refreshToken: string | undefined,
   user: UserProfile,
 ) {
-  await SecureStore.setItemAsync(TOKEN_KEY, token);
-  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
-  if (refreshToken) {
-    await SecureStore.setItemAsync(REFRESH_KEY, refreshToken);
-  }
+  const expiresAt = Date.now() + TOKEN_LIFETIME_MS;
+  await Promise.all([
+    SecureStore.setItemAsync(TOKEN_KEY, token),
+    SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)),
+    SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, String(expiresAt)),
+    refreshToken
+      ? SecureStore.setItemAsync(REFRESH_KEY, refreshToken)
+      : Promise.resolve(),
+  ]);
 }
 
 async function clearStore() {
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
-  await SecureStore.deleteItemAsync(USER_KEY);
-  await SecureStore.deleteItemAsync(REFRESH_KEY);
+  await Promise.all([
+    SecureStore.deleteItemAsync(TOKEN_KEY),
+    SecureStore.deleteItemAsync(USER_KEY),
+    SecureStore.deleteItemAsync(REFRESH_KEY),
+    SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY),
+  ]);
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -92,96 +105,208 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const applyTokenData = useCallback(async (data: FirebaseRefreshResponse) => {
-    setToken(data.id_token);
-    await SecureStore.setItemAsync(TOKEN_KEY, data.id_token);
-    if (data.refresh_token) {
-      setRefreshToken(data.refresh_token);
-      await SecureStore.setItemAsync(REFRESH_KEY, data.refresh_token);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Prevent concurrent silent refreshes
+  const isRefreshingRef = useRef(false);
+  // Track whether initial load is done
+  const isInitializedRef = useRef(false);
+
+  const clearTimers = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
     }
   }, []);
 
   const clearStoredAuth = useCallback(async () => {
     await clearStore();
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-    }
+    clearTimers();
     setToken(null);
     setUser(null);
     setRefreshToken(null);
-  }, []);
+  }, [clearTimers]);
 
   /**
    * Silently refreshes the id_token using the stored refresh_token.
-   * Returns the new id_token on success, or null if the refresh_token has expired.
+   * Returns the new id_token on success, or null if refresh failed.
    */
   const silentRefresh = useCallback(
     async (storedRefreshToken: string): Promise<string | null> => {
+      if (isRefreshingRef.current) {
+        // Already refreshing, wait a moment and read from store
+        await new Promise((r) => setTimeout(r, 500));
+        return SecureStore.getItemAsync(TOKEN_KEY);
+      }
+
+      isRefreshingRef.current = true;
       try {
         const data = await refreshFirebaseToken(storedRefreshToken);
-        await applyTokenData(data);
-        return data.id_token;
+        const newIdToken = data.id_token;
+        const newRefreshToken = data.refresh_token;
+
+        const expiresAt = Date.now() + TOKEN_LIFETIME_MS;
+        await Promise.all([
+          SecureStore.setItemAsync(TOKEN_KEY, newIdToken),
+          SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, String(expiresAt)),
+          newRefreshToken
+            ? SecureStore.setItemAsync(REFRESH_KEY, newRefreshToken)
+            : Promise.resolve(),
+        ]);
+
+        setToken(newIdToken);
+        if (newRefreshToken) {
+          setRefreshToken(newRefreshToken);
+        }
+
+        console.log("[AuthContext] Silent refresh successful");
+        return newIdToken;
       } catch (err) {
-        // refresh_token expired or revoked, user must re-login
-        console.log("Refresh token expired, user must re-login:", err);
+        console.log("[AuthContext] Refresh token expired, must re-login:", err);
         await clearStoredAuth();
         return null;
+      } finally {
+        isRefreshingRef.current = false;
       }
     },
-    [applyTokenData, clearStoredAuth],
+    [clearStoredAuth],
   );
 
   /**
-   * Tries to fetch the user profile with the current token.
-   * Falls back to a silent refresh if the token has expired.
-   * If offline with no refresh token, keeps the cached session.
+   * Check if token needs refresh based on saved expiry time.
+   * Returns true if token is expired or will expire within threshold.
    */
-  const validateAndSync = useCallback(
-    async (currentToken: string, currentRefreshToken: string | null) => {
-      try {
-        const freshUser = await authService.getCurrentUser(currentToken);
-        setUser(freshUser);
-        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
-      } catch (err) {
-        // id_token expired (every 1 hour), attempt silent refresh
-        if (!currentRefreshToken) {
-          // Offline or no refresh token, keep cached session, retry on next action
-          console.log("Token validation failed, keeping cached session:", err);
-          return;
-        }
+  const isTokenExpiredOrExpiring = useCallback(async (): Promise<boolean> => {
+    const expiryStr = await SecureStore.getItemAsync(TOKEN_EXPIRY_KEY);
+    if (!expiryStr) return true;
+    const expiresAt = Number(expiryStr);
+    return Date.now() >= expiresAt - REFRESH_BEFORE_EXPIRY_MS;
+  }, []);
 
-        console.log("Token expired, attempting silent refresh...");
-        const newToken = await silentRefresh(currentRefreshToken);
-
-        if (newToken) {
-          const freshUser = await authService.getCurrentUser(newToken);
-          setUser(freshUser);
-          await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
-          console.log("Silent refresh successful");
-        }
-      }
-    },
-    [silentRefresh],
-  );
-
+  /**
+   * Schedule the next proactive token refresh based on saved expiry.
+   */
   const scheduleTokenRefresh = useCallback(
     (currentRefreshToken: string) => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
+      clearTimers();
+
+      SecureStore.getItemAsync(TOKEN_EXPIRY_KEY).then((expiryStr) => {
+        const expiresAt = expiryStr
+          ? Number(expiryStr)
+          : Date.now() + TOKEN_LIFETIME_MS;
+        const delay = Math.max(
+          0,
+          expiresAt - Date.now() - REFRESH_BEFORE_EXPIRY_MS,
+        );
+
+        console.log(
+          `[AuthContext] Scheduling token refresh in ${Math.round(delay / 1000 / 60)} minutes`,
+        );
+
+        refreshTimerRef.current = setTimeout(async () => {
+          console.log("[AuthContext] Proactive token refresh...");
+          await silentRefresh(currentRefreshToken);
+        }, delay);
+      });
+    },
+    [clearTimers, silentRefresh],
+  );
+
+  /**
+   * Validate token and sync user profile. Handles expiry gracefully.
+   */
+  const validateAndSync = useCallback(
+    async (
+      currentToken: string,
+      currentRefreshToken: string | null,
+    ): Promise<string | null> => {
+      // Check if token is already expired/expiring before making API call
+      const needsRefresh = await isTokenExpiredOrExpiring();
+
+      let activeToken = currentToken;
+
+      if (needsRefresh && currentRefreshToken) {
+        console.log(
+          "[AuthContext] Token expired/expiring, refreshing before API call...",
+        );
+        const refreshed = await silentRefresh(currentRefreshToken);
+        if (!refreshed) return null;
+        activeToken = refreshed;
       }
 
-      refreshTimerRef.current = setTimeout(async () => {
-        console.log("Auto-refreshing token...");
-        const newToken = await silentRefresh(currentRefreshToken);
-        if (newToken) {
-          console.log("Token auto-refreshed successfully");
+      try {
+        const freshUser = await authService.getCurrentUser(activeToken);
+        setUser(freshUser);
+        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
+        return activeToken;
+      } catch (err: any) {
+        // Token was rejected by backend (401)
+        if (err?.status === 401 && currentRefreshToken && !needsRefresh) {
+          console.log("[AuthContext] Got 401, attempting emergency refresh...");
+          const refreshed = await silentRefresh(currentRefreshToken);
+          if (!refreshed) return null;
+
+          try {
+            const freshUser = await authService.getCurrentUser(refreshed);
+            setUser(freshUser);
+            await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
+            return refreshed;
+          } catch (retryErr) {
+            console.error(
+              "[AuthContext] Post-refresh user fetch failed:",
+              retryErr,
+            );
+            return null;
+          }
         }
-      }, REFRESH_INTERVAL);
+
+        // Network error, keep cached user session, don't log out
+        console.log(
+          "[AuthContext] Validation failed (likely offline), keeping cache:",
+          err?.message,
+        );
+        return activeToken;
+      }
     },
-    [silentRefresh],
+    [isTokenExpiredOrExpiring, silentRefresh],
   );
+
+  /**
+   * Handle app coming back to foreground — check if token needs refresh.
+   */
+  const handleAppResume = useCallback(async () => {
+    const storedRefreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
+    const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
+
+    if (!storedToken || !storedRefreshToken) return;
+
+    const needsRefresh = await isTokenExpiredOrExpiring();
+    if (needsRefresh) {
+      console.log(
+        "[AuthContext] App resumed with expired/expiring token, refreshing...",
+      );
+      const newToken = await silentRefresh(storedRefreshToken);
+      if (newToken) {
+        scheduleTokenRefresh(storedRefreshToken);
+      }
+    }
+  }, [isTokenExpiredOrExpiring, silentRefresh, scheduleTokenRefresh]);
+
+  // Listen for app state changes to handle resume
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    const subscription = AppState.addEventListener(
+      "change",
+      (nextState: AppStateStatus) => {
+        if (nextState === "active") {
+          handleAppResume();
+        }
+      },
+    );
+
+    return () => subscription.remove();
+  }, [handleAppResume]);
 
   const loadStoredAuth = useCallback(async () => {
     try {
@@ -191,43 +316,47 @@ export function AuthProvider({ children }: AuthProviderProps) {
         SecureStore.getItemAsync(REFRESH_KEY),
       ]);
 
-      if (!storedToken || !storedUser) return;
+      if (!storedToken || !storedUser) {
+        console.log("[AuthContext] No stored auth, user must log in");
+        return;
+      }
 
-      // Restore from cache immediately, prevents flicker to login screen
+      // Restore from cache immediately to prevent flicker to login screen
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
       if (storedRefreshToken) {
         setRefreshToken(storedRefreshToken);
       }
 
-      // Validate token and sync fresh user data in background
-      await validateAndSync(storedToken, storedRefreshToken ?? null);
+      // Validate and sync in background
+      const activeToken = await validateAndSync(
+        storedToken,
+        storedRefreshToken ?? null,
+      );
+
+      if (activeToken && storedRefreshToken) {
+        scheduleTokenRefresh(storedRefreshToken);
+      }
     } catch (err) {
-      console.error("Error loading stored auth:", err);
+      console.error("[AuthContext] Error loading stored auth:", err);
     } finally {
       setIsLoading(false);
+      isInitializedRef.current = true;
     }
-  }, [validateAndSync]);
+  }, [validateAndSync, scheduleTokenRefresh]);
 
   useEffect(() => {
     loadStoredAuth();
-  }, [loadStoredAuth]);
-
-  useEffect(() => {
-    if (!token || !refreshToken) return;
-    scheduleTokenRefresh(refreshToken);
-    return () => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
-      }
-    };
-  }, [token, refreshToken, scheduleTokenRefresh]);
+    return () => clearTimers();
+  }, [loadStoredAuth, clearTimers]);
 
   // Keep AuthContext token in sync when api.ts silently refreshes a 401
   useEffect(() => {
     const unsubscribe = subscribeToTokenRefresh((newToken) => {
       setToken(newToken);
       SecureStore.setItemAsync(TOKEN_KEY, newToken);
+      const expiresAt = Date.now() + TOKEN_LIFETIME_MS;
+      SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, String(expiresAt));
     });
     return unsubscribe;
   }, []);
@@ -243,9 +372,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(userProfile);
       if (authRefreshToken) {
         setRefreshToken(authRefreshToken);
+        scheduleTokenRefresh(authRefreshToken);
       }
     },
-    [],
+    [scheduleTokenRefresh],
   );
 
   const login = useCallback(
@@ -268,7 +398,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         await authService.signup({ username, email, password });
 
-        // Backend signup doesn't return a token, login right after
         const loginResponse = await authService.login(email, password);
         const userProfile = await authService.getCurrentUser(
           loginResponse.id_token,
@@ -293,8 +422,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await authService.logout(token);
       }
     } catch (err) {
-      // Ignore server-side logout errors, always clear local state
-      console.log("Logout API error (ignored):", err);
+      console.log("[AuthContext] Logout API error (ignored):", err);
     } finally {
       await clearStoredAuth();
       setIsLoading(false);
