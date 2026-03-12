@@ -70,15 +70,7 @@ export default function CardItem(props: CardItemProps) {
         ) : (
           <>
             <View
-              className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full"
-              style={{ backgroundColor: accentColor, opacity: 0.25 }}
-            />
-            <View
-              className="absolute -top-4 -left-4 w-16 h-16 rounded-full"
-              style={{ backgroundColor: accentColor, opacity: 0.15 }}
-            />
-            <View
-              className="w-14 h-14 rounded-2xl items-center justify-center"
+              className="w-16 h-16 rounded-full items-center justify-center"
               style={{ backgroundColor: accentColor + "33" }}
             >
               <Text

@@ -272,12 +272,14 @@ export default function IdentificationResultsScreen() {
             We couldn&#39;t identify the ant in this image. Please try again
             with a clearer photo.
           </Text>
-          <PrimaryButton
-            title="Try Again"
-            icon="camera-outline"
-            onPress={handleIdentifyAnother}
-            size="large"
-          />
+          <View className="mt-8 w-full">
+            <PrimaryButton
+              title="Try Again"
+              icon="camera-outline"
+              onPress={handleIdentifyAnother}
+              size="large"
+            />
+          </View>
         </View>
       </View>
     );
