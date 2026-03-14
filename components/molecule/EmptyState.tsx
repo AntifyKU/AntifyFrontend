@@ -11,19 +11,19 @@ import { Ionicons } from "@expo/vector-icons";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 
 interface EmptyStateProps {
-  title?: string;
-  description?: string;
-  icon?: keyof typeof Ionicons.glyphMap;
-  iconSize?: number;
-  iconColor?: string;
-  image?: ImageSourcePropType;
-  imageSize?: number;
-  containerStyle?: ViewStyle;
-  titleStyle?: TextStyle;
-  descriptionStyle?: TextStyle;
-  buttonTitle?: string;
-  onButtonPress?: () => void;
-  buttonIcon?: keyof typeof Ionicons.glyphMap;
+  readonly title?: string;
+  readonly description?: string;
+  readonly icon?: keyof typeof Ionicons.glyphMap;
+  readonly iconSize?: number;
+  readonly iconColor?: string;
+  readonly image?: ImageSourcePropType;
+  readonly imageSize?: number;
+  readonly containerStyle?: ViewStyle;
+  readonly titleStyle?: TextStyle;
+  readonly descriptionStyle?: TextStyle;
+  readonly buttonTitle?: string;
+  readonly onButtonPress?: () => void;
+  readonly buttonIcon?: keyof typeof Ionicons.glyphMap;
 }
 
 export default function EmptyState({
@@ -56,13 +56,13 @@ export default function EmptyState({
         <Ionicons name={icon} size={iconSize} color={iconColor} />
       )}
 
-      {title && (
+      {!!title && (
         <Text className="mt-4 text-gray-500 text-center" style={titleStyle}>
           {title}
         </Text>
       )}
 
-      {description && (
+      {!!description && (
         <Text
           className="mt-1 text-gray-400 text-center"
           style={descriptionStyle}
@@ -78,7 +78,7 @@ export default function EmptyState({
             onPress={onButtonPress}
             fullWidth={false}
             icon={buttonIcon}
-            style={{ shadowColor: "transparent", elevation: 0}}
+            style={{ shadowColor: "transparent", elevation: 0 }}
           />
         </View>
       )}

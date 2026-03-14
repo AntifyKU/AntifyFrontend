@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import EmptyState from "@/components/molecule/EmptyState";
 import SortModal from "@/components/molecule/SortModal";
 import ActionButton from "@/components/atom/button/ActionButton";
@@ -25,21 +26,16 @@ import { Folder } from "@/services/folders";
 import { CollectionItem } from "@/services/collection";
 
 export default function CollectionSection() {
+  const { t } = useTranslation();
   const { folders, createFolder, updateFolder, deleteFolder } = useFolders();
   const { collection, removeFromCollection, addItemToFolders } =
     useCollection();
-
   const [showCreate, setShowCreate] = useState(false);
   const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
-
   const [showSort, setShowSort] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
-
-  // Folder action modal
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [showFolderActionModal, setShowFolderActionModal] = useState(false);
-
-  // Unfiled item action modals
   const [selectedUnfiledItem, setSelectedUnfiledItem] =
     useState<CollectionItem | null>(null);
   const [showUnfiledActionModal, setShowUnfiledActionModal] = useState(false);
@@ -73,7 +69,6 @@ export default function CollectionSection() {
     });
   }, [folders, sortOption]);
 
-  // Unfiled item handlers
   const handleUnfiledMore = (item: CollectionItem) => {
     setSelectedUnfiledItem(item);
     setShowUnfiledActionModal(true);
@@ -83,22 +78,27 @@ export default function CollectionSection() {
     if (!selectedUnfiledItem) return;
     setShowUnfiledActionModal(false);
     Alert.alert(
-      "Remove from Collection",
-      `Are you sure you want to remove "${selectedUnfiledItem.species_name}" from your collection?`,
+      t("collection.item.removeTitle"),
+      t("collection.item.removeMessage", {
+        name: selectedUnfiledItem.species_name,
+      }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Remove",
+          text: t("collection.item.removeButton"),
           style: "destructive",
-          onPress: async () => {
-            try {
-              await removeFromCollection(selectedUnfiledItem.species_id);
-            } catch (err: any) {
-              Alert.alert(
-                "Error",
-                err.message || "Failed to remove from collection",
-              );
-            }
+          onPress: () => {
+            const run = async () => {
+              try {
+                await removeFromCollection(selectedUnfiledItem.species_id);
+              } catch (err: any) {
+                Alert.alert(
+                  t("common.error"),
+                  err.message || t("collection.item.removeError"),
+                );
+              }
+            };
+            run();
           },
         },
       ],
@@ -119,14 +119,42 @@ export default function CollectionSection() {
     );
   };
 
-  const handleConfirmAddToFolders = async () => {
+  const handleConfirmAddToFolders = () => {
     if (!selectedUnfiledItem || selectedFolderIds.length === 0) return;
-    try {
-      await addItemToFolders(selectedUnfiledItem.species_id, selectedFolderIds);
-      setShowAddToFolderModal(false);
-    } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to add to folders");
-    }
+    const run = async () => {
+      try {
+        await addItemToFolders(
+          selectedUnfiledItem.species_id,
+          selectedFolderIds,
+        );
+        setShowAddToFolderModal(false);
+      } catch (err: any) {
+        Alert.alert(
+          t("common.error"),
+          err.message || t("collection.item.addToFolderError"),
+        );
+      }
+    };
+    run();
+  };
+
+  const handleDeleteFolder = () => {
+    if (!selectedFolder) return;
+    setShowFolderActionModal(false);
+    Alert.alert(
+      t("collection.folder.deleteTitle"),
+      t("collection.folder.deleteMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.deleteButton"),
+          style: "destructive",
+          onPress: () => {
+            deleteFolder(selectedFolder.id);
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -145,8 +173,14 @@ export default function CollectionSection() {
       {/* Create / Edit Folder Modal */}
       <FolderModal
         visible={showCreate || !!editingFolder}
-        title={editingFolder ? "Edit Folder" : "Create Folder"}
-        submitLabel={editingFolder ? "Update" : "Create"}
+        title={
+          editingFolder
+            ? t("collection.folder.editTitle")
+            : t("collection.folder.createTitle")
+        }
+        submitLabel={
+          editingFolder ? t("collection.folder.editSubmit") : t("common.create")
+        }
         initialName={editingFolder?.name}
         initialColor={editingFolder?.color}
         onClose={() => {
@@ -172,21 +206,7 @@ export default function CollectionSection() {
             setShowFolderActionModal(false);
             setEditingFolder(selectedFolder);
           }}
-          onDelete={() => {
-            setShowFolderActionModal(false);
-            Alert.alert(
-              "Delete collection",
-              "Are you sure to delete this collection? This action cannot be undone.",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Delete",
-                  style: "destructive",
-                  onPress: () => deleteFolder(selectedFolder.id),
-                },
-              ],
-            );
-          }}
+          onDelete={handleDeleteFolder}
         />
       )}
 
@@ -214,7 +234,9 @@ export default function CollectionSection() {
                 <View className="w-9 h-9 rounded-full bg-green-50 items-center justify-center mr-3">
                   <Ionicons name="folder-outline" size={18} color="#22A45D" />
                 </View>
-                <Text className="text-base text-gray-800">Add to folder</Text>
+                <Text className="text-base text-gray-800">
+                  {t("collection.item.addToFolder")}
+                </Text>
               </TouchableOpacity>
             )}
 
@@ -226,13 +248,13 @@ export default function CollectionSection() {
                 <Ionicons name="trash-outline" size={18} color="#EF4444" />
               </View>
               <Text className="text-base text-red-500">
-                Remove from collection
+                {t("collection.item.removeFromCollection")}
               </Text>
             </TouchableOpacity>
 
             <View className="mt-3">
               <PrimaryButton
-                title="Cancel"
+                title={t("common.cancel")}
                 onPress={() => setShowUnfiledActionModal(false)}
                 size="small"
                 variant="outlined"
@@ -253,9 +275,13 @@ export default function CollectionSection() {
       >
         <View className="flex-1 bg-black/40 justify-center items-center px-8">
           <View className="bg-white w-full rounded-2xl p-5" style={modalShadow}>
-            <Text className="text-lg font-bold mb-1">Add to Folder</Text>
+            <Text className="text-lg font-bold mb-1">
+              {t("collection.item.addToFolderTitle")}
+            </Text>
             <Text className="text-sm text-gray-500 mb-4">
-              Select folders for {selectedUnfiledItem?.species_name}
+              {t("collection.item.addToFolderSubtitle", {
+                name: selectedUnfiledItem?.species_name,
+              })}
             </Text>
 
             <ScrollView
@@ -292,7 +318,7 @@ export default function CollectionSection() {
             <View className="flex-row gap-2">
               <View className="flex-1">
                 <PrimaryButton
-                  title="Cancel"
+                  title={t("common.cancel")}
                   onPress={() => setShowAddToFolderModal(false)}
                   size="small"
                   variant="outlined"
@@ -302,7 +328,7 @@ export default function CollectionSection() {
               </View>
               <View className="flex-1">
                 <PrimaryButton
-                  title="Confirm"
+                  title={t("common.confirm")}
                   onPress={handleConfirmAddToFolders}
                   size="small"
                   fullWidth
@@ -321,12 +347,12 @@ export default function CollectionSection() {
       <View className="flex-row items-center justify-between px-5 mb-4">
         <ActionButton
           type="sort"
-          label={getSortLabel(sortOption)}
+          label={getSortLabel(sortOption, t)}
           isOpen={showSort}
           onPress={() => setShowSort(true)}
         />
         <PrimaryButton
-          title="Create"
+          title={t("common.create")}
           onPress={() => setShowCreate(true)}
           icon="plus"
           size="small"
@@ -342,7 +368,6 @@ export default function CollectionSection() {
       <View className="flex-1 px-5 pt-2">
         {hasFolders || unfiledItems.length > 0 ? (
           <>
-            {/* Folders grid */}
             {hasFolders && (
               <View className="flex-row flex-wrap">
                 {sortedFolders.map((folder, i) => (
@@ -375,11 +400,10 @@ export default function CollectionSection() {
               </View>
             )}
 
-            {/* Unfiled items */}
             {unfiledItems.length > 0 && (
               <View className="mt-2">
                 <Text className="text-lg font-semibold text-gray-700 mb-3">
-                  Not in any folder ({unfiledItems.length})
+                  {t("collection.unfiledTitle", { count: unfiledItems.length })}
                 </Text>
                 <View className="flex-row flex-wrap">
                   {unfiledItems.map((item, i) => (
@@ -415,9 +439,9 @@ export default function CollectionSection() {
           <View className="flex-1 justify-center items-center pt-8">
             <EmptyState
               icon="folder-outline"
-              title="No collections yet"
-              description="Explore the ant species to save as a collection"
-              buttonTitle="Explore"
+              title={t("collection.empty.title")}
+              description={t("collection.empty.description")}
+              buttonTitle={t("collection.empty.button")}
               onButtonPress={() => router.push("/(tabs)/explore")}
             />
           </View>

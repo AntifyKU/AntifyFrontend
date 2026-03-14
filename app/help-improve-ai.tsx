@@ -16,10 +16,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { speciesListForCorrection } from "@/constants/AntData";
 import StarRating from "@/components/StarRating";
-import PrimaryButton from "@/components/atom/button/PrimaryButton";
-import SearchBar from "@/components/SearchBar";
 import { feedbackService } from "@/services/feedback";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 
@@ -34,9 +33,9 @@ type HelpImproveParams = {
 };
 
 export default function HelpImproveAIScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<HelpImproveParams>();
-  const { imageUri, antId, antName, scientificName, matchPercentage, source } =
-    params;
+  const { imageUri, antId, antName, scientificName, matchPercentage } = params;
 
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [selectedSpeciesId, setSelectedSpeciesId] = useState<string | null>(
@@ -52,11 +51,10 @@ export default function HelpImproveAIScreen() {
   };
 
   const handleSubmitFeedback = async () => {
-    // Validate that user has made a selection
     if (isCorrect === null) {
       Alert.alert(
-        "Selection Required",
-        "Please indicate if the identification was correct.",
+        t("helpImprove.validationTitle"),
+        t("helpImprove.validationMessage"),
       );
       return;
     }
@@ -65,7 +63,6 @@ export default function HelpImproveAIScreen() {
 
     try {
       if (isCorrect === false && selectedSpeciesId) {
-        // Submit AI correction if identification was wrong
         const correctionData = {
           original_prediction: antName || "",
           correct_species_id: selectedSpeciesId,
@@ -74,7 +71,6 @@ export default function HelpImproveAIScreen() {
 
         await feedbackService.submitAICorrection(correctionData);
       } else {
-        // Submit general feedback for correct predictions
         const feedbackData = {
           rating,
           additional_notes: additionalNotes || undefined,
@@ -84,13 +80,11 @@ export default function HelpImproveAIScreen() {
         await feedbackService.submitFeedback(feedbackData);
       }
 
-      // Navigate home after submitting feedback (user already viewed species detail)
       router.dismissAll();
       router.replace("/(tabs)/index-home");
     } catch (error) {
       console.error("Error submitting feedback:", error);
 
-      // Still navigate home on error (API might not be available)
       router.dismissAll();
       router.replace("/(tabs)/index-home");
     } finally {
@@ -111,7 +105,6 @@ export default function HelpImproveAIScreen() {
     setSelectedSpeciesId(speciesId);
   };
 
-  // Filter species based on search query
   const filteredSpecies = speciesListForCorrection.filter((species) =>
     species.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -124,7 +117,7 @@ export default function HelpImproveAIScreen() {
       <SafeAreaView edges={["top"]}>
         <View className="pt-4 pb-5">
           <ScreenHeader
-            title="Help Improve AI"
+            title={t("helpImprove.title")}
             leftIcon="chevron-back"
             onLeftPress={handleBackPress}
           />
@@ -156,7 +149,9 @@ export default function HelpImproveAIScreen() {
               {scientificName || "Oecophylla smaragdina"}
             </Text>
             <Text className="text-[#0A9D5C] font-semibold">
-              {matchPercentage || "85"}% Match
+              {t("helpImprove.matchPercentage", {
+                value: matchPercentage || "85",
+              })}
             </Text>
           </View>
         </View>
@@ -164,25 +159,27 @@ export default function HelpImproveAIScreen() {
         {/* Was this identification correct? */}
         <View className="mx-4 mt-8">
           <Text className="text-xl font-bold text-gray-800 text-center mb-2">
-            Was this identification correct?
+            {t("helpImprove.questionTitle")}
           </Text>
           <Text className="text-gray-500 text-center mb-6">
-            Your feedback helps train our AI to be more accurate
+            {t("helpImprove.questionSubtitle")}
           </Text>
 
           {/* Yes/No Buttons */}
           <View className="flex-row justify-center gap-4">
             <Pressable
-              className={`flex-1 py-4 rounded-xl items-center border-2 ${isCorrect === true
+              className={`flex-1 py-4 rounded-xl items-center border-2 ${
+                isCorrect === true
                   ? "bg-[#0A9D5C] border-[#0A9D5C]"
                   : "bg-white border-gray-200"
-                }`}
+              }`}
               onPress={handleCorrectPress}
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View
-                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${isCorrect === true ? "bg-white/20" : "bg-[#e8f5e0]"
-                  }`}
+                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${
+                  isCorrect === true ? "bg-white/20" : "bg-[#e8f5e0]"
+                }`}
               >
                 <Ionicons
                   name="thumbs-up"
@@ -191,24 +188,27 @@ export default function HelpImproveAIScreen() {
                 />
               </View>
               <Text
-                className={`font-semibold ${isCorrect === true ? "text-white" : "text-[#0A9D5C]"
-                  }`}
+                className={`font-semibold ${
+                  isCorrect === true ? "text-white" : "text-[#0A9D5C]"
+                }`}
               >
-                Yes, Correct
+                {t("helpImprove.correct")}
               </Text>
             </Pressable>
 
             <Pressable
-              className={`flex-1 py-4 rounded-xl items-center border-2 ${isCorrect === false
+              className={`flex-1 py-4 rounded-xl items-center border-2 ${
+                isCorrect === false
                   ? "bg-[#EF4444] border-[#EF4444]"
                   : "bg-white border-gray-200"
-                }`}
+              }`}
               onPress={handleIncorrectPress}
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View
-                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${isCorrect === false ? "bg-white/20" : "bg-[#FEE2E2]"
-                  }`}
+                className={`w-12 h-12 rounded-full items-center justify-center mb-2 ${
+                  isCorrect === false ? "bg-white/20" : "bg-[#FEE2E2]"
+                }`}
               >
                 <Ionicons
                   name="thumbs-down"
@@ -217,10 +217,11 @@ export default function HelpImproveAIScreen() {
                 />
               </View>
               <Text
-                className={`font-semibold ${isCorrect === false ? "text-white" : "text-[#EF4444]"
-                  }`}
+                className={`font-semibold ${
+                  isCorrect === false ? "text-white" : "text-[#EF4444]"
+                }`}
               >
-                No, Incorrect
+                {t("helpImprove.incorrect")}
               </Text>
             </Pressable>
           </View>
@@ -230,7 +231,7 @@ export default function HelpImproveAIScreen() {
         {isCorrect === false && (
           <View className="mx-4 mt-6">
             <Text className="text-lg font-bold text-gray-800 mb-3">
-              Select the correct species:
+              {t("helpImprove.selectSpecies")}
             </Text>
 
             {/* Search Input */}
@@ -238,7 +239,7 @@ export default function HelpImproveAIScreen() {
               <Ionicons name="search" size={20} color="#9ca3af" />
               <TextInput
                 className="flex-1 ml-2 text-gray-700"
-                placeholder="Search species..."
+                placeholder={t("helpImprove.searchPlaceholder")}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
@@ -246,24 +247,28 @@ export default function HelpImproveAIScreen() {
 
             {/* Species not in list option */}
             <Pressable
-              className={`flex-row items-center p-3 mb-2 rounded-xl border ${selectedSpeciesId === "not-in-list"
+              className={`flex-row items-center p-3 mb-2 rounded-xl border ${
+                selectedSpeciesId === "not-in-list"
                   ? "border-[#0A9D5C] bg-[#e8f5e0]"
                   : "border-gray-200"
-                }`}
+              }`}
               onPress={() => handleSpeciesSelect("not-in-list")}
               style={({ pressed }) => pressed && styles.pressed}
             >
-              <Text className="text-gray-600">Species not in list</Text>
+              <Text className="text-gray-600">
+                {t("helpImprove.notInList")}
+              </Text>
             </Pressable>
 
             {/* Species List */}
             {filteredSpecies.map((species) => (
               <Pressable
                 key={species.id}
-                className={`flex-row items-center p-3 mb-2 rounded-xl border ${selectedSpeciesId === species.id
+                className={`flex-row items-center p-3 mb-2 rounded-xl border ${
+                  selectedSpeciesId === species.id
                     ? "border-[#0A9D5C] bg-[#e8f5e0]"
                     : "border-gray-200"
-                  }`}
+                }`}
                 onPress={() => handleSpeciesSelect(species.id)}
                 style={({ pressed }) => pressed && styles.pressed}
               >
@@ -301,7 +306,7 @@ export default function HelpImproveAIScreen() {
         {/* Rate prediction quality */}
         <View className="mx-4 mt-6">
           <Text className="text-lg font-bold text-gray-800 mb-3">
-            Rate this prediction quality:
+            {t("helpImprove.rateTitle")}
           </Text>
           <StarRating rating={rating} onRatingChange={setRating} />
         </View>
@@ -309,11 +314,11 @@ export default function HelpImproveAIScreen() {
         {/* Additional Notes */}
         <View className="mx-4 mt-6">
           <Text className="text-lg font-bold text-gray-800 mb-3">
-            Additional notes (optional):
+            {t("helpImprove.notesTitle")}
           </Text>
           <TextInput
             className="h-28 p-4 text-gray-700 border border-gray-200 rounded-xl bg-white"
-            placeholder="Describe what helped you identify this ant, or what the AI got wrong..."
+            placeholder={t("helpImprove.notesPlaceholder")}
             placeholderTextColor="#9ca3af"
             multiline
             textAlignVertical="top"
@@ -325,7 +330,9 @@ export default function HelpImproveAIScreen() {
         {/* Submit Button */}
         <View className="mx-4 mt-8 mb-4">
           <Pressable
-            className={`bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center ${isSubmitting ? "opacity-70" : ""}`}
+            className={`bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center ${
+              isSubmitting ? "opacity-70" : ""
+            }`}
             onPress={handleSubmitFeedback}
             disabled={isSubmitting}
             style={({ pressed }) => !isSubmitting && pressed && styles.pressed}
@@ -334,14 +341,14 @@ export default function HelpImproveAIScreen() {
               <>
                 <ActivityIndicator size="small" color="#fff" />
                 <Text className="text-white font-semibold text-lg ml-2">
-                  Submitting...
+                  {t("helpImprove.submittingButton")}
                 </Text>
               </>
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" />
                 <Text className="text-white font-semibold text-lg ml-2">
-                  Submit Feedback
+                  {t("helpImprove.submitButton")}
                 </Text>
               </>
             )}
@@ -351,8 +358,7 @@ export default function HelpImproveAIScreen() {
         {/* Footer Note */}
         <View className="mx-4 mb-8">
           <Text className="text-center text-gray-400 text-sm">
-            Your feedback is anonymous and used solely to improve species
-            identification accuracy.
+            {t("helpImprove.footerNote")}
           </Text>
         </View>
 

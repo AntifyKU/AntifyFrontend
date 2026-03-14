@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import RiskTags from '@/components/molecule/RiskTags';
+import RiskTags from "@/components/molecule/RiskTags";
 
 interface AntCardProps {
   id: string;
@@ -13,7 +13,7 @@ interface AntCardProps {
   onPress?: () => void;
   variant?: "horizontal" | "vertical" | "compact";
   showMatchPercentage?: boolean;
-  riskInfo?: import('@/types/api').RiskInfo;
+  riskInfo?: import("@/types/api").RiskInfo;
 }
 
 export default function AntCard({
@@ -27,7 +27,7 @@ export default function AntCard({
   variant = "vertical",
   showMatchPercentage = false,
   riskInfo,
-}: AntCardProps) {
+}: Readonly<AntCardProps>) {
   const [imageError, setImageError] = useState(false);
   const showImage = image && !imageError;
 
@@ -65,12 +65,7 @@ export default function AntCard({
               {matchPercentage}% Match
             </Text>
           )}
-          {riskInfo && (
-            <RiskTags
-              riskInfo={riskInfo}
-              size="small"
-            />
-          )}
+          {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}
         </View>
       </TouchableOpacity>
     );
@@ -101,12 +96,7 @@ export default function AntCard({
         {scientificName && (
           <Text className="text-gray-500 text-sm">{scientificName}</Text>
         )}
-        {riskInfo && (
-          <RiskTags
-            riskInfo={riskInfo}
-            size="small"
-          />
-        )}
+        {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}
       </TouchableOpacity>
     );
   }
@@ -142,12 +132,7 @@ export default function AntCard({
             {matchPercentage}% Match
           </Text>
         )}
-        {riskInfo && (
-          <RiskTags
-            riskInfo={riskInfo}
-            size="small"
-          />
-        )}
+        {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}
       </View>
     </TouchableOpacity>
   );

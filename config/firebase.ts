@@ -1,8 +1,3 @@
-/**
- * Firebase Configuration
- * Web SDK configuration for authentication
- */
-
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 

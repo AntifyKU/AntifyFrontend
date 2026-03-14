@@ -21,6 +21,7 @@ import { SortOption, getSortLabel } from "@/utils/sort";
 import { useFolders } from "@/hooks/useFolders";
 import { useCollection } from "@/hooks/useCollection";
 import { CollectionItem } from "@/services/collection";
+import { useTranslation } from "react-i18next";
 
 const modalShadow = {
   shadowColor: "#000",
@@ -31,44 +32,48 @@ const modalShadow = {
 };
 
 export default function CollectionDetailPage() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+
   const { folders } = useFolders();
   const { collection, removeItemFromFolder } = useCollection();
 
   const [showSort, setShowSort] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
+
   const [selectedItem, setSelectedItem] = useState<CollectionItem | null>(null);
   const [showItemActionModal, setShowItemActionModal] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Get current folder
   const currentFolder = useMemo(
     () => folders.find((f) => f.id === id),
     [folders, id],
   );
 
-  // Get items in this folder
   const folderItems = useMemo(
-    () => collection.filter((item) => item.folder_ids?.includes(id as string)),
+    () => collection.filter((item) => item.folder_ids?.includes(id)),
     [collection, id],
   );
 
-  // Sorted items
   const sortedItems = useMemo(() => {
     return [...folderItems].sort((a, b) => {
       switch (sortOption) {
         case "name-asc":
           return a.species_name.localeCompare(b.species_name);
+
         case "name-desc":
           return b.species_name.localeCompare(a.species_name);
+
         case "newest":
           return (
             new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
           );
+
         case "oldest":
           return (
             new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
           );
+
         default:
           return 0;
       }
@@ -86,25 +91,33 @@ export default function CollectionDetailPage() {
     setShowItemActionModal(false);
 
     Alert.alert(
-      "Remove from Folder",
-      `Remove "${selectedItem.species_name}" from this folder?`,
+      t("collection.folder.removeTitle"),
+      t("collection.folder.removeConfirm", {
+        name: selectedItem.species_name,
+      }),
       [
-        { text: "Cancel", style: "cancel" },
         {
-          text: "Remove",
+          text: t("common.cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("collection.folder.removeButton"),
           style: "destructive",
-          onPress: async () => {
-            setIsRemoving(true);
-            try {
-              await removeItemFromFolder(selectedItem.species_id, id as string);
-            } catch (err: any) {
-              Alert.alert(
-                "Error",
-                err.message || "Failed to remove from folder",
-              );
-            } finally {
-              setIsRemoving(false);
-            }
+          onPress: () => {
+            (async () => {
+              setIsRemoving(true);
+
+              try {
+                await removeItemFromFolder(selectedItem.species_id, id);
+              } catch (err: any) {
+                Alert.alert(
+                  t("common.error"),
+                  err.message || t("collection.folder.removeError"),
+                );
+              } finally {
+                setIsRemoving(false);
+              }
+            })();
           },
         },
       ],
@@ -115,8 +128,11 @@ export default function CollectionDetailPage() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
+
         <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">Folder not found</Text>
+          <Text className="text-gray-500">
+            {t("collection.folder.folderNotFound")}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -149,6 +165,7 @@ export default function CollectionDetailPage() {
             <Text className="text-lg font-bold mb-0.5">
               {selectedItem?.species_name}
             </Text>
+
             <Text className="text-sm text-gray-500 italic mb-5">
               {selectedItem?.species_scientific_name}
             </Text>
@@ -165,14 +182,17 @@ export default function CollectionDetailPage() {
                   color="#EF4444"
                 />
               </View>
+
               <Text className="text-base text-red-500">
-                {isRemoving ? "Removing..." : "Remove from folder"}
+                {isRemoving
+                  ? t("collection.folder.removing")
+                  : t("collection.folder.removeFromFolder")}
               </Text>
             </TouchableOpacity>
 
             <View className="mt-3">
               <PrimaryButton
-                title="Cancel"
+                title={t("common.cancel")}
                 onPress={() => setShowItemActionModal(false)}
                 size="small"
                 variant="outlined"
@@ -198,7 +218,7 @@ export default function CollectionDetailPage() {
         <View className="flex-row items-center justify-end px-5">
           <ActionButton
             type="sort"
-            label={getSortLabel(sortOption)}
+            label={getSortLabel(sortOption, t)}
             isOpen={showSort}
             onPress={() => setShowSort(true)}
           />
@@ -211,9 +231,11 @@ export default function CollectionDetailPage() {
           className="w-3 h-3 rounded-full mr-2"
           style={{ backgroundColor: currentFolder.color }}
         />
+
         <Text className="text-gray-600">
-          {folderItems.length}{" "}
-          {folderItems.length === 1 ? "species" : "species"}
+          {t("collection.folder.speciesCount", {
+            count: folderItems.length,
+          })}
         </Text>
       </View>
 
@@ -251,9 +273,9 @@ export default function CollectionDetailPage() {
           <View className="flex-1 items-center justify-center pt-16">
             <EmptyState
               icon="folder-open-outline"
-              title="No species in this folder"
-              description="Add species from your collection to organize them"
-              buttonTitle="Go to Collection"
+              title={t("collection.folder.emptyTitle")}
+              description={t("collection.folder.emptyDescription")}
+              buttonTitle={t("collection.folder.goToCollection")}
               onButtonPress={() => router.back()}
             />
           </View>

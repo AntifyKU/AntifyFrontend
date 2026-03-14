@@ -16,12 +16,12 @@ export type FilterState = {
 };
 
 type Props = {
-  visible: boolean;
-  tempFilters: FilterState;
-  onClose: () => void;
-  onApply: () => void;
-  onClear: () => void;
-  onToggle: (category: keyof FilterState, value: string) => void;
+  readonly visible: boolean;
+  readonly tempFilters: FilterState;
+  readonly onClose: () => void;
+  readonly onApply: () => void;
+  readonly onClear: () => void;
+  readonly onToggle: (category: keyof FilterState, value: string) => void;
 };
 
 export default function FilterModal({

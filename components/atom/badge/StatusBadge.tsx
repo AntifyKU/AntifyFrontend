@@ -22,14 +22,11 @@ const STATUS_BADGE_STYLE = {
 };
 
 interface StatusBadgeProps {
-  status: Status;
-  label?: string;
+  readonly status: Status;
+  readonly label?: string;
 }
 
-export default function StatusBadge({
-  status,
-  label,
-}: StatusBadgeProps) {
+export default function StatusBadge({ status, label }: StatusBadgeProps) {
   const style = STATUS_BADGE_STYLE[status];
 
   return (

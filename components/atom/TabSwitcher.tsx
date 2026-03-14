@@ -21,13 +21,13 @@ export function TabSwitcher<T extends string>({
   onTabChange,
   activeColor = "#22A45D",
   inactiveColor = "#6B7280",
-}: TabSwitcherProps<T>) {
+}: Readonly<TabSwitcherProps<T>>) {
   return (
     <View style={styles.container}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.value;
         const label =
-          tab.count !== undefined ? `${tab.label} (${tab.count})` : tab.label;
+          tab.count === undefined ? tab.label : `${tab.label} (${tab.count})`;
 
         return (
           <Pressable
@@ -58,13 +58,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     backgroundColor: "#F3F4F6",
-    borderRadius: 12,
+    borderRadius: 100,
     padding: 6,
     overflow: "hidden",
   },
   tab: {
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 100,
     alignItems: "center",
     justifyContent: "center",
   },

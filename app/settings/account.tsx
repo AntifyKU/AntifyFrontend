@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/services/auth";
 import TextInput from "@/components/atom/TextInput";
@@ -21,12 +22,12 @@ type MenuScreen = "main" | "username" | "email" | "password";
 
 export default function AccountSettingsScreen() {
   const { user, token, refreshUser, logout } = useAuth();
+  const { t } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<MenuScreen>("main");
 
   // Form states
   const [newUsername, setNewUsername] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -44,28 +45,27 @@ export default function AccountSettingsScreen() {
     if (!token) return;
 
     if (!newUsername.trim()) {
-      setUsernameError("Username is required");
+      setUsernameError(t("account.username.errorRequired"));
       return;
     }
     if (newUsername.trim().length < 3) {
-      setUsernameError("Username must be at least 3 characters");
+      setUsernameError(t("account.username.errorTooShort"));
       return;
     }
     if (newUsername === user?.username) {
-      setUsernameError("Username is the same as current");
+      setUsernameError(t("account.username.errorSame"));
       return;
     }
 
     setUsernameError("");
     setIsUpdatingUsername(true);
-
     try {
       await authService.updateProfile(token, { username: newUsername.trim() });
       await refreshUser();
-      Alert.alert("Success", "Username updated successfully!");
+      Alert.alert(t("common.success"), t("account.username.successMessage"));
       setCurrentScreen("main");
     } catch (error: any) {
-      setUsernameError(error.message || "Failed to update username");
+      setUsernameError(error.message || t("account.username.errorFailed"));
     } finally {
       setIsUpdatingUsername(false);
     }
@@ -76,29 +76,28 @@ export default function AccountSettingsScreen() {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!newEmail.trim()) {
-      setEmailError("Email is required");
+      setEmailError(t("account.email.errorRequired"));
       return;
     }
     if (!emailRegex.test(newEmail)) {
-      setEmailError("Invalid email format");
+      setEmailError(t("account.email.errorInvalid"));
       return;
     }
     if (newEmail === user?.email) {
-      setEmailError("Email is the same as current");
+      setEmailError(t("account.email.errorSame"));
       return;
     }
 
     setEmailError("");
     setIsUpdatingEmail(true);
-
     try {
       await authService.changeEmail(token, newEmail.trim());
       await refreshUser();
       setNewEmail("");
-      Alert.alert("Success", "Email updated successfully!");
+      Alert.alert(t("common.success"), t("account.email.successMessage"));
       setCurrentScreen("main");
     } catch (error: any) {
-      setEmailError(error.message || "Failed to update email");
+      setEmailError(error.message || t("account.email.errorFailed"));
     } finally {
       setIsUpdatingEmail(false);
     }
@@ -108,30 +107,28 @@ export default function AccountSettingsScreen() {
     if (!token) return;
 
     if (!newPassword) {
-      setPasswordError("New password is required");
+      setPasswordError(t("account.password.errorRequired"));
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters");
+      setPasswordError(t("account.password.errorTooShort"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(t("account.password.errorMismatch"));
       return;
     }
 
     setPasswordError("");
     setIsUpdatingPassword(true);
-
     try {
       await authService.changePassword(token, newPassword);
       setNewPassword("");
       setConfirmPassword("");
-      setCurrentPassword("");
-      Alert.alert("Success", "Password updated successfully!");
+      Alert.alert(t("common.success"), t("account.password.successMessage"));
       setCurrentScreen("main");
     } catch (error: any) {
-      setPasswordError(error.message || "Failed to update password");
+      setPasswordError(error.message || t("account.password.errorFailed"));
     } finally {
       setIsUpdatingPassword(false);
     }
@@ -139,14 +136,19 @@ export default function AccountSettingsScreen() {
 
   const handleDeleteAccount = async () => {
     if (!token) return;
-
     try {
       await authService.deleteAccount(token);
-      Alert.alert("Success", "Your account has been deleted!");
+      Alert.alert(
+        t("common.success"),
+        t("account.deleteAccount.successMessage"),
+      );
       logout();
       router.replace("/(auth)/login");
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to delete account");
+      Alert.alert(
+        t("common.error"),
+        error.message || t("account.deleteAccount.errorMessage"),
+      );
     }
   };
 
@@ -155,31 +157,29 @@ export default function AccountSettingsScreen() {
       <View className="py-4">
         <MenuItem
           icon="person-outline"
-          title="Username"
-          description="Manage your account username"
+          title={t("account.menu.username.title")}
+          description={t("account.menu.username.description")}
           onPress={() => setCurrentScreen("username")}
           iconColor="#22A45D"
         />
-
         <MenuItem
           icon="mail-outline"
-          title="Email"
-          description="Manage your email address"
+          title={t("account.menu.email.title")}
+          description={t("account.menu.email.description")}
           onPress={() => setCurrentScreen("email")}
           iconColor="#22A45D"
         />
-
         <MenuItem
           icon="lock-closed-outline"
-          title="Change Password"
-          description="Update your password"
+          title={t("account.menu.password.title")}
+          description={t("account.menu.password.description")}
           onPress={() => setCurrentScreen("password")}
           iconColor="#22A45D"
         />
 
         <View className="mt-8 mb-6">
           <PrimaryButton
-            title="Delete Account"
+            title={t("account.deleteAccount.button")}
             iconType="ant"
             icon="user-delete"
             size="large"
@@ -194,14 +194,16 @@ export default function AccountSettingsScreen() {
             iconColor="#FFFFFF"
             onPress={() => {
               Alert.alert(
-                "Delete Account",
-                "Are you sure you want to delete your account? This action cannot be undone.",
+                t("account.deleteAccount.confirmTitle"),
+                t("account.deleteAccount.confirmMessage"),
                 [
-                  { text: "Cancel", style: "cancel" },
+                  { text: t("common.cancel"), style: "cancel" },
                   {
-                    text: "Delete",
+                    text: t("common.delete"),
                     style: "destructive",
-                    onPress: handleDeleteAccount,
+                    onPress: () => {
+                      void handleDeleteAccount();
+                    },
                   },
                 ],
               );
@@ -219,17 +221,19 @@ export default function AccountSettingsScreen() {
     >
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <View className="py-6">
-          <Text className="text-lg text-gray-500 mb-2">Current username</Text>
+          <Text className="text-lg text-gray-500 mb-2">
+            {t("account.username.currentLabel")}
+          </Text>
           <Text className="text-base font-semibold text-gray-800 mb-6">
             {user?.username}
           </Text>
 
           <Text className="text-lg font-semibold text-gray-800 mb-4">
-            New username
+            {t("account.username.newLabel")}
           </Text>
 
           <TextInput
-            placeholder="Enter new username"
+            placeholder={t("account.username.placeholder")}
             value={newUsername}
             onChangeText={(text) => {
               setNewUsername(text);
@@ -241,7 +245,11 @@ export default function AccountSettingsScreen() {
           />
 
           <PrimaryButton
-            title={isUpdatingUsername ? "Updating..." : "Update Username"}
+            title={
+              isUpdatingUsername
+                ? t("common.updatingButton")
+                : t("account.username.updateButton")
+            }
             onPress={handleUpdateUsername}
             disabled={isUpdatingUsername}
             size="large"
@@ -264,17 +272,19 @@ export default function AccountSettingsScreen() {
     >
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <View className="py-6">
-          <Text className="text-lg text-gray-500 mb-2">Current email</Text>
+          <Text className="text-lg text-gray-500 mb-2">
+            {t("account.email.currentLabel")}
+          </Text>
           <Text className="text-base font-semibold text-gray-800 mb-6">
             {user?.email}
           </Text>
 
           <Text className="text-lg font-semibold text-gray-800 mb-4">
-            New email
+            {t("account.email.newLabel")}
           </Text>
 
           <TextInput
-            placeholder="Enter new email"
+            placeholder={t("account.email.placeholder")}
             value={newEmail}
             onChangeText={(text) => {
               setNewEmail(text);
@@ -287,7 +297,11 @@ export default function AccountSettingsScreen() {
           />
 
           <PrimaryButton
-            title={isUpdatingEmail ? "Updating..." : "Update Email"}
+            title={
+              isUpdatingEmail
+                ? t("common.updatingButton")
+                : t("account.email.updateButton")
+            }
             onPress={handleUpdateEmail}
             disabled={isUpdatingEmail}
             size="large"
@@ -311,11 +325,11 @@ export default function AccountSettingsScreen() {
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <View className="py-6">
           <Text className="text-lg font-semibold text-gray-800 mb-4">
-            New password
+            {t("account.password.newLabel")}
           </Text>
 
           <TextInput
-            placeholder="Enter new password"
+            placeholder={t("account.password.newPlaceholder")}
             value={newPassword}
             onChangeText={(text) => {
               setNewPassword(text);
@@ -331,7 +345,7 @@ export default function AccountSettingsScreen() {
           <View className="h-3" />
 
           <TextInput
-            placeholder="Confirm new password"
+            placeholder={t("account.password.confirmPlaceholder")}
             value={confirmPassword}
             onChangeText={(text) => {
               setConfirmPassword(text);
@@ -343,7 +357,11 @@ export default function AccountSettingsScreen() {
           />
 
           <PrimaryButton
-            title={isUpdatingPassword ? "Updating..." : "Update Password"}
+            title={
+              isUpdatingPassword
+                ? t("common.updatingButton")
+                : t("account.password.updateButton")
+            }
             onPress={handleUpdatePassword}
             disabled={isUpdatingPassword}
             size="large"
@@ -362,13 +380,13 @@ export default function AccountSettingsScreen() {
   const getScreenTitle = () => {
     switch (currentScreen) {
       case "username":
-        return "Username";
+        return t("account.username.screenTitle");
       case "email":
-        return "Email";
+        return t("account.email.screenTitle");
       case "password":
-        return "Change Password";
+        return t("account.password.screenTitle");
       default:
-        return "Account Settings";
+        return t("account.title");
     }
   };
 
@@ -376,7 +394,6 @@ export default function AccountSettingsScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
 
-      {/* Header */}
       <View className="py-6">
         <ScreenHeader
           title={getScreenTitle()}
@@ -394,7 +411,6 @@ export default function AccountSettingsScreen() {
         />
       </View>
 
-      {/* Content */}
       {currentScreen === "main" && renderMainMenu()}
       {currentScreen === "username" && renderUsernameForm()}
       {currentScreen === "email" && renderEmailForm()}

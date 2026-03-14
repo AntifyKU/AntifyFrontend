@@ -5,18 +5,18 @@ import { Ionicons, AntDesign } from "@expo/vector-icons";
 type IconType = "ion" | "ant";
 
 interface PrimaryButtonProps {
-  title: string;
-  onPress: () => void;
-  icon?: string;
-  iconType?: IconType;
-  iconPosition?: "left" | "right";
-  variant?: "filled" | "outlined";
-  disabled?: boolean;
-  fullWidth?: boolean;
-  size?: "small" | "medium" | "large";
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-  iconColor?: string;
+  readonly title: string;
+  readonly onPress: () => void;
+  readonly icon?: string;
+  readonly iconType?: IconType;
+  readonly iconPosition?: "left" | "right";
+  readonly variant?: "filled" | "outlined";
+  readonly disabled?: boolean;
+  readonly fullWidth?: boolean;
+  readonly size?: "small" | "medium" | "large";
+  readonly style?: ViewStyle;
+  readonly textStyle?: TextStyle;
+  readonly iconColor?: string;
 }
 
 export default function PrimaryButton({
@@ -45,7 +45,13 @@ export default function PrimaryButton({
     large: "text-lg",
   };
 
-  const iconSize = size === "small" ? 16 : size === "medium" ? 20 : 24;
+  const getIconSize = (buttonSize: typeof size): number => {
+    if (buttonSize === "small") return 16;
+    if (buttonSize === "medium") return 20;
+    return 24;
+  };
+
+  const iconSize = getIconSize(size);
   const isFilled = variant === "filled";
 
   const backgroundColor = isFilled ? "#0A9D5C" : "transparent";

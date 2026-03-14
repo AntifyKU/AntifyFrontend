@@ -189,23 +189,30 @@ export async function changePassword(
  * Delete user account
  */
 export async function deleteAccount(
-  token: string
+  token: string,
 ): Promise<{ message: string }> {
-  return apiClient.delete<{ message: string }>(
-    "/api/users/me",
-    { authToken: token }
-  );
+  return apiClient.delete<{ message: string }>("/api/users/me", {
+    authToken: token,
+  });
 }
 
 export async function refreshIdToken(refreshToken: string) {
+  const FIREBASE_API_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
   const res = await fetch(
-    `https://securetoken.googleapis.com/v1/token?key=YOUR_FIREBASE_API_KEY`,
+    `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `grant_type=refresh_token&refresh_token=${refreshToken}`,
-    }
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }).toString(),
+    },
   );
+
+  if (!res.ok) {
+    throw new Error("Failed to refresh token");
+  }
 
   return res.json();
 }
@@ -220,7 +227,7 @@ export const authService = {
   deleteProfilePicture,
   changeEmail,
   changePassword,
-  deleteAccount
+  deleteAccount,
 };
 
 export default authService;

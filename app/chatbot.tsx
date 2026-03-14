@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 import { useChatbot } from "@/hooks/useChatbot";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import MessageBubble from "@/components/atom/MessageBubble";
@@ -24,15 +25,14 @@ import { useLocalSearchParams } from "expo-router";
 
 export default function ChatbotScreen() {
   const params = useLocalSearchParams<{ initialAntName?: string }>();
-
+  const { t } = useTranslation();
   const initialMessage = params.initialAntName
-    ? `Ask me about the ${params.initialAntName}! I can help you with its characteristics, venom, distribution, and more.`
-    : "Ask me about ants! I can help identify species and answer questions.";
+    ? t("chatbot.askAboutAnt", { antName: params.initialAntName })
+    : t("chatbot.askAboutAnts");
 
   const initialContext = params.initialAntName
     ? `The user is currently viewing the ant species: ${params.initialAntName}. Please answer questions with this specific ant in mind.`
     : undefined;
-
   const { messages, isConnected, isTyping, sendMessage, sendMessageWithImage } =
     useChatbot(initialMessage, initialContext);
 
@@ -80,8 +80,7 @@ export default function ChatbotScreen() {
 
     if (!result.canceled && result.assets[0].base64) {
       const asset = result.assets[0];
-      const message =
-        inputText.trim() || "What can you tell me about this image?";
+      const message = inputText.trim() || t("chatbot.defaultImageMessage");
 
       sendMessageWithImage(
         message,
@@ -99,7 +98,7 @@ export default function ChatbotScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
       <View style={{ paddingTop: 24, paddingBottom: 16 }}>
-        <ScreenHeader title="Live Chat" />
+        <ScreenHeader title="ChatBot" />
       </View>
 
       <View
@@ -183,7 +182,7 @@ export default function ChatbotScreen() {
         <View style={{ marginLeft: 12 }}>
           <Text style={{ fontSize: 18, fontWeight: "600" }}>Antify</Text>
           <Text style={{ color: "#9CA3AF" }}>
-            {isConnected ? "Support Agent" : "Connecting..."}
+            {isConnected ? "Support Agent" : t("chatbot.statusConnecting")}
           </Text>
         </View>
       </View>
@@ -225,7 +224,7 @@ export default function ChatbotScreen() {
                     />
                   </View>
                   <Text style={{ color: "#6B7280" }}>
-                    Livechat {formatTime(msg.timestamp)}
+                    Live Chat {formatTime(msg.timestamp)}
                   </Text>
                 </View>
               )}
@@ -278,7 +277,7 @@ export default function ChatbotScreen() {
               fontSize: 16,
               backgroundColor: "#FFFFFF",
             }}
-            placeholder="Write a message"
+            placeholder={t("chatbot.inputPlaceholder")}
             value={inputText}
             onChangeText={setInputText}
             onSubmitEditing={handleSend}

@@ -1,16 +1,19 @@
 export type SortOption = "name-asc" | "name-desc" | "newest" | "oldest";
 
-export const getSortLabel = (option: SortOption) => {
+export const getSortLabel = (
+  option: SortOption,
+  t: (key: string) => string,
+) => {
   switch (option) {
     case "name-asc":
-      return "A-Z";
+      return t("sort.nameAsc");
     case "name-desc":
-      return "Z-A";
+      return t("sort.nameDesc");
     case "newest":
-      return "Newest";
+      return t("sort.newest");
     case "oldest":
-      return "Oldest";
+      return t("sort.oldest");
     default:
-      return "Sort";
+      return t("sort.title");
   }
 };

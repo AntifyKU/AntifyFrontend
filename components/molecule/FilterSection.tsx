@@ -3,10 +3,10 @@ import { View, Text } from "react-native";
 import Badge from "@/components/atom/badge/Badge";
 
 type Props = {
-  title: string;
-  options: string[];
-  selected: string[];
-  onToggle: (value: string) => void;
+  readonly title: string;
+  readonly options: readonly string[];
+  readonly selected: readonly string[];
+  readonly onToggle: (value: string) => void;
 };
 
 export default function FilterSection({
@@ -17,9 +17,7 @@ export default function FilterSection({
 }: Props) {
   return (
     <View className="mb-6">
-      <Text className="mb-4 text-lg font-semibold text-gray-800">
-        {title}
-      </Text>
+      <Text className="mb-4 text-lg font-semibold text-gray-800">{title}</Text>
 
       <View className="flex-row flex-wrap">
         {options.map((option) => (

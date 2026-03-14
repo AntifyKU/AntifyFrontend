@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import ListCard from "@/components/ListCard";
 import SearchBar from "@/components/SearchBar";
 import ActionButton from "@/components/atom/button/ActionButton";
@@ -18,19 +19,73 @@ import FilterModal from "@/components/organism/modal/FilterModal";
 import { useExploreFilters } from "@/hooks/useExploreFilters";
 import { useSpecies } from "@/hooks/useSpecies";
 import EmptyState from "@/components/molecule/EmptyState";
-import { useAuth } from "@/context/AuthContext";
-import NotificationModal from "@/components/organism/modal/NotificationModal";
+
+// Helper filter functions to reduce nesting
+function matchesSearchQuery(item: any, query: string) {
+  if (!query) return true;
+  return (
+    item.name.toLowerCase().includes(query) ||
+    item.scientific_name.toLowerCase().includes(query)
+  );
+}
+
+function matchesQuickFiltersApplied(item: any, quickFilters: string[]) {
+  if (quickFilters.length === 0) return true;
+  const quickFilterMap: Record<string, string[]> = {
+    "1": ["Stinging", "Invasive", "Venomous"],
+    "2": ["Forest", "Tree", "Arboreal"],
+    "3": ["Urban", "Household"],
+    "4": ["Giant", "Rare"],
+  };
+  return quickFilters.every((id) => {
+    const tags = quickFilterMap[id] || [];
+    return item.tags?.some((tag: string) =>
+      tags.some((t) => tag.toLowerCase().includes(t.toLowerCase())),
+    );
+  });
+}
+
+function matchesColorsApplied(item: any, colors: string[]) {
+  if (colors.length === 0) return true;
+  return colors.every((c) =>
+    item.colors.some((ic: string) =>
+      ic.toLowerCase().includes(c.toLowerCase()),
+    ),
+  );
+}
+
+function matchesHabitatsApplied(item: any, habitats: string[]) {
+  if (habitats.length === 0) return true;
+  return habitats.every((h) =>
+    item.habitat.some((ih: string) =>
+      ih.toLowerCase().includes(h.toLowerCase()),
+    ),
+  );
+}
+
+function matchesDistributionsApplied(item: any, distributions: string[]) {
+  if (distributions.length === 0) return true;
+  return distributions.every((d) =>
+    item.distribution.some((id: string) =>
+      id.toLowerCase().includes(d.toLowerCase()),
+    ),
+  );
+}
 
 export default function ExploreScreen() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSort, setShowSort] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
-  const [showNoti, setShowNoti] = useState(false);
-  const { user } = useAuth();
   const { species, loading, isUsingFallback } = useSpecies();
-  const { appliedFilters, tempFilters, setApplied, setTemp, toggleFilter } =
-    useExploreFilters();
+  const {
+    appliedFilters,
+    tempFilters,
+    setAppliedFilters,
+    setTempFilters,
+    toggleFilter,
+  } = useExploreFilters();
 
   const activeFilterCount =
     appliedFilters.quickFilters.length +
@@ -38,68 +93,31 @@ export default function ExploreScreen() {
     appliedFilters.habitats.length +
     appliedFilters.distributions.length;
 
+  // Helper functions for filtering
+  const JUNK_LABELS = useMemo(
+    () => new Set(["life", "unknown", "animalia", "insecta"]),
+    [],
+  );
+
+  const isNotJunkLabel = React.useCallback(
+    (item: any) => {
+      return !JUNK_LABELS.has(item.name.toLowerCase().trim());
+    },
+    [JUNK_LABELS],
+  );
+
   const filteredAndSortedSpecies = useMemo(() => {
-    const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
+    const query = searchQuery.toLowerCase().trim();
 
-    let result = species.filter((item) => {
-      // Hide junk taxonomy labels
-      if (JUNK_LABELS.has(item.name.toLowerCase().trim())) return false;
-      // Search
-      const query = searchQuery.toLowerCase().trim();
-      if (query) {
-        const match =
-          item.name.toLowerCase().includes(query) ||
-          item.scientific_name.toLowerCase().includes(query);
-        if (!match) return false;
-      }
-
-      // Quick Filter
-      if (appliedFilters.quickFilters.length > 0) {
-        const quickFilterMap: Record<string, string[]> = {
-          "1": ["Stinging", "Invasive", "Venomous"],
-          "2": ["Forest", "Tree", "Arboreal"],
-          "3": ["Urban", "Household"],
-          "4": ["Giant", "Rare"],
-        };
-
-        const ok = appliedFilters.quickFilters.every((id) => {
-          const tags = quickFilterMap[id] || [];
-          return item.tags?.some((tag) =>
-            tags.some((t) => tag.toLowerCase().includes(t.toLowerCase())),
-          );
-        });
-
-        if (!ok) return false;
-      }
-
-      // Color
-      if (appliedFilters.colors.length > 0) {
-        const ok = appliedFilters.colors.every((c) =>
-          item.colors.some((ic) => ic.toLowerCase().includes(c.toLowerCase())),
-        );
-        if (!ok) return false;
-      }
-
-      // Habitat
-      if (appliedFilters.habitats.length > 0) {
-        const ok = appliedFilters.habitats.every((h) =>
-          item.habitat.some((ih) => ih.toLowerCase().includes(h.toLowerCase())),
-        );
-        if (!ok) return false;
-      }
-
-      // Distribution
-      if (appliedFilters.distributions.length > 0) {
-        const ok = appliedFilters.distributions.every((d) =>
-          item.distribution.some((id) =>
-            id.toLowerCase().includes(d.toLowerCase()),
-          ),
-        );
-        if (!ok) return false;
-      }
-
-      return true;
-    });
+    let result = species.filter(
+      (item) =>
+        isNotJunkLabel(item) &&
+        matchesSearchQuery(item, query) &&
+        matchesQuickFiltersApplied(item, appliedFilters.quickFilters) &&
+        matchesColorsApplied(item, appliedFilters.colors) &&
+        matchesHabitatsApplied(item, appliedFilters.habitats) &&
+        matchesDistributionsApplied(item, appliedFilters.distributions),
+    );
 
     // Sort
     result = [...result].sort((a, b) => {
@@ -109,16 +127,16 @@ export default function ExploreScreen() {
         case "name-desc":
           return b.name.localeCompare(a.name);
         case "newest":
-          return parseInt(b.id) - parseInt(a.id);
+          return Number.parseInt(b.id) - Number.parseInt(a.id);
         case "oldest":
-          return parseInt(a.id) - parseInt(b.id);
+          return Number.parseInt(a.id) - Number.parseInt(b.id);
         default:
           return 0;
       }
     });
 
     return result;
-  }, [species, searchQuery, appliedFilters, sortOption]);
+  }, [species, searchQuery, appliedFilters, sortOption, isNotJunkLabel]);
 
   const handleItemPress = (id: string) => {
     router.push({ pathname: "/detail/[id]", params: { id } });
@@ -144,11 +162,11 @@ export default function ExploreScreen() {
         tempFilters={tempFilters}
         onClose={() => setShowFilter(false)}
         onApply={() => {
-          setApplied(tempFilters);
+          setAppliedFilters(tempFilters);
           setShowFilter(false);
         }}
         onClear={() =>
-          setTemp({
+          setTempFilters({
             quickFilters: [],
             colors: [],
             sizes: [],
@@ -159,26 +177,16 @@ export default function ExploreScreen() {
         onToggle={toggleFilter}
       />
 
-      <NotificationModal
-        visible={showNoti}
-        role={user?.role === "admin" ? "admin" : "user"}
-        onClose={() => setShowNoti(false)}
-      />
-
       {/* Header */}
       <View className="pt-4 pb-5">
-        <ScreenHeader
-          title="Explore"
-          rightIcon="notifications-outline"
-          onRightPress={() => { setShowNoti(true) }}
-        />
+        <ScreenHeader title={t("explore.title")} />
       </View>
 
       {/* Search */}
       <SearchBar
         value={searchQuery}
         onChangeText={setSearchQuery}
-        placeholder="Search ant species..."
+        placeholder={t("explore.searchPlaceholder")}
       />
 
       <ScrollView
@@ -192,15 +200,15 @@ export default function ExploreScreen() {
         <View className="flex-row justify-between px-5 mb-4">
           <ActionButton
             type="sort"
-            label={getSortLabel(sortOption)}
+            label={getSortLabel(sortOption, t)}
             onPress={() => setShowSort(true)}
           />
           <ActionButton
             type="filter"
-            label="Filter"
+            label={t("explore.filterLabel")}
             badgeCount={activeFilterCount}
             onPress={() => {
-              setTemp(appliedFilters);
+              setTempFilters(appliedFilters);
               setShowFilter(true);
             }}
           />
@@ -209,13 +217,18 @@ export default function ExploreScreen() {
         {/* Offline Banner */}
         {isUsingFallback && (
           <View className="mx-5 mb-3 px-4 py-2 bg-yellow-50 rounded-lg">
-            <Text className="text-yellow-700 text-sm">Using offline data</Text>
+            <Text className="text-yellow-700 text-sm">
+              {t("explore.offlineBanner")}
+            </Text>
           </View>
         )}
+
         {/* Count */}
         <View className="px-5 mb-4">
           <Text className="text-base text-gray-500">
-            {filteredAndSortedSpecies.length} species found
+            {t("explore.speciesFound", {
+              count: filteredAndSortedSpecies.length,
+            })}
           </Text>
         </View>
 
@@ -223,7 +236,9 @@ export default function ExploreScreen() {
         {loading && (
           <View className="py-10 items-center">
             <ActivityIndicator size="large" color="#22A45D" />
-            <Text className="mt-4 text-gray-500">Loading species...</Text>
+            <Text className="mt-4 text-gray-500">
+              {t("explore.loadingSpecies")}
+            </Text>
           </View>
         )}
 
@@ -249,8 +264,8 @@ export default function ExploreScreen() {
             <EmptyState
               icon="search-outline"
               iconSize={48}
-              title="No species found"
-              description="Try adjusting your search"
+              title={t("explore.emptyTitle")}
+              description={t("explore.emptyDescription")}
             />
           </View>
         )}

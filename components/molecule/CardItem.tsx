@@ -37,7 +37,7 @@ export default function CardItem(props: CardItemProps) {
   const [imageError, setImageError] = useState(false);
   const isSpecies = props.variant === "species";
   const imageUri = isSpecies
-    ? (props as SpeciesCardItemProps).imageUri
+    ? props.imageUri
     : undefined;
   const showImage = isSpecies && !!imageUri && !imageError;
 
@@ -105,11 +105,11 @@ export default function CardItem(props: CardItemProps) {
 
             {isSpecies ? (
               <Text className="text-sm text-gray-500 italic" numberOfLines={1}>
-                {(props as SpeciesCardItemProps).scientificName}
+                {props.scientificName}
               </Text>
             ) : (
               <Text className="text-sm text-gray-500">
-                {(props as FolderCardItemProps).itemCount ?? 0} species
+                {props.itemCount ?? 0} species
               </Text>
             )}
           </View>

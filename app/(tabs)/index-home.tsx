@@ -7,8 +7,6 @@ import {
   Pressable,
   StatusBar,
   Alert,
-  ActionSheetIOS,
-  Platform,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
@@ -19,7 +17,6 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import SectionHeader from "@/components/molecule/SectionHeader";
 import CardItem from "@/components/molecule/CardItem";
@@ -31,88 +28,107 @@ import {
   featuredSpeciesList as staticFeaturedList,
 } from "@/constants/AntData";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
-import NotificationModal from "@/components/organism/modal/NotificationModal";
-import { useAuth } from "@/context/AuthContext";
+import { openIdentifySheet } from "@/utils/identifyHelper";
+
+function getDailyIndex(listLength: number): number {
+  const today = new Date();
+  const seed =
+    today.getFullYear() * 10000 +
+    (today.getMonth() + 1) * 100 +
+    today.getDate();
+  const randomValue = Math.sin(seed) * 10000;
+  return Math.floor((randomValue - Math.floor(randomValue)) * listLength);
+}
+
+function toSpeciesCard(s: {
+  id: string;
+  name: string;
+  scientific_name: string;
+  image?: string;
+}) {
+  return {
+    id: s.id,
+    name: s.name,
+    scientificName: s.scientific_name,
+    image: s.image || "",
+  };
+}
+
+function getAntProvinces(s: {
+  distribution_v2?: { provinces?: string[] };
+}): string[] {
+  return s.distribution_v2?.provinces?.map((p) => p.toLowerCase()) ?? [];
+}
+
+function antMatchesUserLocation(
+  antProvinces: string[],
+  userLocations: string[],
+): boolean {
+  return antProvinces.some((p) =>
+    userLocations.some((userLoc) => userLoc.includes(p) || p.includes(userLoc)),
+  );
+}
+
+function getLocalSpecies(
+  species: {
+    id: string;
+    name: string;
+    scientific_name: string;
+    image?: string;
+    distribution_v2?: { provinces?: string[] };
+  }[],
+  locationObj: Location.LocationGeocodedAddress,
+) {
+  // Build a list of defined, lowercased location strings from the geocoded address
+  const userLocations: string[] = [
+    locationObj.city,
+    locationObj.subregion,
+    locationObj.region,
+  ]
+    .filter((loc): loc is string => typeof loc === "string" && loc.length > 0)
+    .map((loc) => loc.toLowerCase());
+
+  return species
+    .filter((s) => antMatchesUserLocation(getAntProvinces(s), userLocations))
+    .slice(0, 10)
+    .map(toSpeciesCard);
+}
 
 export default function HomeScreen() {
   const [location, setLocation] = useState("Loading...");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
-  const [showNoti, setShowNoti] = useState(false);
-  const [locationObj, setLocationObj] = useState<Location.LocationGeocodedAddress | null>(null);
-  const { user } = useAuth();
+  const [locationObj, setLocationObj] =
+    useState<Location.LocationGeocodedAddress | null>(null);
 
-  const {
-    species,
-    loading: speciesLoading,
-  } = useSpecies({
-    filters: { limit: 500 }, // Fetch full list to enable local filtering
+  const { species, loading: speciesLoading } = useSpecies({
+    filters: { limit: 500 },
   });
 
-  const { featuredAntOfTheDay, featuredSpeciesList, localSpeciesList } = useMemo(() => {
-    if (species.length > 0) {
-      // 1. Daily Random Ant of the Day
-      // Use the current date to seed the random index so it changes once per day
-      const today = new Date();
-      const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-
-      // Simple pseudo-random generator based on the date seed
-      const randomValue = Math.sin(seed) * 10000;
-      const index = Math.floor((randomValue - Math.floor(randomValue)) * species.length);
-      const chosenAnt = species[index];
-
-      const antOfTheDay = {
-        id: chosenAnt.id,
-        name: chosenAnt.name,
-        scientificName: chosenAnt.scientific_name,
-        image: chosenAnt.image || "",
-      };
-
-      // 2. Featured Species (just take the first 5 for now)
-      const featuredList = species.slice(0, 5).map((s) => ({
-        id: s.id,
-        name: s.name,
-        scientificName: s.scientific_name,
-        image: s.image || "",
-      }));
-
-      // 3. Species Near You
-      let localList: typeof featuredList = [];
-      if (locationObj) {
-        const potentialProvinces = [
-          locationObj.city?.toLowerCase(),
-          locationObj.subregion?.toLowerCase(),
-          locationObj.region?.toLowerCase(),
-        ].filter(Boolean) as string[];
-
-        const localMatches = species.filter(s => {
-          const antProvinces = s.distribution_v2?.provinces?.map(p => p.toLowerCase()) || [];
-          return antProvinces.some(p =>
-            potentialProvinces.some(userLoc =>
-              userLoc.includes(p) || p.includes(userLoc)
-            )
-          );
-        });
-
-        localList = localMatches.slice(0, 10).map((s) => ({
-          id: s.id,
-          name: s.name,
-          scientificName: s.scientific_name,
-          image: s.image || "",
-        }));
+  const { featuredAntOfTheDay, featuredSpeciesList, localSpeciesList } =
+    useMemo(() => {
+      if (species.length === 0) {
+        return {
+          featuredAntOfTheDay: staticAntOfTheDay,
+          featuredSpeciesList: staticFeaturedList,
+          localSpeciesList: [],
+        };
       }
+
+      const antOfTheDay = toSpeciesCard(species[getDailyIndex(species.length)]);
+
+      const featuredList = species.slice(0, 5).map(toSpeciesCard);
+
+      const localList = locationObj
+        ? getLocalSpecies(species, locationObj)
+        : [];
 
       return {
         featuredAntOfTheDay: antOfTheDay,
-        featuredSpeciesList: featuredList.length > 0 ? featuredList : staticFeaturedList,
+        featuredSpeciesList:
+          featuredList.length > 0 ? featuredList : staticFeaturedList,
         localSpeciesList: localList,
       };
-    }
-    return {
-      featuredAntOfTheDay: staticAntOfTheDay,
-      featuredSpeciesList: staticFeaturedList,
-      localSpeciesList: [],
-    };
-  }, [species, locationObj]);
+    }, [species, locationObj]);
 
   useEffect(() => {
     getLocation();
@@ -138,10 +154,7 @@ export default function HomeScreen() {
         const displayLocation =
           address.city || address.subregion || address.region;
         const displayCountry = address.country;
-
-        // Save the raw address object so we can use it to filter local species
         setLocationObj(address);
-
         if (displayLocation && displayCountry) {
           setLocation(`${displayLocation}, ${displayCountry}`);
         } else if (displayLocation) {
@@ -164,103 +177,7 @@ export default function HomeScreen() {
   };
 
   const handleAntPress = (antId: string) => {
-    router.push({
-      pathname: `/detail/[id]`,
-      params: { id: antId },
-    });
-  };
-
-  const handleTakePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "You need to grant camera permission to use this feature.",
-        );
-        return;
-      }
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const capturedImage = result.assets[0];
-        router.push({
-          pathname: "/identification-results",
-          params: { imageUri: capturedImage.uri, source: "camera" },
-        });
-      }
-    } catch (error) {
-      console.error("Error taking photo:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem taking the photo. Please try again.",
-      );
-    }
-  };
-
-  const handleUploadPhoto = async () => {
-    try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "You need to grant gallery access to use this feature.",
-        );
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const selectedImage = result.assets[0];
-        router.push({
-          pathname: "/identification-results",
-          params: { imageUri: selectedImage.uri, source: "gallery" },
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading photo:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem selecting the photo. Please try again.",
-      );
-    }
-  };
-
-  const handleIdentifyAnt = () => {
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Take Photo", "Choose from Gallery"],
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            handleTakePhoto();
-          } else if (buttonIndex === 2) {
-            handleUploadPhoto();
-          }
-        },
-      );
-    } else {
-      Alert.alert(
-        "Identify Ant",
-        "Choose an option",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Take Photo", onPress: handleTakePhoto },
-          { text: "Choose from Gallery", onPress: handleUploadPhoto },
-        ],
-        { cancelable: true },
-      );
-    }
+    router.push({ pathname: `/detail/[id]`, params: { id: antId } });
   };
 
   const handleCategoryPress = (categoryName: string) => {
@@ -277,7 +194,12 @@ export default function HomeScreen() {
         "Please enable location permission in your device settings to see your current location.",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Retry", onPress: getLocation },
+          {
+            text: "Retry",
+            onPress: () => {
+              getLocation();
+            },
+          },
         ],
       );
     } else {
@@ -292,17 +214,8 @@ export default function HomeScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="pt-4 pb-5">
-          <ScreenHeader
-            rightIcon="notifications-outline"
-            onRightPress={() => setShowNoti(true)}
-          />
+          <ScreenHeader />
         </View>
-
-        <NotificationModal
-          visible={showNoti}
-          role={user?.role === "admin" ? "admin" : "user"}
-          onClose={() => setShowNoti(false)}
-        />
 
         {/* Your Location Section */}
         <Pressable
@@ -330,7 +243,7 @@ export default function HomeScreen() {
           <PrimaryButton
             title="Identify Ant"
             icon="camera"
-            onPress={handleIdentifyAnt}
+            onPress={openIdentifySheet}
             size="large"
           />
         </View>
@@ -343,34 +256,42 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
           >
-            {quickDiscoveryCategories.map((tag) => (
-              <TouchableOpacity
-                key={tag.id}
-                className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
-                onPress={() => handleCategoryPress(tag.name)}
-              >
-                {tag.name === "Venomous" ? (
+            {quickDiscoveryCategories.map((tag) => {
+              let icon;
+              if (tag.name === "Venomous") {
+                icon = (
                   <MaterialCommunityIcons
                     name="alert"
                     size={16}
                     color={tag.color}
                   />
-                ) : tag.name === "Forest" ? (
+                );
+              } else if (tag.name === "Forest") {
+                icon = (
                   <MaterialCommunityIcons
                     name="tree"
                     size={16}
                     color={tag.color}
                   />
-                ) : tag.name === "Household" ? (
-                  <Ionicons name="home" size={16} color={tag.color} />
-                ) : (
-                  <Ionicons name="sparkles" size={16} color={tag.color} />
-                )}
-                <Text className="ml-2 text-gray-700 font-medium">
-                  {tag.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                );
+              } else if (tag.name === "Household") {
+                icon = <Ionicons name="home" size={16} color={tag.color} />;
+              } else {
+                icon = <Ionicons name="sparkles" size={16} color={tag.color} />;
+              }
+              return (
+                <TouchableOpacity
+                  key={tag.id}
+                  className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
+                  onPress={() => handleCategoryPress(tag.name)}
+                >
+                  {icon}
+                  <Text className="ml-2 text-gray-700 font-medium">
+                    {tag.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -406,7 +327,6 @@ export default function HomeScreen() {
             showSeeMore
             onSeeMorePress={() => router.push("/(tabs)/explore")}
           />
-
           {speciesLoading ? (
             <View className="h-32 items-center justify-center">
               <ActivityIndicator size="small" color="#328e6e" />
@@ -442,7 +362,7 @@ export default function HomeScreen() {
         {localSpeciesList.length > 0 && (
           <View className="mb-8">
             <SectionHeader
-              title={`Species near ${locationObj?.city || locationObj?.subregion || 'you'}`}
+              title={`Species near ${locationObj?.city || locationObj?.subregion || "you"}`}
               subtitle="Found in your province"
             />
             <ScrollView

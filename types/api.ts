@@ -1,8 +1,3 @@
-/**
- * API Response Types
- * TypeScript types matching backend schemas
- */
-
 // Species Types
 export interface SpeciesClassification {
   family: string;
@@ -104,24 +99,6 @@ export interface SpeciesFilters {
   limit?: number;
 }
 
-// News Types
-export interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  link: string;
-  image?: string;
-  source: string;
-  published_at?: string;
-  fetched_at?: string;
-}
-
-export interface NewsListResponse {
-  items: NewsItem[];
-  total: number;
-  last_updated?: string;
-}
-
 // Identification Types
 export interface Detection {
   class_id: number;
@@ -170,8 +147,7 @@ export interface SpeciesDetailsResponse {
   model?: string;
 }
 
-// Collection & Favorites Types
-
+// Collection Types
 export interface CollectionItem {
   id: string;
   species_id: string;
@@ -193,47 +169,6 @@ export interface AddToCollectionRequest {
   notes?: string;
   location?: string;
   image_url?: string;
-}
-
-export interface FavoriteItem {
-  id: string;
-  species_id: string;
-  species_name: string;
-  scientific_name: string;
-  image_url?: string;
-  added_at: string;
-}
-
-export interface FavoritesListResponse {
-  favorites: FavoriteItem[];
-  total: number;
-}
-
-// News Favorites Types
-export interface FavoriteNewsItem {
-  id: string;
-  news_id: string;
-  news_title: string;
-  news_description: string;
-  news_link: string;
-  news_image?: string;
-  news_source: string;
-  news_published_at?: string;
-  added_at: string;
-}
-
-export interface FavoriteNewsListResponse {
-  items: FavoriteNewsItem[];
-  total: number;
-}
-
-export interface AddFavoriteNewsRequest {
-  news_id: string;
-}
-
-export interface CheckFavoriteNewsResponse {
-  is_favorite: boolean;
-  favorite_id?: string;
 }
 
 // Feedback Types
@@ -307,24 +242,28 @@ export interface HealthResponse {
 }
 
 // History Types
-export interface HistoryPrediction {
+export interface PredictionSnapshot {
   rank: number;
-  species_id?: string;
-  class_name: string;
+  speciesName: string;
   confidence: number;
+  speciesId: string | null;
 }
 
-export interface HistoryItem {
+export interface HistoryRecord {
   id: string;
-  image_uri: string;
-  top_prediction: string;
-  top_confidence: number;
-  predictions: HistoryPrediction[];
-  identified_at: string;
-  notes?: string;
+  imageBase64: string;
+  imageMimeType: string;
+  speciesName: string;
+  commonName: string | null;
+  confidence: number;
+  identifiedAt: string;
+  speciesInfo: Species | null;
+  topPredictions: PredictionSnapshot[];
 }
 
-export interface HistoryListResponse {
-  items: HistoryItem[];
-  total: number;
+export type NewHistoryRecord = Omit<HistoryRecord, "id" | "identifiedAt">;
+
+export interface HistoryFilter {
+  search?: string;
+  limit?: number;
 }

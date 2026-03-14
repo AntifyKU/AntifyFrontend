@@ -1,129 +1,116 @@
-/**
- * History Service
- * Handles local storage of identification history
- */
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { HistoryItem, HistoryListResponse } from "@/types/api";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 
-const HISTORY_KEY = "@ant_identify_history";
-const MAX_HISTORY_ITEMS = 100; // Maximum number of items to keep
+import type {
+  HistoryFilter,
+  HistoryRecord,
+  NewHistoryRecord,
+} from "@/types/api";
 
-/**
- * Get all history items
- */
-export async function getHistory(): Promise<HistoryListResponse> {
+const INDEX_KEY = "history:index";
+const RECORD_KEY = (id: string) => `history:record:${id}`;
+
+const MAX_RECORDS = 200;
+
+async function _getIndex(): Promise<string[]> {
   try {
-    const historyJson = await AsyncStorage.getItem(HISTORY_KEY);
+    const raw = await AsyncStorage.getItem(INDEX_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
 
-    if (!historyJson) {
-      return { items: [], total: 0 };
-    }
+async function _setIndex(index: string[]): Promise<void> {
+  await AsyncStorage.setItem(INDEX_KEY, JSON.stringify(index));
+}
 
-    const items: HistoryItem[] = JSON.parse(historyJson);
+async function _getRecord(id: string): Promise<HistoryRecord | null> {
+  try {
+    const raw = await AsyncStorage.getItem(RECORD_KEY(id));
+    return raw ? (JSON.parse(raw) as HistoryRecord) : null;
+  } catch {
+    return null;
+  }
+}
 
-    // Sort by date (newest first)
-    items.sort(
-      (a, b) =>
-        new Date(b.identified_at).getTime() -
-        new Date(a.identified_at).getTime(),
+export async function saveRecord(
+  data: NewHistoryRecord,
+): Promise<HistoryRecord> {
+  const record: HistoryRecord = {
+    ...data,
+    id: uuidv4(),
+    identifiedAt: new Date().toISOString(),
+  };
+
+  await AsyncStorage.setItem(RECORD_KEY(record.id), JSON.stringify(record));
+
+  const index = await _getIndex();
+  const newIndex = [record.id, ...index].slice(0, MAX_RECORDS);
+
+  if (index.length >= MAX_RECORDS) {
+    const evicted = index.slice(MAX_RECORDS - 1);
+    await AsyncStorage.multiRemove(evicted.map(RECORD_KEY));
+  }
+
+  await _setIndex(newIndex);
+  return record;
+}
+
+export async function getRecords(
+  filter: HistoryFilter = {},
+): Promise<HistoryRecord[]> {
+  const { search, limit = 50 } = filter;
+
+  const index = await _getIndex();
+  if (index.length === 0) return [];
+
+  const idsToFetch = search ? index : index.slice(0, limit);
+  const pairs = await AsyncStorage.multiGet(idsToFetch.map(RECORD_KEY));
+  let records: HistoryRecord[] = pairs
+    .map(([, value]) => (value ? (JSON.parse(value) as HistoryRecord) : null))
+    .filter((r): r is HistoryRecord => r !== null);
+
+  if (search) {
+    const lower = search.toLowerCase();
+    records = records.filter(
+      (r) =>
+        r.speciesName.toLowerCase().includes(lower) ||
+        (r.commonName?.toLowerCase().includes(lower) ?? false),
     );
-
-    return {
-      items,
-      total: items.length,
-    };
-  } catch (error) {
-    console.error("Error getting history:", error);
-    return { items: [], total: 0 };
   }
+
+  return records.slice(0, limit);
 }
 
-/**
- * Add a new history item
- */
-export async function addHistoryItem(
-  item: Omit<HistoryItem, "id" | "identified_at">,
-): Promise<HistoryItem> {
-  try {
-    const { items } = await getHistory();
-
-    const newItem: HistoryItem = {
-      ...item,
-      id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      identified_at: new Date().toISOString(),
-    };
-
-    // Add to beginning of array
-    items.unshift(newItem);
-
-    // Keep only the most recent items
-    const trimmedItems = items.slice(0, MAX_HISTORY_ITEMS);
-
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(trimmedItems));
-
-    return newItem;
-  } catch (error) {
-    console.error("Error adding history item:", error);
-    throw error;
-  }
+export async function getRecord(id: string): Promise<HistoryRecord | null> {
+  return _getRecord(id);
 }
 
-/**
- * Delete a history item
- */
-export async function deleteHistoryItem(id: string): Promise<void> {
-  try {
-    const { items } = await getHistory();
-    const filteredItems = items.filter((item) => item.id !== id);
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(filteredItems));
-  } catch (error) {
-    console.error("Error deleting history item:", error);
-    throw error;
-  }
+export async function deleteRecord(id: string): Promise<void> {
+  await AsyncStorage.removeItem(RECORD_KEY(id));
+  const index = await _getIndex();
+  await _setIndex(index.filter((i) => i !== id));
 }
 
-/**
- * Clear all history
- */
-export async function clearHistory(): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(HISTORY_KEY);
-  } catch (error) {
-    console.error("Error clearing history:", error);
-    throw error;
-  }
+export async function clearAllRecords(): Promise<void> {
+  const index = await _getIndex();
+  await AsyncStorage.multiRemove([INDEX_KEY, ...index.map(RECORD_KEY)]);
 }
 
-/**
- * Update history item notes
- */
-export async function updateHistoryNotes(
-  id: string,
-  notes: string,
-): Promise<void> {
-  try {
-    const { items } = await getHistory();
-    const itemIndex = items.findIndex((item) => item.id === id);
-
-    if (itemIndex === -1) {
-      throw new Error("History item not found");
-    }
-
-    items[itemIndex].notes = notes;
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(items));
-  } catch (error) {
-    console.error("Error updating history notes:", error);
-    throw error;
-  }
+export async function getRecordCount(): Promise<number> {
+  const index = await _getIndex();
+  return index.length;
 }
 
 export const historyService = {
-  getHistory,
-  addHistoryItem,
-  deleteHistoryItem,
-  clearHistory,
-  updateHistoryNotes,
+  saveRecord,
+  getRecords,
+  getRecord,
+  deleteRecord,
+  clearAllRecords,
+  getRecordCount,
 };
 
 export default historyService;
