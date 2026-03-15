@@ -104,14 +104,6 @@ export default function FilterModal({
             onToggle={(v) => onToggle("habitats", v)}
           />
 
-          {/* Risk */}
-          <FilterSection
-            title="Risk"
-            options={filterOptions.risks}
-            selected={tempFilters.risks}
-            onToggle={(v) => onToggle("risks", v)}
-          />
-
           {/* Distribution */}
           <FilterSection
             title="Distribution"

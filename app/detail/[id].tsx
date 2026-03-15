@@ -492,7 +492,6 @@ export default function DetailScreen() {
         onConfirm={addToCollectionWithFolders}
       />
 
-      {/* Fixed Header */}
       <View className="absolute top-0 left-0 z-20" style={{ zIndex: 20 }}>
         <SafeAreaView edges={["top"]}>
           <Pressable
@@ -696,70 +695,70 @@ export default function DetailScreen() {
       </ScrollView>
 
       {/* Bottom Fixed Buttons */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
-        <SafeAreaView edges={["bottom"]}>
-          <View className="flex-row px-4 py-3 gap-3">
-            <View style={{ flex: 2 }}>
-              <View style={{ height: BUTTON_HEIGHT }}>
-                <PrimaryButton
-                  title={
-                    isCurrentInCollection
-                      ? "In Collection"
-                      : "Add to My Collection"
-                  }
-                  onPress={handleCollectionPress}
-                  disabled={isCollectionLoading}
-                  icon={isCurrentInCollection ? "checkmark" : "add"}
-                  fullWidth
-                  variant={isCurrentInCollection ? "outlined" : "filled"}
-                  iconColor={isCurrentInCollection ? "#0A9D5C" : "#FFFFFF"}
-                  style={{
-                    height: BUTTON_HEIGHT,
-                    borderColor: "#0A9D5C",
-                    backgroundColor: isCurrentInCollection
-                      ? "#E8F6EF"
-                      : "#0A9D5C",
-                    shadowColor: isCurrentInCollection
-                      ? "transparent"
-                      : "#0A9D5C",
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: isCurrentInCollection ? 0 : 0.3,
-                    shadowRadius: 8,
-                    elevation: isCurrentInCollection ? 0 : 6,
-                  }}
-                  textStyle={{
-                    color: isCurrentInCollection ? "#0A9D5C" : "#FFFFFF",
-                    fontWeight: "600",
-                  }}
-                />
-              </View>
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <View style={{ height: BUTTON_HEIGHT }}>
-                <PrimaryButton
-                  title="Ask Chat"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/chatbot",
-                      params: { initialAntName: currentAnt.name },
-                    })
-                  }
-                  fullWidth
-                  variant="outlined"
-                  style={{
-                    height: BUTTON_HEIGHT,
-                    borderColor: "#0A9D5C",
-                    shadowColor: "transparent",
-                  }}
-                  textStyle={{ fontWeight: "600" }}
-                />
-              </View>
-            </View>
+  <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+    <SafeAreaView edges={["bottom"]}>
+      <View className="flex-row px-4 py-3 gap-3">
+        <View style={{ flex: 2 }}>
+          <View style={{ height: BUTTON_HEIGHT }}>
+            <PrimaryButton
+              title={
+                isCurrentInCollection
+                  ? "In Collection"
+                  : "Add to My Collection"
+              }
+              onPress={handleCollectionPress}
+              disabled={isCollectionLoading}
+              icon={isCurrentInCollection ? "checkmark" : "add"}
+              fullWidth
+              variant={isCurrentInCollection ? "outlined" : "filled"}
+              iconColor={isCurrentInCollection ? "#0A9D5C" : "#FFFFFF"}
+              style={{
+                height: BUTTON_HEIGHT,
+                borderColor: "#0A9D5C",
+                backgroundColor: isCurrentInCollection
+                  ? "#E8F6EF"
+                  : "#0A9D5C",
+                shadowColor: isCurrentInCollection
+                  ? "transparent"
+                  : "#0A9D5C",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: isCurrentInCollection ? 0 : 0.3,
+                shadowRadius: 8,
+                elevation: isCurrentInCollection ? 0 : 6,
+              }}
+              textStyle={{
+                color: isCurrentInCollection ? "#0A9D5C" : "#FFFFFF",
+                fontWeight: "600",
+              }}
+            />
           </View>
-        </SafeAreaView>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <View style={{ height: BUTTON_HEIGHT }}>
+            <PrimaryButton
+              title="Ask Chat"
+              onPress={() =>
+                router.push({
+                  pathname: "/chatbot",
+                  params: { initialAntName: currentAnt.name },
+                })
+              }
+              fullWidth
+              variant="outlined"
+              style={{
+                height: BUTTON_HEIGHT,
+                borderColor: "#0A9D5C",
+                shadowColor: "transparent",
+              }}
+              textStyle={{ fontWeight: "600" }}
+            />
+          </View>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
+  </View>
+    </View >
   );
 }
 

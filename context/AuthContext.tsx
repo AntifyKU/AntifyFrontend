@@ -316,8 +316,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         SecureStore.getItemAsync(REFRESH_KEY),
       ]);
 
-      if (!storedToken || !storedUser) {
-        console.log("[AuthContext] No stored auth, user must log in");
+      if (!storedToken || !storedUser || !storedRefreshToken) {
+        console.log("[AuthContext] Missing auth components, user must log in");
+        if (storedToken || storedUser || storedRefreshToken) {
+          await clearStoredAuth();
+        }
         return;
       }
 
@@ -343,7 +346,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(false);
       isInitializedRef.current = true;
     }
-  }, [validateAndSync, scheduleTokenRefresh]);
+  }, [validateAndSync, scheduleTokenRefresh, clearStoredAuth]);
 
   useEffect(() => {
     loadStoredAuth();
@@ -353,10 +356,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Keep AuthContext token in sync when api.ts silently refreshes a 401
   useEffect(() => {
     const unsubscribe = subscribeToTokenRefresh((newToken) => {
+      console.log("[AuthContext] API layer triggered a refresh, syncing state");
       setToken(newToken);
-      SecureStore.setItemAsync(TOKEN_KEY, newToken);
-      const expiresAt = Date.now() + TOKEN_LIFETIME_MS;
-      SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, String(expiresAt));
     });
     return unsubscribe;
   }, []);
