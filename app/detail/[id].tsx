@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { antSpeciesData } from "@/constants/AntData";
+
 import Badge from "@/components/atom/badge/Badge";
 import { useSpeciesDetail } from "@/hooks/useSpeciesDetail";
 import { useSpecies } from "@/hooks/useSpecies";
@@ -344,42 +344,14 @@ export default function DetailScreen() {
   const { species, loading } = useSpeciesDetail(id);
   const { species: allSpecies } = useSpecies();
 
-  const currentAnt = species
-    ? {
-        id: species.id,
-        name: species.name,
-        scientificName: species.scientific_name,
-        classification: species.classification,
-        tags: species.tags,
-        about: species.about,
-        characteristics: species.characteristics,
-        colors: species.colors,
-        habitat: species.habitat,
-        distribution: species.distribution,
-        behavior: species.behavior,
-        ecologicalRole: species.ecological_role,
-        image: species.image || "",
-        provinces: species.distribution_v2?.provinces ?? [],
-        acceptedTaxon: species.accepted_taxon,
-        lookalikes: species.lookalikes ?? [],
-        risk: species.risk,
-      }
-    : {
-        ...antSpeciesData[0],
-        provinces: [] as string[],
-        acceptedTaxon: undefined,
-        lookalikes: [] as string[],
-        risk: undefined,
-      };
-
   const handleBackPress = () => {
     if (fromIdentification === "true") {
       navigateAfterIdentification(
         id,
         imageUri,
         source,
-        antName || currentAnt.name,
-        scientificName || currentAnt.scientificName,
+        antName || species?.name || "",
+        scientificName || species?.scientific_name || "",
         matchPercentage,
       );
     } else {
@@ -455,7 +427,7 @@ export default function DetailScreen() {
     );
   }
 
-  if (!species && !loading) {
+  if (!species) {
     return (
       <View className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
@@ -483,6 +455,28 @@ export default function DetailScreen() {
       </View>
     );
   }
+
+  // Transform API species to display format
+  const currentAnt = {
+    id: species.id,
+    name: species.name,
+    scientificName: species.scientific_name,
+    classification: species.classification,
+    tags: species.tags,
+    about: species.about,
+    characteristics: species.characteristics,
+    colors: species.colors,
+    habitat: species.habitat,
+    distribution: species.distribution,
+    behavior: species.behavior,
+    ecologicalRole: species.ecological_role,
+    image: species.image || "",
+    // Extended fields
+    provinces: species.distribution_v2?.provinces ?? [],
+    acceptedTaxon: species.accepted_taxon,
+    lookalikes: species.lookalikes ?? [],
+    risk: species.risk,
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -620,23 +614,6 @@ export default function DetailScreen() {
                 <Badge
                   key={hab}
                   label={hab}
-                  onPress={() => {}}
-                  size="small"
-                  showCloseIcon={false}
-                />
-              ))}
-            </View>
-          </View>
-
-          <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">
-              Distribution in Thailand
-            </Text>
-            <View className="flex-row flex-wrap">
-              {currentAnt.distribution.map((dist) => (
-                <Badge
-                  key={dist}
-                  label={dist}
                   onPress={() => {}}
                   size="small"
                   showCloseIcon={false}

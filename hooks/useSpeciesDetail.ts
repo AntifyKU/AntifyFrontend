@@ -1,29 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { speciesService } from "@/services/species";
-import { getAntById, antSpeciesData } from "@/constants/AntData";
-import type { Species } from "@/types/api";
+/**
+ * useSpeciesDetail Hook
+ * Fetches a single species by ID with fallback to static data
+ */
 
-// Transform static data to API format
-function transformStaticSpecies(
-  staticAnt: (typeof antSpeciesData)[0],
-): Species {
-  return {
-    id: staticAnt.id,
-    name: staticAnt.name,
-    scientific_name: staticAnt.scientificName,
-    classification: staticAnt.classification,
-    tags: staticAnt.tags,
-    about: staticAnt.about,
-    characteristics: staticAnt.characteristics,
-    colors: staticAnt.colors,
-    habitat: staticAnt.habitat,
-    distribution: staticAnt.distribution,
-    behavior: staticAnt.behavior,
-    ecological_role: staticAnt.ecologicalRole,
-    image: staticAnt.image,
-  };
-}
-
+import { useState, useEffect, useCallback } from 'react';
+import { speciesService } from '@/services/species';
+import type { Species } from '@/types/api';
 interface UseSpeciesDetailOptions {
   useFallback?: boolean;
 }
@@ -68,11 +50,8 @@ export function useSpeciesDetail(
 
       // Use fallback data on error
       if (useFallback) {
-        const staticAnt = getAntById(id);
-        if (staticAnt) {
-          setSpecies(transformStaticSpecies(staticAnt));
-          setIsUsingFallback(true);
-        }
+        setSpecies(null);
+        setIsUsingFallback(true);
       }
     } finally {
       setLoading(false);

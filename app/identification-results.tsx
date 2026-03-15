@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { identificationResultsData } from "@/constants/AntData";
+
 import { useIdentification } from "@/hooks/useIdentification";
 import AntCard from "@/components/molecule/AntCard";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
@@ -129,12 +129,12 @@ export default function IdentificationResultsScreen() {
         }
       }
 
-      // Fallback to static mock data
+      // No valid predictions
       return {
-        bestMatch: identificationResultsData[0],
-        otherMatches: identificationResultsData.slice(1),
-        totalMatches: identificationResultsData.length,
-        isUsingFallback: true,
+        bestMatch: null,
+        otherMatches: [],
+        totalMatches: 0,
+        isUsingFallback: false,
       };
     }, [speciesResult, speciesInfo, allSpecies]);
 
@@ -240,8 +240,8 @@ export default function IdentificationResultsScreen() {
     );
   }
 
-  // Show error state if identification failed and no fallback
-  if (identifyError && !bestMatch) {
+  // Show error state if identification failed or no valid matches
+  if (identifyError || !bestMatch) {
     return (
       <View className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
@@ -442,23 +442,6 @@ export default function IdentificationResultsScreen() {
           provinceSpecies={provinceSpecies}
           loadingProvinceSpecies={loadingProvinceSpecies}
         />
-
-        {/* Help Improve AI Section */}
-        <View className="mx-4 mt-6">
-          <Text className="text-center text-gray-600 mb-3">
-            Help improve our AI accuracy
-          </Text>
-
-          <TouchableOpacity
-            className="py-3 rounded-full border border-gray-300 flex-row items-center justify-center"
-            onPress={handleProvideFeedback}
-          >
-            <Ionicons name="thumbs-up-outline" size={20} color="#0A9D5C" />
-            <Text className="text-[#0A9D5C] font-semibold ml-2">
-              Provide Feedback
-            </Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Other Possibilities Section */}
         <View className="mx-4 mt-6">

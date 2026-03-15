@@ -7,6 +7,7 @@ export function useExploreFilters() {
     colors: [],
     sizes: [],
     habitats: [],
+    risks: [],
     distributions: [],
   });
 

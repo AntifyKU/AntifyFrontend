@@ -1,0 +1,62 @@
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
+
+interface CollectionGridItemProps {
+  id: string;
+  title: string;
+  subtitle?: string;
+  image?: string;
+  itemWidth: number;
+  isLeftColumn: boolean;
+  onPress: () => void;
+}
+
+export default function CollectionGridItem({
+  id,
+  title,
+  subtitle,
+  image,
+  itemWidth,
+  isLeftColumn,
+  onPress,
+}: CollectionGridItemProps) {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={{
+        width: itemWidth,
+        marginLeft: isLeftColumn ? 0 : 5,
+        marginRight: isLeftColumn ? 5 : 0,
+        marginBottom: 15,
+      }}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden pb-3 relative"
+    >
+      <View className="w-full aspect-square bg-[#e1eebc] items-center justify-center relative overflow-hidden">
+        {image && !imageError ? (
+          <Image
+            source={{ uri: image }}
+            className="w-full h-full absolute inset-0"
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <Text className="text-[#328e6e] opacity-50 font-bold">No Image</Text>
+        )}
+      </View>
+
+      <View className="px-3 pt-3 flex-1 justify-center">
+        <Text className="text-sm font-bold text-gray-800" numberOfLines={1}>
+          {title || 'Unknown Species'}
+        </Text>
+        {subtitle ? (
+          <Text className="text-xs text-gray-500 italic mt-0.5" numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+    </TouchableOpacity>
+  );
+}

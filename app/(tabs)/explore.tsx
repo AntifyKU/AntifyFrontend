@@ -20,57 +20,6 @@ import { useExploreFilters } from "@/hooks/useExploreFilters";
 import { useSpecies } from "@/hooks/useSpecies";
 import EmptyState from "@/components/molecule/EmptyState";
 
-// Helper filter functions to reduce nesting
-function matchesSearchQuery(item: any, query: string) {
-  if (!query) return true;
-  return (
-    item.name.toLowerCase().includes(query) ||
-    item.scientific_name.toLowerCase().includes(query)
-  );
-}
-
-function matchesQuickFiltersApplied(item: any, quickFilters: string[]) {
-  if (quickFilters.length === 0) return true;
-  const quickFilterMap: Record<string, string[]> = {
-    "1": ["Stinging", "Invasive", "Venomous"],
-    "2": ["Forest", "Tree", "Arboreal"],
-    "3": ["Urban", "Household"],
-    "4": ["Giant", "Rare"],
-  };
-  return quickFilters.every((id) => {
-    const tags = quickFilterMap[id] || [];
-    return item.tags?.some((tag: string) =>
-      tags.some((t) => tag.toLowerCase().includes(t.toLowerCase())),
-    );
-  });
-}
-
-function matchesColorsApplied(item: any, colors: string[]) {
-  if (colors.length === 0) return true;
-  return colors.every((c) =>
-    item.colors.some((ic: string) =>
-      ic.toLowerCase().includes(c.toLowerCase()),
-    ),
-  );
-}
-
-function matchesHabitatsApplied(item: any, habitats: string[]) {
-  if (habitats.length === 0) return true;
-  return habitats.every((h) =>
-    item.habitat.some((ih: string) =>
-      ih.toLowerCase().includes(h.toLowerCase()),
-    ),
-  );
-}
-
-function matchesDistributionsApplied(item: any, distributions: string[]) {
-  if (distributions.length === 0) return true;
-  return distributions.every((d) =>
-    item.distribution.some((id: string) =>
-      id.toLowerCase().includes(d.toLowerCase()),
-    ),
-  );
-}
 
 export default function ExploreScreen() {
   const { t } = useTranslation();
@@ -91,6 +40,7 @@ export default function ExploreScreen() {
     appliedFilters.quickFilters.length +
     appliedFilters.colors.length +
     appliedFilters.habitats.length +
+    (appliedFilters.risks?.length || 0) +
     appliedFilters.distributions.length;
 
   // Helper functions for filtering
@@ -99,25 +49,92 @@ export default function ExploreScreen() {
     [],
   );
 
-  const isNotJunkLabel = React.useCallback(
-    (item: any) => {
-      return !JUNK_LABELS.has(item.name.toLowerCase().trim());
-    },
-    [JUNK_LABELS],
-  );
 
   const filteredAndSortedSpecies = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
 
-    let result = species.filter(
-      (item) =>
-        isNotJunkLabel(item) &&
-        matchesSearchQuery(item, query) &&
-        matchesQuickFiltersApplied(item, appliedFilters.quickFilters) &&
-        matchesColorsApplied(item, appliedFilters.colors) &&
-        matchesHabitatsApplied(item, appliedFilters.habitats) &&
-        matchesDistributionsApplied(item, appliedFilters.distributions),
-    );
+    let result = species.filter((item) => {
+      // Hide junk taxonomy labels
+      if (JUNK_LABELS.has(item.name.toLowerCase().trim())) return false;
+      // Search
+      const query = searchQuery.toLowerCase().trim();
+      if (query) {
+        const match =
+          item.name.toLowerCase().includes(query) ||
+          item.scientific_name.toLowerCase().includes(query);
+        if (!match) return false;
+      }
+
+      // Quick Filter
+      if (appliedFilters.quickFilters.length > 0) {
+        const ok = appliedFilters.quickFilters.every((id) => {
+          if (id === "1") {
+            return item.risk?.venom?.has_venom === true || item.risk?.sting_or_bite === "sting";
+          }
+          if (id === "2") {
+            return item.habitat?.some((h: string) => h.toLowerCase().includes("forest") || h.toLowerCase().includes("tree") || h.toLowerCase().includes("wood"));
+          }
+          if (id === "3") {
+            return item.habitat?.some((h: string) => h.toLowerCase().includes("urban") || h.toLowerCase().includes("building"));
+          }
+          return false;
+        });
+
+        if (!ok) return false;
+      }
+
+      // Color
+      if (appliedFilters.colors.length > 0) {
+        const ok = appliedFilters.colors.every((c) =>
+          item.colors.some((ic) => ic.toLowerCase().includes(c.toLowerCase())),
+        );
+        if (!ok) return false;
+      }
+
+      // Habitat
+      if (appliedFilters.habitats.length > 0) {
+        const ok = appliedFilters.habitats.every((h) =>
+          item.habitat.some((ih) => ih.toLowerCase().includes(h.toLowerCase())),
+        );
+        if (!ok) return false;
+      }
+
+      // Risk
+      if (appliedFilters.risks && appliedFilters.risks.length > 0) {
+        // Because a risk choice is essentially an OR filter among mutually exclusive or overlapping traits,
+        // we might want to check if ANY selected risk matches, OR we can stick to EVERY.
+        // Let's use EVERY to match how colors and habitats work, ensuring the ant meets ALL selected risk criteria.
+        const ok = appliedFilters.risks.every((r) => {
+          if (r === "Venomous") {
+            return item.risk?.venom?.has_venom === true;
+          }
+          if (r === "Bites") {
+            // Some entries might have "bite_only" or "sting_and_bite"
+            return item.risk?.sting_or_bite?.toLowerCase().includes("bite");
+          }
+          if (r === "Sting") {
+            return item.risk?.sting_or_bite?.toLowerCase().includes("sting");
+          }
+          return false;
+        });
+        if (!ok) return false;
+      }
+
+      // Distribution
+      if (appliedFilters.distributions.length > 0) {
+        const ok = appliedFilters.distributions.every((d) => {
+          const inDistribution = item.distribution?.some((id: string) =>
+            id.toLowerCase().includes(d.toLowerCase())
+          );
+          const inProvinces = item.distribution_v2?.provinces?.some((p: string) =>
+            p.toLowerCase().includes(d.toLowerCase())
+          );
+          return inDistribution || inProvinces;
+        });
+        if (!ok) return false;
+      }
+
+      return true;
+    });
 
     // Sort
     result = [...result].sort((a, b) => {
@@ -136,7 +153,7 @@ export default function ExploreScreen() {
     });
 
     return result;
-  }, [species, searchQuery, appliedFilters, sortOption, isNotJunkLabel]);
+  }, [species, JUNK_LABELS, searchQuery, appliedFilters, sortOption]);
 
   const handleItemPress = (id: string) => {
     router.push({ pathname: "/detail/[id]", params: { id } });
@@ -171,6 +188,7 @@ export default function ExploreScreen() {
             colors: [],
             sizes: [],
             habitats: [],
+            risks: [],
             distributions: [],
           })
         }
