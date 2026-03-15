@@ -14,7 +14,6 @@ export type FilterState = {
   habitats: string[];
   risks: string[];
   distributions: string[];
-  risks: string[];
 };
 
 type Props = {
