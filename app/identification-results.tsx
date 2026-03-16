@@ -46,10 +46,15 @@ export default function IdentificationResultsScreen() {
   const { species: allSpecies } = useSpecies();
 
   // Get user location for the species-in-area card
-  const { province, loading: locationLoading, permissionDenied } = useLocation();
+  const {
+    province,
+    loading: locationLoading,
+    permissionDenied,
+  } = useLocation();
 
   // Fetch Firestore species confirmed in user's province (fires once province is known)
-  const { provinceSpecies, loading: loadingProvinceSpecies } = useProvinceSpecies(province);
+  const { provinceSpecies, loading: loadingProvinceSpecies } =
+    useProvinceSpecies(province);
 
   // State for processed results
   const [hasIdentified, setHasIdentified] = useState(false);
@@ -63,80 +68,101 @@ export default function IdentificationResultsScreen() {
   }, [imageUri, hasIdentified, identifyLoading, identifySpecies]);
 
   // Process identification results
-  const { bestMatch, otherMatches, totalMatches } =
-    useMemo(() => {
-      // Labels the AI emits when it can't identify the species
-      const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
-      const isJunk = (name: string) =>
-        JUNK_LABELS.has(name.toLowerCase().replace(/_/g, " ").trim());
+  const { bestMatch, otherMatches, totalMatches } = useMemo(() => {
+    // Labels the AI emits when it can't identify the species
+    const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
+    const isJunk = (name: string) =>
+      JUNK_LABELS.has(name.toLowerCase().replace(/_/g, " ").trim());
 
-      // If we have API results from the new species details endpoint
-      if (speciesResult?.success && speciesResult.predictions && speciesResult.predictions.length > 0) {
-        // Strip junk predictions first, then pick best from what remains
-        const predictions = speciesResult.predictions.filter(
-          (p) => !isJunk(p.class_name)
-        );
+    // If we have API results from the new species details endpoint
+    if (
+      speciesResult?.success &&
+      speciesResult.predictions &&
+      speciesResult.predictions.length > 0
+    ) {
+      // Strip junk predictions first, then pick best from what remains
+      const predictions = speciesResult.predictions.filter(
+        (p) => !isJunk(p.class_name),
+      );
 
-        if (predictions.length === 0) {
-          // All predictions were junk — fall through to static fallback
-        } else {
-          // Build best match: use speciesInfo only if the top prediction didn't change
-          // AND the speciesInfo itself doesn't have a junk name (e.g. "Life" from Firestore)
-          const bestPrediction = predictions[0];
-          const isOriginalTop = bestPrediction.class_name === speciesResult.predictions[0].class_name;
-          const speciesInfoIsJunk = speciesInfo ? isJunk(speciesInfo.name) : false;
-          const effectiveInfo = (isOriginalTop && !speciesInfoIsJunk) ? speciesInfo : null;
+      if (predictions.length === 0) {
+        // All predictions were junk — fall through to static fallback
+      } else {
+        // Build best match: use speciesInfo only if the top prediction didn't change
+        // AND the speciesInfo itself doesn't have a junk name (e.g. "Life" from Firestore)
+        const bestPrediction = predictions[0];
+        const isOriginalTop =
+          bestPrediction.class_name === speciesResult.predictions[0].class_name;
+        const speciesInfoIsJunk = speciesInfo
+          ? isJunk(speciesInfo.name)
+          : false;
+        const effectiveInfo =
+          isOriginalTop && !speciesInfoIsJunk ? speciesInfo : null;
 
-          const bestMatchItem = {
-            id: effectiveInfo?.id ?? `prediction-0`,
-            name: effectiveInfo?.name ?? bestPrediction.class_name.replace(/_/g, " "),
-            scientificName: effectiveInfo?.scientific_name ?? bestPrediction.class_name,
-            image: effectiveInfo?.image ?? "",
-            matchPercentage: Math.round(bestPrediction.confidence * 100),
-            riskInfo: effectiveInfo?.risk,
-            isInDatabase: effectiveInfo !== null,  // true only when we have real Firestore data
-          };
+        const bestMatchItem = {
+          id: effectiveInfo?.id ?? `prediction-0`,
+          name:
+            effectiveInfo?.name ?? bestPrediction.class_name.replace(/_/g, " "),
+          scientificName:
+            effectiveInfo?.scientific_name ?? bestPrediction.class_name,
+          image: effectiveInfo?.image ?? "",
+          matchPercentage: Math.round(bestPrediction.confidence * 100),
+          riskInfo: effectiveInfo?.risk,
+          isInDatabase: effectiveInfo !== null, // true only when we have real Firestore data
+        };
 
-          // Other predictions (try to enrich from allSpecies)
-          // Also discard any matched species whose name is itself a junk label
-          const otherMatchItems = predictions.slice(1).map((pred, index) => {
-            const matchedSpecies = allSpecies.find((s) =>
-              s.scientific_name === pred.class_name ||
-              s.id === pred.species_id ||
-              s.name.toLowerCase() === pred.class_name.replace(/_/g, " ").toLowerCase()
+        // Other predictions (try to enrich from allSpecies)
+        // Also discard any matched species whose name is itself a junk label
+        const otherMatchItems = predictions
+          .slice(1)
+          .map((pred, index) => {
+            const matchedSpecies = allSpecies.find(
+              (s) =>
+                s.scientific_name === pred.class_name ||
+                s.id === pred.species_id ||
+                s.name.toLowerCase() ===
+                  pred.class_name.replace(/_/g, " ").toLowerCase(),
             );
 
             // Reject matched species if its name is a junk label
-            const validSpecies = matchedSpecies && !isJunk(matchedSpecies.name) ? matchedSpecies : null;
-            const displayName = validSpecies?.name ?? pred.class_name.replace(/_/g, " ");
+            const validSpecies =
+              matchedSpecies && !isJunk(matchedSpecies.name)
+                ? matchedSpecies
+                : null;
+            const displayName =
+              validSpecies?.name ?? pred.class_name.replace(/_/g, " ");
 
             return {
-              id: validSpecies?.id ?? pred.species_id ?? `prediction-${index + 1}`,
+              id:
+                validSpecies?.id ??
+                pred.species_id ??
+                `prediction-${index + 1}`,
               name: displayName,
               scientificName: validSpecies?.scientific_name ?? pred.class_name,
               image: validSpecies?.image ?? "",
               matchPercentage: Math.round(pred.confidence * 100),
               riskInfo: validSpecies?.risk,
             };
-          }).filter((item) => !isJunk(item.name)); // final safety net
+          })
+          .filter((item) => !isJunk(item.name)); // final safety net
 
-          return {
-            bestMatch: bestMatchItem,
-            otherMatches: otherMatchItems,
-            totalMatches: predictions.length,
-            isUsingFallback: false,
-          };
-        }
+        return {
+          bestMatch: bestMatchItem,
+          otherMatches: otherMatchItems,
+          totalMatches: predictions.length,
+          isUsingFallback: false,
+        };
       }
+    }
 
-      // Fallback to static mock data
-      return {
-        bestMatch: identificationResultsData[0],
-        otherMatches: identificationResultsData.slice(1),
-        totalMatches: identificationResultsData.length,
-        isUsingFallback: true,
-      };
-    }, [speciesResult, speciesInfo, allSpecies]);
+    // Fallback to static mock data
+    return {
+      bestMatch: identificationResultsData[0],
+      otherMatches: identificationResultsData.slice(1),
+      totalMatches: identificationResultsData.length,
+      isUsingFallback: true,
+    };
+  }, [speciesResult, speciesInfo, allSpecies]);
 
   const handleBackPress = () => {
     router.back();
@@ -161,7 +187,7 @@ export default function IdentificationResultsScreen() {
             onPress: handleProvideFeedback,
           },
           { text: "OK", style: "cancel" },
-        ]
+        ],
       );
       return;
     }
@@ -303,7 +329,8 @@ export default function IdentificationResultsScreen() {
             Can&apos;t Detect Ant
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
-            {speciesResult.message || "The image doesn't appear to contain a real ant. Please try again with a photo of a real ant."}
+            {speciesResult.message ||
+              "The image doesn't appear to contain a real ant. Please try again with a photo of a real ant."}
           </Text>
           {imageUri && (
             <View className="mt-6 w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
@@ -333,7 +360,7 @@ export default function IdentificationResultsScreen() {
 
       {/* Header */}
       <SafeAreaView>
-        <View className="pt-4 pb-5">
+        <View className="pt-4">
           <ScreenHeader
             title="Identification Results"
             leftIcon="chevron-back"
@@ -344,7 +371,7 @@ export default function IdentificationResultsScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Analysis Complete Banner */}
-        <View className="mx-4 mt-4 bg-[#e8f5e0] rounded-xl p-4 flex-row items-center">
+        <View className="mx-4 bg-[#e8f5e0] rounded-xl p-4 flex-row items-center">
           <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-3">
             <Ionicons name="checkmark-circle" size={28} color="#0A9D5C" />
           </View>
@@ -399,7 +426,10 @@ export default function IdentificationResultsScreen() {
               {/* Added RiskTags for Best Match */}
               {(bestMatch as any).riskInfo && (
                 <View className="mt-2">
-                  <RiskTags riskInfo={(bestMatch as any).riskInfo} size="small" />
+                  <RiskTags
+                    riskInfo={(bestMatch as any).riskInfo}
+                    size="small"
+                  />
                 </View>
               )}
 

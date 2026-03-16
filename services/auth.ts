@@ -12,7 +12,7 @@ export interface SignupRequest {
 }
 
 export interface LoginRequest {
-  username_or_email: string; // Backend expects this field name
+  email: string; // Backend expects this field name
   password: string;
 }
 
@@ -75,7 +75,7 @@ export async function login(
   password: string,
 ): Promise<LoginResponse> {
   return apiClient.post<LoginResponse>("/api/auth/login", {
-    username_or_email: email,
+    email: email,
     password,
   });
 }

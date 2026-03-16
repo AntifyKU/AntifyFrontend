@@ -24,7 +24,11 @@
     "passwordTooShort": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
     "signIn": "เข้าสู่ระบบ",
     "loading": "กำลังโหลด...",
-    "logout": "ออกจากระบบ"
+    "logout": "ออกจากระบบ",
+    "locale": "th-TH",
+    "required": "จำเป็นต้องกรอก",
+    "processing": "กำลังดำเนินการ...",
+    "done": "เสร็จสิ้น"
   },
   "auth": {
     "login": {
@@ -46,7 +50,8 @@
       "errorEmailRequired": "$t(common.emailRequired)",
       "errorEmailInvalid": "$t(common.emailInvalid)",
       "errorPasswordRequired": "$t(common.passwordRequired)",
-      "errorPasswordTooShort": "$t(common.passwordTooShort)"
+      "errorPasswordTooShort": "$t(common.passwordTooShort)",
+      "loginRequired": "กรุณาเข้าสู่ระบบ"
     },
     "signup": {
       "title": "สร้างบัญชี",
@@ -286,16 +291,6 @@
       "title": "ภาษา",
       "english": "อังกฤษ",
       "thai": "ไทย"
-    },
-    "notifications": {
-      "title": "การแจ้งเตือน",
-      "enabled": "รับการอัปเดตเกี่ยวกับสายพันธุ์ใหม่",
-      "disabled": "เปิดใช้งานเพื่อรับการอัปเดต",
-      "permissionTitle": "ต้องการสิทธิ์การแจ้งเตือน",
-      "permissionMessage": "กรุณาเปิดการแจ้งเตือนในการตั้งค่าเพื่อรับการอัปเดต",
-      "disableTitle": "ปิดการแจ้งเตือน",
-      "disableMessage": "หากต้องการปิดการแจ้งเตือน กรุณาไปที่การตั้งค่าและเปลี่ยนสิทธิ์",
-      "errorOpening": "ไม่สามารถเปิดการตั้งค่าได้ กรุณาเปิดการตั้งค่าด้วยตนเองและค้นหา Antify"
     }
   },
   "privacy": {
@@ -500,32 +495,6 @@
     "emptyTitle": "ไม่พบสายพันธุ์",
     "emptyDescription": "ลองปรับการค้นหาของคุณ"
   },
-  "notification": {
-    "title": "การแจ้งเตือน",
-    "tabs": {
-      "requests": "คำขอ",
-      "system": "ระบบ"
-    },
-    "requestsTitle": "คำขอ",
-    "yourRequestsTitle": "คำขอของคุณ",
-    "requestsFound": "พบ {{count}} คำขอ",
-    "filter": {
-      "all": "ทั้งหมด",
-      "pending": "รอดำเนินการ",
-      "approved": "อนุมัติแล้ว",
-      "rejected": "ถูกปฏิเสธ"
-    },
-    "emptyRequests": {
-      "title": "ไม่พบคำขอ",
-      "description": "ไม่มีคำขอ{{filter}}ในขณะนี้",
-      "descriptionAll": "ไม่มีคำขอในขณะนี้"
-    },
-    "systemTitle": "ระบบ",
-    "emptySystem": {
-      "title": "ไม่มีการแจ้งเตือนจากระบบ",
-      "description": "คุณรับทราบทุกอย่างแล้ว!"
-    }
-  },
   "chatbot": {
     "statusConnecting": "กำลังเชื่อมต่อ...",
     "inputPlaceholder": "พิมพ์ข้อความ",
@@ -560,5 +529,90 @@
     "permissionDenied": "ไม่ได้รับอนุญาต",
     "cameraPermission": "คุณต้องอนุญาตการใช้กล้อง",
     "galleryPermission": "คุณต้องอนุญาตการเข้าถึงรูปภาพ"
+  },
+  "provinces": {
+    "bangkok": "กรุงเทพมหานคร",
+    "krabi": "กระบี่",
+    "kanchanaburi": "กาญจนบุรี",
+    "kalasin": "กาฬสินธุ์",
+    "kamphaengPhet": "กำแพงเพชร",
+    "khonKaen": "ขอนแก่น",
+    "chanthaburi": "จันทบุรี",
+    "chachoengsao": "ฉะเชิงเทรา",
+    "chonburi": "ชลบุรี",
+    "chainat": "ชัยนาท",
+    "chaiyaphum": "ชัยภูมิ",
+    "chumphon": "ชุมพร",
+    "chiangRai": "เชียงราย",
+    "chiangMai": "เชียงใหม่",
+    "trang": "ตรัง",
+    "trat": "ตราด",
+    "tak": "ตาก",
+    "nakhonNayok": "นครนายก",
+    "nakhonPathom": "นครปฐม",
+    "nakhonPhanom": "นครพนม",
+    "nakhonRatchasima": "นครราชสีมา",
+    "nakhonSiThamarat": "นครศรีธรรมราช",
+    "nakhonSawan": "นครสวรรค์",
+    "nonthaburi": "นนทบุรี",
+    "narathiwat": "นราธิวาส",
+    "nan": "น่าน",
+    "buengKan": "บึงกาฬ",
+    "buriram": "บุรีรัมย์",
+    "pathumThani": "ปทุมธานี",
+    "prachuapKhiriKhan": "ประจวบคีรีขันธ์",
+    "prachinburi": "ปราจีนบุรี",
+    "pattani": "ปัตตานี",
+    "phraNakhonSiAyutthaya": "พระนครศรีอยุธยา",
+    "phayao": "พะเยา",
+    "phangNga": "พังงา",
+    "phatthalung": "พัทลุง",
+    "phichit": "พิจิตร",
+    "phitsanulok": "พิษณุโลก",
+    "phetchaburi": "เพชรบุรี",
+    "phetchabun": "เพชรบูรณ์",
+    "phrae": "แพร่",
+    "phuket": "ภูเก็ต",
+    "mahasarakham": "มหาสารคาม",
+    "mukdahan": "มุกดาหาร",
+    "maeHongSon": "แม่ฮ่องสอน",
+    "yasothon": "ยโสธร",
+    "yala": "ยะลา",
+    "roiEt": "ร้อยเอ็ด",
+    "ranong": "ระนอง",
+    "rayong": "ระยอง",
+    "ratchaburi": "ราชบุรี",
+    "lopburi": "ลพบุรี",
+    "lampang": "ลำปาง",
+    "lamphun": "ลำพูน",
+    "loei": "เลย",
+    "sisaket": "ศรีสะเกษ",
+    "sakonNakhon": "สกลนคร",
+    "songkhla": "สงขลา",
+    "satun": "สตูล",
+    "samutPrakan": "สมุทรปราการ",
+    "samutSongkhram": "สมุทรสงคราม",
+    "samutSakhon": "สมุทรสาคร",
+    "saKaeo": "สระแก้ว",
+    "saraburi": "สระบุรี",
+    "singburi": "สิงห์บุรี",
+    "sukhothai": "สุโขทัย",
+    "suphanburi": "สุพรรณบุรี",
+    "suratThani": "สุราษฎร์ธานี",
+    "surin": "สุรินทร์",
+    "nongKhai": "หนองคาย",
+    "nongBuaLamphu": "หนองบัวลำภู",
+    "angThong": "อ่างทอง",
+    "amnajCharoen": "อำนาจเจริญ",
+    "udonThani": "อุดรธานี",
+    "uttaradit": "อุตรดิตถ์",
+    "uthaithani": "อุทัยธานี",
+    "ubonRatchathani": "อุบลราชธานี"
+  },
+  "tabs": {
+    "home": "หน้าแรก",
+    "explore": "สำรวจ",
+    "chatbot": "แชทบอท",
+    "profile": "โปรไฟล์"
   }
 }

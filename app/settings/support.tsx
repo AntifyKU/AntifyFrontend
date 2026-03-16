@@ -17,7 +17,13 @@ import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { MenuItem } from "@/components/atom/MenuItem";
 import { Section } from "@/components/atom/Section";
 
-type SupportScreen = "main" | "about" | "howto" | "contact" | "terms";
+type SupportScreen =
+  | "main"
+  | "about"
+  | "howto"
+  | "data-usage"
+  | "contact"
+  | "terms";
 
 const FeatureItem = ({
   icon,
@@ -66,6 +72,48 @@ const TipItem = ({ text }: { text: string }) => (
   </View>
 );
 
+const DataItem = ({ icon, text }: { icon: string; text: string }) => (
+  <View className="flex-row items-center mb-3 ml-3">
+    <View className="w-8 h-8 rounded-full items-center justify-center mr-3">
+      <Ionicons name={icon as any} size={16} color="#22A45D" />
+    </View>
+    <Text className="text-base text-gray-700 flex-1">{text}</Text>
+  </View>
+);
+
+const RightItem = ({ text }: { text: string }) => (
+  <View className="flex-row items-center mb-3 ml-3">
+    <Ionicons name="checkmark-circle-outline" size={20} color="#22A45D" />
+    <Text className="text-base text-gray-700 ml-3">{text}</Text>
+  </View>
+);
+
+const SectionTitle = ({ title }: { title: string }) => (
+  <View className="flex-row items-center mb-3">
+    <Text className="text-lg font-semibold text-gray-800">{title}</Text>
+  </View>
+);
+
+interface InfoCardProps {
+  content: string;
+  color: "blue" | "green" | "red";
+}
+
+const colorMap = {
+  blue: { bg: "bg-blue-50", text: "text-blue-700" },
+  green: { bg: "bg-green-50", text: "text-green-700" },
+  red: { bg: "bg-red-50", text: "text-red-700" },
+};
+
+const InfoCard = ({ content, color }: InfoCardProps) => {
+  const { bg, text } = colorMap[color];
+  return (
+    <View className={`${bg} rounded-2xl p-5`}>
+      <Text className={`text-base ${text} leading-6`}>{content}</Text>
+    </View>
+  );
+};
+
 export default function SupportInfoScreen() {
   const { t } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<SupportScreen>("main");
@@ -103,6 +151,13 @@ export default function SupportInfoScreen() {
           title={t("support.menu.howto.title")}
           description={t("support.menu.howto.description")}
           onPress={() => setCurrentScreen("howto")}
+          iconColor="#22A45D"
+        />
+        <MenuItem
+          icon="shield-checkmark-outline"
+          title={t("privacy.dataUsage.menuTitle")}
+          description={t("privacy.dataUsage.menuDescription")}
+          onPress={() => setCurrentScreen("data-usage")}
           iconColor="#22A45D"
         />
         <MenuItem
@@ -255,7 +310,6 @@ export default function SupportInfoScreen() {
         <Text className="text-base text-gray-600 mb-6">
           {t("support.contact.intro")}
         </Text>
-
         <View className="mb-6">
           <MenuItem
             icon="mail-outline"
@@ -272,7 +326,6 @@ export default function SupportInfoScreen() {
   const renderTermsPrivacy = () => (
     <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
       <View className="py-6">
-        {/* Terms of Service */}
         <View className="mb-8">
           <Text className="text-xl font-bold text-green-700 mb-4">
             {t("support.terms.termsTitle")}
@@ -299,7 +352,6 @@ export default function SupportInfoScreen() {
           />
         </View>
 
-        {/* Privacy Policy */}
         <View className="mb-8">
           <Text className="text-xl font-bold text-gray-800 mb-4">
             {t("support.terms.privacyTitle")}
@@ -351,12 +403,97 @@ export default function SupportInfoScreen() {
     </ScrollView>
   );
 
+  const renderDataUsage = () => (
+    <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator>
+      <View className="py-6">
+        <View className="items-center mb-6">
+          <View className="w-24 h-24 rounded-full bg-blue-50 items-center justify-center">
+            <Ionicons
+              name="shield-checkmark-outline"
+              size={40}
+              color="#3B82F6"
+            />
+          </View>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-2xl font-bold text-gray-800 text-center mb-3">
+            {t("privacy.dataUsage.screenTitle")}
+          </Text>
+          <Text className="text-base text-gray-600 text-center leading-6">
+            {t("privacy.dataUsage.screenDescription")}
+          </Text>
+        </View>
+
+        <View className="mb-6">
+          <SectionTitle title={t("privacy.dataUsage.storage.title")} />
+          <InfoCard
+            content={t("privacy.dataUsage.storage.content")}
+            color="blue"
+          />
+        </View>
+
+        <View className="mb-6">
+          <SectionTitle title={t("privacy.dataUsage.whatWeCollect.title")} />
+          <DataItem
+            icon="person-outline"
+            text={t("privacy.dataUsage.whatWeCollect.account")}
+          />
+          <DataItem
+            icon="camera-outline"
+            text={t("privacy.dataUsage.whatWeCollect.photos")}
+          />
+          <DataItem
+            icon="location-outline"
+            text={t("privacy.dataUsage.whatWeCollect.location")}
+          />
+          <DataItem
+            icon="time-outline"
+            text={t("privacy.dataUsage.whatWeCollect.usage")}
+          />
+        </View>
+
+        <View className="mb-6">
+          <SectionTitle title={t("privacy.dataUsage.howWeUse.title")} />
+          <InfoCard
+            content={t("privacy.dataUsage.howWeUse.content")}
+            color="green"
+          />
+        </View>
+
+        <View className="mb-6">
+          <SectionTitle title={t("privacy.dataUsage.whatWeDont.title")} />
+          <InfoCard
+            content={t("privacy.dataUsage.whatWeDont.content")}
+            color="red"
+          />
+        </View>
+
+        <View className="mb-6">
+          <SectionTitle title={t("privacy.dataUsage.yourRights.title")} />
+          <RightItem text={t("privacy.dataUsage.yourRights.access")} />
+          <RightItem text={t("privacy.dataUsage.yourRights.update")} />
+          <RightItem text={t("privacy.dataUsage.yourRights.delete")} />
+          <RightItem text={t("privacy.dataUsage.yourRights.export")} />
+        </View>
+
+        <View className="items-center py-4">
+          <Text className="text-sm text-gray-400">
+            Last updated: February 2026
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
   const getScreenTitle = () => {
     switch (currentScreen) {
       case "about":
         return t("support.about.title");
       case "howto":
         return t("support.menu.howto.title");
+      case "data-usage":
+        return t("privacy.dataUsage.menuTitle");
       case "contact":
         return t("support.contact.title");
       case "terms":
@@ -384,6 +521,7 @@ export default function SupportInfoScreen() {
       {currentScreen === "main" && renderMainMenu()}
       {currentScreen === "about" && renderAbout()}
       {currentScreen === "howto" && renderHowToUse()}
+      {currentScreen === "data-usage" && renderDataUsage()}
       {currentScreen === "contact" && renderContact()}
       {currentScreen === "terms" && renderTermsPrivacy()}
     </SafeAreaView>

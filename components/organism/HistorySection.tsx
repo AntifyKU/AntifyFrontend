@@ -157,7 +157,7 @@ const HistorySection: React.FC = () => {
     <View className="flex-1">
       {/* Guest header */}
       {!user && (
-        <View className="items-center mt-6 mb-4">
+        <View className="items-center mb-6">
           <Text className="text-xl font-semibold text-gray-800 text-center">
             {t("history.title")}
           </Text>

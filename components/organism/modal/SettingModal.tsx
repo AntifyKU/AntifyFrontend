@@ -48,12 +48,6 @@ const AUTH_MENU_KEYS = [
   },
   {
     id: "3",
-    titleKey: "settings.menu.privacy",
-    icon: "shield-outline",
-    route: "/settings/privacy",
-  },
-  {
-    id: "4",
     titleKey: "settings.menu.support",
     icon: "help-circle-outline",
     route: "/settings/support",
@@ -69,12 +63,6 @@ const GUEST_MENU_KEYS = [
   },
   {
     id: "3",
-    titleKey: "settings.menu.privacy",
-    icon: "shield-outline",
-    route: "/settings/privacy",
-  },
-  {
-    id: "4",
     titleKey: "settings.menu.support",
     icon: "help-circle-outline",
     route: "/settings/support",

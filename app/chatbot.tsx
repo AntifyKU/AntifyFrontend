@@ -98,7 +98,7 @@ export default function ChatbotScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
       <View style={{ paddingTop: 24, paddingBottom: 16 }}>
-        <ScreenHeader title="ChatBot" />
+        <ScreenHeader title={t("tabs.chatbot")} />
       </View>
 
       <View

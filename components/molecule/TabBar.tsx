@@ -4,6 +4,7 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openIdentifySheet } from "@/utils/identifyHelper";
+import { router, useLocalSearchParams } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -13,7 +14,6 @@ export default function TabBar({
   navigation,
 }: Readonly<BottomTabBarProps>) {
   const insets = useSafeAreaInsets();
-
   const activeColor = "#22A45D";
   const inactiveColor = "#6B7280";
 
@@ -23,6 +23,9 @@ export default function TabBar({
 
   const leftTabs = visibleRoutes.slice(0, 2);
   const rightTabs = visibleRoutes.slice(2, 4);
+  const params = useLocalSearchParams<{ from?: string }>();
+  const currentRoute = state.routes[state.index].name;
+  if (currentRoute === "chatbot" && params.from) return null;
 
   const getIconName = (
     routeName: string,
@@ -33,8 +36,8 @@ export default function TabBar({
         return isFocused ? "home" : "home-outline";
       case "explore":
         return isFocused ? "compass" : "compass-outline";
-      case "notification":
-        return isFocused ? "notifications" : "notifications-outline";
+      case "chatbot":
+        return isFocused ? "chatbox" : "chatbox-outline";
       case "profile":
         return isFocused ? "person" : "person-outline";
       default:
@@ -145,6 +148,19 @@ export default function TabBar({
         <View style={{ width: 80 }} />
 
         <View style={{ flex: 2, flexDirection: "row" }}>
+          <TouchableOpacity
+            onPress={() => router.push("/chatbot")}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingTop: 12,
+            }}
+          >
+            <Ionicons name="chatbox-outline" size={26} color={inactiveColor} />
+            <Text style={{ color: inactiveColor, fontSize: 12 }}>แชทบอท</Text>
+          </TouchableOpacity>
+
           {rightTabs.map(renderTab)}
         </View>
       </View>

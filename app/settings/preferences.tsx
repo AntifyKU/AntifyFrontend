@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -13,8 +13,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import * as Notifications from "expo-notifications";
 import * as IntentLauncher from "expo-intent-launcher";
+import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
@@ -27,12 +27,10 @@ type Language = "english" | "thai";
 
 interface AppPreferences {
   language: Language;
-  notifications_enabled: boolean;
 }
 
 const DEFAULT_PREFS: AppPreferences = {
   language: "english",
-  notifications_enabled: true,
 };
 
 interface OptionButtonProps {
@@ -60,20 +58,25 @@ function OptionButton({ label, selected, onPress }: OptionButtonProps) {
 }
 
 export default function PreferencesScreen() {
-  const { user, token, refreshUser } = useAuth();
+  const { user, token } = useAuth();
   const { t, i18n } = useTranslation();
 
   const [language, setLanguage] = useState<Language>(DEFAULT_PREFS.language);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [locationEnabled, setLocationEnabled] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (hasLoadedRef.current) return;
+
     const loadPreferences = async () => {
       try {
         if (user?.preferences) {
           const serverPrefs = user.preferences as AppPreferences;
-          setLanguage(serverPrefs.language ?? DEFAULT_PREFS.language);
+          const lang = serverPrefs.language ?? DEFAULT_PREFS.language;
+          setLanguage(lang);
+          i18n.changeLanguage(lang === "thai" ? "th" : "en");
           await AsyncStorage.setItem(
             PREFS_STORAGE_KEY,
             JSON.stringify(serverPrefs),
@@ -82,41 +85,46 @@ export default function PreferencesScreen() {
           const stored = await AsyncStorage.getItem(PREFS_STORAGE_KEY);
           if (stored) {
             const parsed: AppPreferences = JSON.parse(stored);
-            setLanguage(parsed.language ?? DEFAULT_PREFS.language);
+            const lang = parsed.language ?? DEFAULT_PREFS.language;
+            setLanguage(lang);
+            i18n.changeLanguage(lang === "thai" ? "th" : "en");
           }
         }
       } catch (error) {
         console.error("Error loading preferences:", error);
       } finally {
+        hasLoadedRef.current = true;
         setIsLoaded(true);
       }
     };
-    loadPreferences();
-  }, [user]);
 
-  const checkNotificationPermission = useCallback(async () => {
+    loadPreferences();
+  }, [user, i18n]);
+
+  // Check location permission
+  const checkLocationPermission = useCallback(async () => {
     try {
-      const { status } = await Notifications.getPermissionsAsync();
-      setNotificationsEnabled(status === "granted");
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setLocationEnabled(status === "granted");
     } catch (error) {
-      console.error("Error checking notification permission:", error);
+      console.error("Error checking location permission:", error);
     }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      checkNotificationPermission();
-    }, [checkNotificationPermission]),
+      checkLocationPermission();
+    }, [checkLocationPermission]),
   );
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") {
-        checkNotificationPermission();
+        checkLocationPermission();
       }
     });
     return () => subscription.remove();
-  }, [checkNotificationPermission]);
+  }, [checkLocationPermission]);
 
   const persistPreferences = async (updated: Partial<AppPreferences>) => {
     try {
@@ -129,8 +137,9 @@ export default function PreferencesScreen() {
       await AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(merged));
 
       if (token) {
-        await authService.updateProfile(token, { preferences: merged });
-        await refreshUser();
+        authService
+          .updateProfile(token, { preferences: merged })
+          .catch((error) => console.error("Error syncing preferences:", error));
       }
     } catch (error) {
       console.error("Error saving preferences:", error);
@@ -155,56 +164,42 @@ export default function PreferencesScreen() {
       }
     } catch (error) {
       console.error("Error opening settings:", error);
-      Alert.alert(
-        t("common.error"),
-        t("preferences.notifications.errorOpening"),
-      );
+      Alert.alert(t("common.error"), t("privacy.location.errorOpening"));
     }
   };
 
-  const handleEnableNotifications = async () => {
+  const handleEnableLocation = async () => {
     setIsCheckingPermission(true);
     try {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === "granted") {
-        setNotificationsEnabled(true);
-        await persistPreferences({ notifications_enabled: true });
+        setLocationEnabled(true);
       } else {
-        setNotificationsEnabled(false);
+        setLocationEnabled(false);
         Alert.alert(
-          t("preferences.notifications.permissionTitle"),
-          t("preferences.notifications.permissionMessage"),
+          t("privacy.location.permissionTitle"),
+          t("privacy.location.permissionMessage"),
           [
             { text: t("common.cancel"), style: "cancel" },
-            {
-              text: t("common.openSettings"),
-              onPress: () => {
-                openAppSettings();
-              },
-            },
+            { text: t("common.openSettings"), onPress: openAppSettings },
           ],
         );
       }
     } catch (error) {
-      console.error("Error requesting notification permission:", error);
-      setNotificationsEnabled(false);
+      console.error("Error requesting location permission:", error);
+      setLocationEnabled(false);
     } finally {
       setIsCheckingPermission(false);
     }
   };
 
-  const handleDisableNotifications = () => {
+  const handleDisableLocation = () => {
     Alert.alert(
-      t("preferences.notifications.disableTitle"),
-      t("preferences.notifications.disableMessage"),
+      t("privacy.location.disableTitle"),
+      t("privacy.location.disableMessage"),
       [
         { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("common.openSettings"),
-          onPress: () => {
-            openAppSettings();
-          },
-        },
+        { text: t("common.openSettings"), onPress: openAppSettings },
       ],
     );
   };
@@ -246,24 +241,24 @@ export default function PreferencesScreen() {
           </View>
         </View>
 
-        {/* Notifications Section */}
-        <MenuItem
-          icon="notifications-outline"
-          title={t("preferences.notifications.title")}
-          description={
-            notificationsEnabled
-              ? t("preferences.notifications.enabled")
-              : t("preferences.notifications.disabled")
-          }
-          iconColor="#22A45D"
-          switchValue={notificationsEnabled}
-          onSwitchChange={
-            notificationsEnabled
-              ? handleDisableNotifications
-              : handleEnableNotifications
-          }
-          disabled={isCheckingPermission}
-        />
+        {/* Location Section */}
+        <View className="py-2">
+          <MenuItem
+            icon="location-outline"
+            title={t("privacy.location.title")}
+            description={
+              locationEnabled
+                ? t("privacy.location.enabled")
+                : t("privacy.location.disabled")
+            }
+            iconColor="#22A45D"
+            switchValue={locationEnabled}
+            onSwitchChange={
+              locationEnabled ? handleDisableLocation : handleEnableLocation
+            }
+            disabled={isCheckingPermission}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

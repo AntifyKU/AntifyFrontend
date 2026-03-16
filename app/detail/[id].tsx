@@ -435,14 +435,6 @@ export default function DetailScreen() {
     );
   };
 
-  const handleSuggestUpdate = () => {
-    if (!isAuthenticated) {
-      promptLogin("Please log in to suggest updates to species information");
-      return;
-    }
-    router.push("/requestformpage");
-  };
-
   const isCurrentInCollection = isAuthenticated && isInCollection(id);
 
   if (loading) {
@@ -694,25 +686,6 @@ export default function DetailScreen() {
           )}
 
           {currentAnt.risk && <RiskSafetySection risk={currentAnt.risk} />}
-
-          <View className="mb-6">
-            <Text className="text-lg font-bold text-gray-800 mb-2">
-              Contribute
-            </Text>
-            <View className="flex-row items-center justify-between">
-              <Text className="text-gray-600">Help improve our database</Text>
-              <PrimaryButton
-                title="Suggest Update"
-                onPress={handleSuggestUpdate}
-                icon="pencil"
-                fullWidth={false}
-                variant="outlined"
-                size="small"
-                style={{ shadowColor: "transparent" }}
-                textStyle={{ fontWeight: "600" }}
-              />
-            </View>
-          </View>
         </View>
 
         <View className="h-32" />

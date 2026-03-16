@@ -18,7 +18,6 @@ export default function FilterSection({
   return (
     <View className="mb-6">
       <Text className="mb-4 text-lg font-semibold text-gray-800">{title}</Text>
-
       <View className="flex-row flex-wrap">
         {options.map((option) => (
           <Badge
