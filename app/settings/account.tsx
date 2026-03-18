@@ -17,6 +17,7 @@ import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { MenuItem } from "@/components/atom/MenuItem";
+import validator from "validator";
 
 type MenuScreen = "main" | "username" | "email" | "password";
 
@@ -74,15 +75,16 @@ export default function AccountSettingsScreen() {
   const handleUpdateEmail = async () => {
     if (!token) return;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!newEmail.trim()) {
       setEmailError(t("account.email.errorRequired"));
       return;
     }
-    if (!emailRegex.test(newEmail)) {
+
+    if (newEmail.length > 254 || !validator.isEmail(newEmail)) {
       setEmailError(t("account.email.errorInvalid"));
       return;
     }
+
     if (newEmail === user?.email) {
       setEmailError(t("account.email.errorSame"));
       return;

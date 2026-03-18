@@ -18,6 +18,7 @@ import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import validator from "validator";
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export default function LoginScreen() {
 
     if (!email.trim()) {
       newErrors.email = t("auth.login.errorEmailRequired");
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!validator.isEmail(email)) {
       newErrors.email = t("auth.login.errorEmailInvalid");
     }
 

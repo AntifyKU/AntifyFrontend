@@ -20,6 +20,7 @@ import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { Section } from "@/components/atom/Section";
+import validator from "validator";
 
 type TermsContentProps = Readonly<{
   t: (key: string) => string;
@@ -124,7 +125,7 @@ export default function SignupScreen() {
 
     if (!email.trim()) {
       newErrors.email = t("auth.signup.errorEmailRequired");
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!validator.isEmail(email)) {
       newErrors.email = t("auth.signup.errorEmailInvalid");
     }
 
