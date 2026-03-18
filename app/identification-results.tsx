@@ -162,7 +162,7 @@ export default function IdentificationResultsScreen() {
                 },
               }),
           },
-          { text: t("identification.ok"), style: "cancel" },
+          { text: t("common.ok"), style: "cancel" },
         ],
       );
       return;

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import { useTranslation } from "react-i18next";
 
 type OnboardingSlideProps = {
   iconName: keyof typeof Ionicons.glyphMap;
@@ -29,35 +30,33 @@ const OnboardingSlide = ({
   </View>
 );
 
-const slides = [
-  {
-    iconName: "camera-outline" as const,
-    title: "Identify Ant Species",
-    description:
-      "Upload photos to instantly identify ant species with AI-powered image classification.",
-  },
-  {
-    iconName: "location-outline" as const,
-    title: "Discover Local Ants",
-    description:
-      "Explore ant species commonly found in your area with location-based discovery.",
-  },
-  {
-    iconName: "book-outline" as const,
-    title: "Learn & Stay Updated",
-    description:
-      "Access comprehensive information about ant biology and ecology.",
-  },
-  {
-    iconName: "chatbubbles-outline" as const,
-    title: "Get Expert Guidance",
-    description: "Chat with our intelligent assistant for instant support.",
-  },
-];
-
 export default function Onboarding() {
+  const { t } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const router = useRouter();
+
+  const slides = [
+    {
+      iconName: "camera-outline" as const,
+      title: t("onboarding.slides.identify.title"),
+      description: t("onboarding.slides.identify.description"),
+    },
+    {
+      iconName: "location-outline" as const,
+      title: t("onboarding.slides.discover.title"),
+      description: t("onboarding.slides.discover.description"),
+    },
+    {
+      iconName: "book-outline" as const,
+      title: t("onboarding.slides.learn.title"),
+      description: t("onboarding.slides.learn.description"),
+    },
+    {
+      iconName: "chatbubbles-outline" as const,
+      title: t("onboarding.slides.expert.title"),
+      description: t("onboarding.slides.expert.description"),
+    },
+  ];
 
   const completeOnboarding = async (
     targetPath: "/(tabs)" | "/(auth)/login",
@@ -94,16 +93,18 @@ export default function Onboarding() {
           className="absolute top-20 right-8 z-10"
           style={({ pressed }) => pressed && { opacity: 0.6 }}
         >
-          <Text className="text-base font-medium text-[#0A9D5C]">Skip</Text>
+          <Text className="text-base font-medium text-[#0A9D5C]">
+            {t("onboarding.skip")}
+          </Text>
         </Pressable>
       )}
 
       <OnboardingSlide {...slides[currentSlide]} />
 
       <View className="flex-row justify-center mb-8">
-        {slides.map((_, index) => (
+        {slides.map((slide, index) => (
           <View
-            key={index}
+            key={slide.title}
             className="h-2 rounded-full mx-1"
             style={{
               width: index === currentSlide ? 32 : 8,
@@ -116,7 +117,11 @@ export default function Onboarding() {
       <View className="px-8 pb-12">
         {currentSlide < slides.length - 1 ? (
           <>
-            <PrimaryButton title="Next" onPress={handleNext} size="large" />
+            <PrimaryButton 
+              title={t("onboarding.next")} 
+              onPress={handleNext} 
+              size="large" 
+            />
             {currentSlide > 0 && (
               <Pressable
                 onPress={handleBack}
@@ -124,7 +129,7 @@ export default function Onboarding() {
                 style={({ pressed }) => pressed && { opacity: 0.6 }}
               >
                 <Text className="text-gray-500 text-center text-base font-medium">
-                  Back
+                  {t("onboarding.back")}
                 </Text>
               </Pressable>
             )}
@@ -132,7 +137,7 @@ export default function Onboarding() {
         ) : (
           <>
             <PrimaryButton
-              title="Get Started"
+              title={t("onboarding.get_started")}
               onPress={handleGetStarted}
               size="large"
             />
@@ -142,7 +147,7 @@ export default function Onboarding() {
               style={({ pressed }) => pressed && { opacity: 0.6 }}
             >
               <Text className="text-gray-500 text-center text-base font-medium">
-                Skip for Now
+                {t("onboarding.skip_for_now")}
               </Text>
             </Pressable>
           </>

@@ -680,5 +680,35 @@
     "ai_confidence": "AI confidence: {{percentage}}%",
     "none_confirmed": "None of the predicted species are confirmed in {{province}}.",
     "total_in_db": "{{count}} species total in {{province}} database"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "get_started": "Get Started",
+    "skip_for_now": "Skip for Now",
+    "slides": {
+      "identify": {
+        "title": "Identify Ant Species",
+        "description": "Upload photos to instantly identify ant species with AI-powered image classification."
+      },
+      "discover": {
+        "title": "Discover Local Ants",
+        "description": "Explore ant species commonly found in your area with location-based discovery."
+      },
+      "learn": {
+        "title": "Learn & Stay Updated",
+        "description": "Access comprehensive information about ant biology and ecology."
+      },
+      "expert": {
+        "title": "Get Expert Guidance",
+        "description": "Chat with our intelligent assistant for instant support."
+      }
+    }
+  },
+  "not_found": {
+    "title": "Oops!",
+    "message": "This screen does not exist.",
+    "go_home": "Go to home screen!"
   }
 }
