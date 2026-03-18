@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -100,34 +100,7 @@ export default function HomeScreen() {
     filters: { limit: 500 },
   });
 
-  const { featuredAntOfTheDay, featuredSpeciesList, localSpeciesList } =
-    useMemo(() => {
-      if (species.length === 0) {
-        return {
-          featuredAntOfTheDay: null,
-          featuredSpeciesList: [],
-          localSpeciesList: [],
-        };
-      }
-
-      const antOfTheDay = toSpeciesCard(species[getDailyIndex(species.length)]);
-      const featuredList = species.slice(0, 5).map(toSpeciesCard);
-      const localList = locationObj
-        ? getLocalSpecies(species, locationObj)
-        : [];
-
-      return {
-        featuredAntOfTheDay: antOfTheDay,
-        featuredSpeciesList: featuredList,
-        localSpeciesList: localList,
-      };
-    }, [species, locationObj]);
-
-  useEffect(() => {
-    getLocation();
-  }, []);
-
-  const getLocation = async () => {
+  const getLocation = useCallback(async () => {
     try {
       setIsLoadingLocation(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -167,7 +140,34 @@ export default function HomeScreen() {
     } finally {
       setIsLoadingLocation(false);
     }
-  };
+  }, [t]);
+
+  const { featuredAntOfTheDay, featuredSpeciesList, localSpeciesList } =
+    useMemo(() => {
+      if (species.length === 0) {
+        return {
+          featuredAntOfTheDay: null,
+          featuredSpeciesList: [],
+          localSpeciesList: [],
+        };
+      }
+
+      const antOfTheDay = toSpeciesCard(species[getDailyIndex(species.length)]);
+      const featuredList = species.slice(0, 5).map(toSpeciesCard);
+      const localList = locationObj
+        ? getLocalSpecies(species, locationObj)
+        : [];
+
+      return {
+        featuredAntOfTheDay: antOfTheDay,
+        featuredSpeciesList: featuredList,
+        localSpeciesList: localList,
+      };
+    }, [species, locationObj]);
+
+  useEffect(() => {
+    getLocation();
+  }, [getLocation]);
 
   const handleAntPress = (antId: string) => {
     router.push({ pathname: `/detail/[id]`, params: { id: antId } });

@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import * as i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import en from "./locales/en.json";
@@ -20,6 +20,7 @@ const initI18n = async () => {
       lng = parsed.language === "thai" ? "th" : "en";
     }
   } catch {
+    // Fail silently
   }
 
   await i18n.use(initReactI18next).init({
