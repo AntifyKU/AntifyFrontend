@@ -614,5 +614,71 @@
     "explore": "Explore",
     "chatbot": "Chatbot",
     "profile": "Profile"
+  },
+  "home": {
+    "your_location": "Your Location",
+    "location_denied": "Location permission denied",
+    "unknown_location": "Unknown location",
+    "unable_to_get_location": "Unable to get location",
+    "loading": "Loading...",
+    "identify_ant": "Identify Ant",
+    "quick_discovery": "Quick Discovery",
+    "ant_of_the_day": "Ant of the Day",
+    "featured_species": "Featured Species",
+    "discover_thai_ants": "Discover common Thai ants",
+    "species_near": "Species near {{location}}",
+    "found_in_province": "Found in your province",
+    "see_more": "See more",
+    "alert": {
+      "location_title": "Location Permission",
+      "location_message": "Please enable location permission in your device settings to see your current location.",
+      "cancel": "Cancel",
+      "retry": "Retry"
+    },
+    "categories": {
+      "venomous": "Venomous",
+      "forest": "Forest",
+      "household": "Household",
+      "all": "All"
+    }
+  },
+  "identification": {
+    "title": "Identification Results",
+    "analyzing": "Analyzing Image...",
+    "analyzing_desc": "Our AI is identifying the ant species in your photo",
+    "failed_title": "Identification Failed",
+    "unable_to_identify": "Unable to Identify",
+    "unable_desc": "We couldn't identify the ant in this image. Please try again with a clearer photo.",
+    "try_again": "Try Again",
+    "detect_reject_title": "Can't Detect Ant",
+    "detect_reject_desc": "The image doesn't appear to contain a real ant. Please try again with a photo of a real ant.",
+    "try_another": "Try Another Photo",
+    "analysis_complete": "Analysis Complete",
+    "matches_found": "{{count}} possible matches found",
+    "best_match": "Best Match",
+    "confirm_details": "Confirm & View Details",
+    "other_possibilities": "Other Possibilities",
+    "identify_another": "Identify Another Ant",
+    "match_label": "{{percentage}}% Match",
+    "alert_not_found_title": "Species Not in Database",
+    "alert_not_found_desc": "We couldn't match this ant to a known species in our database yet. This could be a rare or undocumented species, or the photo may need better lighting / angle for a more accurate result.",
+    "help_improve": "Help Improve AI"
+  },
+  "location_card": {
+    "title": "Predicted & Found Near You",
+    "score_info_title": "Confidence Score",
+    "score_info_desc": "This score combines the AI prediction confidence with a 40% boost for species confirmed to live in your current province.",
+    "current_province": "Current Province",
+    "detecting": "Detecting location...",
+    "denied": "Location access denied",
+    "unable_to_detect": "Unable to detect",
+    "searching": "Searching...",
+    "enable_location": "Enable location access to see which predicted species are found near you.",
+    "checking_db": "Checking local species database...",
+    "confirmed_in": "{{matched}} of {{total}} predictions confirmed in {{province}}",
+    "found_here": "Found here",
+    "ai_confidence": "AI confidence: {{percentage}}%",
+    "none_confirmed": "None of the predicted species are confirmed in {{province}}.",
+    "total_in_db": "{{count}} species total in {{province}} database"
   }
 }

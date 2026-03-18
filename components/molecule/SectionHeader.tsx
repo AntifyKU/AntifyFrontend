@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface SectionHeaderProps {
   readonly title: string;
@@ -15,9 +16,11 @@ export default function SectionHeader({
   subtitle,
   showSeeMore = false,
   onSeeMorePress,
-  seeMoreText = "See more",
+  seeMoreText,
   containerClassName = "px-5 mb-3",
 }: SectionHeaderProps) {
+  const { t } = useTranslation();
+  const finalSeeMoreText = seeMoreText ?? t("home.see_more");
   return (
     <View
       className={`flex-row items-center justify-between ${containerClassName}`}
@@ -30,7 +33,7 @@ export default function SectionHeader({
       </View>
       {showSeeMore && onSeeMorePress && (
         <TouchableOpacity onPress={onSeeMorePress}>
-          <Text className="text-[#328e6e] font-medium">{seeMoreText}</Text>
+          <Text className="text-[#328e6e] font-medium">{finalSeeMoreText}</Text>
         </TouchableOpacity>
       )}
     </View>

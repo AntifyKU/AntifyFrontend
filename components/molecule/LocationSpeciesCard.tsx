@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import type { Species } from "@/types/api";
+import { useTranslation } from "react-i18next";
 
 const LOCAL_BOOST = 0.4;
 
@@ -29,13 +30,11 @@ interface LocationSpeciesCardProps {
   readonly loadingProvinceSpecies: boolean;
 }
 
-// Normalize a scientific name for fuzzy comparison
 function normalizeSci(name?: string): string {
   if (!name) return "";
   return name.toLowerCase().replaceAll("_", " ").replace(/\.$/, "").trim();
 }
 
-// True if a prediction matches a Firestore province species. Uses partial name matching so "Acropyga sp" matches "Acropyga"
 function isInProvince(
   pred: LocationSpeciesPrediction,
   provinceSpecies: Species[],
@@ -49,10 +48,8 @@ function isInProvince(
     const speciesSci = normalizeSci(s.scientific_name);
     const speciesName = s.name?.toLowerCase().trim() ?? "";
 
-    // Exact common name match
     if (predName && speciesName && predName === speciesName) return true;
 
-    // Scientific name: one must start with or be a prefix/suffix of the other
     if (predSci && speciesSci) {
       if (predSci === speciesSci) return true;
       if (predSci.startsWith(speciesSci) || speciesSci.startsWith(predSci))
@@ -74,6 +71,8 @@ function ConfidenceBar({
   readonly weighted: number;
   readonly raw: number;
 }) {
+  const { t } = useTranslation();
+
   const getBarColor = (): string => {
     if (weighted >= 70) return "#0A9D5C";
     if (weighted >= 40) return "#F59E0B";
@@ -117,7 +116,7 @@ function ConfidenceBar({
       </View>
       {weighted !== raw && (
         <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
-          AI confidence: {raw.toFixed(2)}%
+          {t("location_card.ai_confidence", { percentage: raw.toFixed(2) })}
         </Text>
       )}
     </View>
@@ -132,9 +131,9 @@ export default function LocationSpeciesCard({
   provinceSpecies,
   loadingProvinceSpecies,
 }: LocationSpeciesCardProps) {
+  const { t } = useTranslation();
   const isLoading = loadingLocation || loadingProvinceSpecies;
 
-  // The intersection: only predictions that are also confirmed in the province
   const matchedPredictions = predictions.filter((pred) =>
     isInProvince(pred, provinceSpecies),
   );
@@ -150,13 +149,13 @@ export default function LocationSpeciesCard({
         }}
       >
         <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>
-          Predicted & Found Near You
+          {t("location_card.title")}
         </Text>
         <TouchableOpacity
           onPress={() =>
             Alert.alert(
-              "Confidence Score",
-              "This score combines the AI prediction confidence with a 40% boost for species confirmed to live in your current province.",
+              t("location_card.score_info_title"),
+              t("location_card.score_info_desc"),
             )
           }
           style={{ padding: 4 }}
@@ -183,7 +182,6 @@ export default function LocationSpeciesCard({
           borderColor: "#E5E7EB",
         }}
       >
-        {/* Header */}
         <View
           style={{
             backgroundColor: "#e8f5e0",
@@ -208,7 +206,7 @@ export default function LocationSpeciesCard({
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#0A9D5C", fontWeight: "700", fontSize: 14 }}>
-              Current Province
+              {t("location_card.current_province")}
             </Text>
             {loadingLocation && (
               <View
@@ -224,13 +222,13 @@ export default function LocationSpeciesCard({
                   style={{ marginRight: 4 }}
                 />
                 <Text style={{ color: "#328e6e", fontSize: 12 }}>
-                  Detecting location…
+                  {t("location_card.detecting")}
                 </Text>
               </View>
             )}
             {!loadingLocation && permissionDenied && (
               <Text style={{ color: "#D97706", fontSize: 12, marginTop: 2 }}>
-                Location access denied
+                {t("location_card.denied")}
               </Text>
             )}
             {!loadingLocation && !permissionDenied && province && (
@@ -240,7 +238,7 @@ export default function LocationSpeciesCard({
             )}
             {!loadingLocation && !permissionDenied && !province && (
               <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
-                Unable to detect
+                {t("location_card.unable_to_detect")}
               </Text>
             )}
           </View>
@@ -248,7 +246,7 @@ export default function LocationSpeciesCard({
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <ActivityIndicator size="small" color="#9CA3AF" />
               <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 4 }}>
-                Searching…
+                {t("location_card.searching")}
               </Text>
             </View>
           )}
@@ -256,7 +254,6 @@ export default function LocationSpeciesCard({
 
         <View style={{ height: 1, backgroundColor: "#E5E7EB" }} />
 
-        {/* Permission denied */}
         {permissionDenied && (
           <View
             style={{
@@ -278,13 +275,11 @@ export default function LocationSpeciesCard({
                 marginTop: 8,
               }}
             >
-              Enable location access to see which predicted species are found
-              near you.
+              {t("location_card.enable_location")}
             </Text>
           </View>
         )}
 
-        {/* Loading skeleton */}
         {!permissionDenied && isLoading && (
           <View
             style={{
@@ -296,15 +291,13 @@ export default function LocationSpeciesCard({
           >
             <ActivityIndicator color="#0A9D5C" />
             <Text style={{ color: "#9CA3AF", fontSize: 13, marginLeft: 10 }}>
-              Checking local species database…
+              {t("location_card.checking_db")}
             </Text>
           </View>
         )}
 
-        {/* Intersection results */}
         {!permissionDenied && !isLoading && matchedPredictions.length > 0 && (
           <>
-            {/* Summary chip */}
             <View
               style={{
                 paddingHorizontal: 16,
@@ -332,8 +325,11 @@ export default function LocationSpeciesCard({
                 <Text
                   style={{ color: "#16a34a", fontSize: 12, fontWeight: "700" }}
                 >
-                  {matchedPredictions.length} of {predictions.length}{" "}
-                  predictions confirmed in {province}
+                  {t("location_card.confirmed_in", {
+                    matched: matchedPredictions.length,
+                    total: predictions.length,
+                    province: province,
+                  })}
                 </Text>
               </View>
             </View>
@@ -354,7 +350,6 @@ export default function LocationSpeciesCard({
                       paddingVertical: 12,
                     }}
                   >
-                    {/* Thumbnail */}
                     <View
                       style={{
                         width: 52,
@@ -389,7 +384,6 @@ export default function LocationSpeciesCard({
                       )}
                     </View>
 
-                    {/* Info */}
                     <View style={{ flex: 1 }}>
                       <View
                         style={{
@@ -410,7 +404,6 @@ export default function LocationSpeciesCard({
                         >
                           {pred.name}
                         </Text>
-                        {/* "Found here" badge */}
                         <View
                           style={{
                             backgroundColor: "#dcfce7",
@@ -434,7 +427,7 @@ export default function LocationSpeciesCard({
                               fontWeight: "600",
                             }}
                           >
-                            Found here
+                            {t("location_card.found_here")}
                           </Text>
                         </View>
                       </View>
@@ -470,7 +463,6 @@ export default function LocationSpeciesCard({
           </>
         )}
 
-        {/* Empty state */}
         {!permissionDenied && !isLoading && matchedPredictions.length === 0 && (
           <View
             style={{
@@ -492,13 +484,13 @@ export default function LocationSpeciesCard({
                 marginTop: 8,
               }}
             >
-              None of the predicted species are confirmed in{" "}
-              {province ?? "your area"}.
+              {t("location_card.none_confirmed", {
+                province: province ?? t("home.unknown_location"),
+              })}
             </Text>
           </View>
         )}
 
-        {/* Footer */}
         {!permissionDenied && !isLoading && province && (
           <>
             <View style={{ height: 1, backgroundColor: "#E5E7EB" }} />
@@ -516,12 +508,10 @@ export default function LocationSpeciesCard({
                 color="#0A9D5C"
               />
               <Text style={{ fontSize: 12, color: "#6B7280", marginLeft: 6 }}>
-                <Text style={{ fontWeight: "700", color: "#0A9D5C" }}>
-                  {provinceSpecies.length}
-                </Text>
-                {" species total in "}
-                <Text style={{ fontWeight: "600" }}>{province}</Text>
-                {" database"}
+                {t("location_card.total_in_db", {
+                  count: provinceSpecies.length,
+                  province: province,
+                })}
               </Text>
             </View>
           </>

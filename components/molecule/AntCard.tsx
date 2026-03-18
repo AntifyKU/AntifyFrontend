@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RiskTags from "@/components/molecule/RiskTags";
 
@@ -34,16 +34,16 @@ export default function AntCard({
   if (variant === "horizontal") {
     return (
       <TouchableOpacity
-        className="flex-row bg-[#e8f5e0] rounded-xl p-3 mb-3 items-center"
+        className="flex-row overflow-hidden bg-white border border-gray-200 rounded-xl mb-3"
         onPress={onPress}
         activeOpacity={0.7}
       >
         {/* Thumbnail */}
-        <View className="w-16 h-16 rounded-lg bg-[#d4e8c7] items-center justify-center mr-3 overflow-hidden">
+        <View className="w-28 bg-[#e1eebc] self-stretch items-center justify-center overflow-hidden">
           {showImage ? (
             <Image
               source={{ uri: image }}
-              className="w-full h-full"
+              style={StyleSheet.absoluteFillObject}
               resizeMode="cover"
               onError={() => setImageError(true)}
             />
@@ -53,19 +53,23 @@ export default function AntCard({
         </View>
 
         {/* Details */}
-        <View className="flex-1">
+        <View className="flex-1 px-4 py-3 justify-center">
           <Text className="font-bold text-gray-800">{name}</Text>
           {(description || scientificName) && (
-            <Text className="text-gray-500 text-sm" numberOfLines={1}>
+            <Text className="text-gray-500 text-sm italic" numberOfLines={1}>
               {description || scientificName}
             </Text>
           )}
           {showMatchPercentage && matchPercentage !== undefined && (
-            <Text className="text-[#0A9D5C] font-semibold text-sm">
+            <Text className="text-[#0A9D5C] font-semibold text-sm mt-1">
               {matchPercentage.toFixed(2)}% Match
             </Text>
           )}
-          {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}
+          {riskInfo && (
+            <View className="mt-1">
+              <RiskTags riskInfo={riskInfo} size="small" />
+            </View>
+          )}
         </View>
       </TouchableOpacity>
     );

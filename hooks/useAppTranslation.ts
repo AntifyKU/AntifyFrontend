@@ -6,10 +6,10 @@ export function useAppTranslation() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
 
-  const preferredLanguage = user?.preferences?.language ?? "english";
+  const preferredLanguage = user?.preferences?.language ?? "thai";
 
   useEffect(() => {
-    const langCode = preferredLanguage === "thai" ? "th" : "en";
+    const langCode = preferredLanguage === "english" ? "en" : "th";
     if (i18n.language !== langCode) {
       i18n.changeLanguage(langCode);
     }

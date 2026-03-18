@@ -25,6 +25,7 @@ import { useSpecies } from "@/hooks/useSpecies";
 import { quickDiscoveryCategories } from "@/constants/Filters";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { openIdentifySheet } from "@/utils/identifyHelper";
+import { useTranslation } from "react-i18next";
 
 function getDailyIndex(listLength: number): number {
   const today = new Date();
@@ -75,7 +76,6 @@ function getLocalSpecies(
   }[],
   locationObj: Location.LocationGeocodedAddress,
 ) {
-  // Build a list of defined, lowercased location strings from the geocoded address
   const userLocations: string[] = [
     locationObj.city,
     locationObj.subregion,
@@ -91,11 +91,11 @@ function getLocalSpecies(
 }
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState("Loading...");
+  const { t } = useTranslation();
+  const [location, setLocation] = useState(t("home.loading"));
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [locationObj, setLocationObj] =
     useState<Location.LocationGeocodedAddress | null>(null);
-
   const { species, loading: speciesLoading } = useSpecies({
     filters: { limit: 500 },
   });
@@ -111,9 +111,7 @@ export default function HomeScreen() {
       }
 
       const antOfTheDay = toSpeciesCard(species[getDailyIndex(species.length)]);
-
       const featuredList = species.slice(0, 5).map(toSpeciesCard);
-
       const localList = locationObj
         ? getLocalSpecies(species, locationObj)
         : [];
@@ -134,7 +132,7 @@ export default function HomeScreen() {
       setIsLoadingLocation(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setLocation("Location permission denied");
+        setLocation(t("home.location_denied"));
         setIsLoadingLocation(false);
         return;
       }
@@ -157,15 +155,15 @@ export default function HomeScreen() {
         } else if (address.formattedAddress) {
           setLocation(address.formattedAddress);
         } else {
-          setLocation("Unknown location");
+          setLocation(t("home.unknown_location"));
         }
       } else {
         setLocationObj(null);
-        setLocation("Unknown location");
+        setLocation(t("home.unknown_location"));
       }
     } catch (error) {
       console.error("Error getting location:", error);
-      setLocation("Unable to get location");
+      setLocation(t("home.unable_to_get_location"));
     } finally {
       setIsLoadingLocation(false);
     }
@@ -183,14 +181,14 @@ export default function HomeScreen() {
   };
 
   const handleLocationPress = () => {
-    if (location === "Location permission denied") {
+    if (location === t("home.location_denied")) {
       Alert.alert(
-        "Location Permission",
-        "Please enable location permission in your device settings to see your current location.",
+        t("home.alert.location_title"),
+        t("home.alert.location_message"),
         [
-          { text: "Cancel", style: "cancel" },
+          { text: t("home.alert.cancel"), style: "cancel" },
           {
-            text: "Retry",
+            text: t("home.alert.retry"),
             onPress: () => {
               getLocation();
             },
@@ -207,12 +205,10 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View className="pt-4 pb-5">
           <ScreenHeader />
         </View>
 
-        {/* Your Location Section */}
         <Pressable
           className="flex-row items-start justify-between px-5 mb-6"
           onPress={handleLocationPress}
@@ -220,7 +216,7 @@ export default function HomeScreen() {
         >
           <View>
             <Text className="text-xl font-bold text-gray-900">
-              Your Location
+              {t("home.your_location")}
             </Text>
             <View className="flex-row items-center mt-1">
               {isLoadingLocation ? (
@@ -233,19 +229,17 @@ export default function HomeScreen() {
           <MaterialIcons name="location-on" size={30} color="#328e6e" />
         </Pressable>
 
-        {/* Identify Ant Button */}
         <View className="px-5 mb-6">
           <PrimaryButton
-            title="Identify Ant"
+            title={t("home.identify_ant")}
             icon="camera"
             onPress={openIdentifySheet}
             size="large"
           />
         </View>
 
-        {/* Quick Discovery Section */}
         <View className="mb-6">
-          <SectionHeader title="Quick Discovery" />
+          <SectionHeader title={t("home.quick_discovery")} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -253,6 +247,11 @@ export default function HomeScreen() {
           >
             {quickDiscoveryCategories.map((tag) => {
               let icon;
+              const translatedName = t(
+                `home.categories.${tag.name.toLowerCase()}`,
+                { defaultValue: tag.name },
+              );
+
               if (tag.name === "Venomous") {
                 icon = (
                   <MaterialCommunityIcons
@@ -274,6 +273,7 @@ export default function HomeScreen() {
               } else {
                 icon = <Ionicons name="sparkles" size={16} color={tag.color} />;
               }
+
               return (
                 <TouchableOpacity
                   key={tag.id}
@@ -282,7 +282,7 @@ export default function HomeScreen() {
                 >
                   {icon}
                   <Text className="ml-2 text-gray-700 font-medium">
-                    {tag.name}
+                    {translatedName}
                   </Text>
                 </TouchableOpacity>
               );
@@ -290,14 +290,13 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Ant of the Day Section */}
         <View className="mb-6">
-          <SectionHeader title="Ant of the Day" />
+          <SectionHeader title={t("home.ant_of_the_day")} />
           <View className="px-5">
             {speciesLoading || !featuredAntOfTheDay ? (
               <View className="h-48 items-center justify-center bg-gray-50 rounded-xl">
                 <ActivityIndicator size="small" color="#328e6e" />
-                <Text className="mt-2 text-gray-500">Loading...</Text>
+                <Text className="mt-2 text-gray-500">{t("home.loading")}</Text>
               </View>
             ) : (
               <CardItem
@@ -314,11 +313,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Featured Species Section */}
         <View className="mb-8">
           <SectionHeader
-            title="Featured Species"
-            subtitle="Discover common Thai ants"
+            title={t("home.featured_species")}
+            subtitle={t("home.discover_thai_ants")}
             showSeeMore
             onSeeMorePress={() => router.push("/(tabs)/explore")}
           />
@@ -353,12 +351,16 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Species Near You Section */}
         {localSpeciesList.length > 0 && (
           <View className="mb-8">
             <SectionHeader
-              title={`Species near ${locationObj?.city || locationObj?.subregion || "you"}`}
-              subtitle="Found in your province"
+              title={t("home.species_near", {
+                location:
+                  locationObj?.city ||
+                  locationObj?.subregion ||
+                  t("home.unknown_location"),
+              })}
+              subtitle={t("home.found_in_province")}
             />
             <ScrollView
               horizontal
@@ -386,7 +388,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Bottom padding for tab bar */}
         <View className="h-24" />
       </ScrollView>
     </SafeAreaView>
