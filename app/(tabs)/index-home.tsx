@@ -22,11 +22,7 @@ import SectionHeader from "@/components/molecule/SectionHeader";
 import CardItem from "@/components/molecule/CardItem";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { useSpecies } from "@/hooks/useSpecies";
-import {
-  quickDiscoveryCategories,
-  featuredAntOfTheDay as staticAntOfTheDay,
-  featuredSpeciesList as staticFeaturedList,
-} from "@/constants/AntData";
+import { quickDiscoveryCategories } from "@/constants/Filters";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { openIdentifySheet } from "@/utils/identifyHelper";
 
@@ -108,8 +104,8 @@ export default function HomeScreen() {
     useMemo(() => {
       if (species.length === 0) {
         return {
-          featuredAntOfTheDay: staticAntOfTheDay,
-          featuredSpeciesList: staticFeaturedList,
+          featuredAntOfTheDay: null,
+          featuredSpeciesList: [],
           localSpeciesList: [],
         };
       }
@@ -124,8 +120,7 @@ export default function HomeScreen() {
 
       return {
         featuredAntOfTheDay: antOfTheDay,
-        featuredSpeciesList:
-          featuredList.length > 0 ? featuredList : staticFeaturedList,
+        featuredSpeciesList: featuredList,
         localSpeciesList: localList,
       };
     }, [species, locationObj]);
@@ -299,7 +294,7 @@ export default function HomeScreen() {
         <View className="mb-6">
           <SectionHeader title="Ant of the Day" />
           <View className="px-5">
-            {speciesLoading ? (
+            {speciesLoading || !featuredAntOfTheDay ? (
               <View className="h-48 items-center justify-center bg-gray-50 rounded-xl">
                 <ActivityIndicator size="small" color="#328e6e" />
                 <Text className="mt-2 text-gray-500">Loading...</Text>

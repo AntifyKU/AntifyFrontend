@@ -109,14 +109,19 @@ export default function FolderModal({
                     setColorError(false);
                   }}
                   className="mr-3 items-center"
+                  activeOpacity={0.8}
                 >
                   <View
-                    className="w-10 h-10 rounded-full border-2"
+                    className="w-10 h-10 rounded-full items-center justify-center border-2"
                     style={{
                       backgroundColor: c.hex,
                       borderColor: borderColor,
                     }}
-                  />
+                  >
+                    {isSelected && (
+                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    )}
+                  </View>
                 </TouchableOpacity>
               );
             })}

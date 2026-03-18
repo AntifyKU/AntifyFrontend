@@ -1,26 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import { speciesService } from "@/services/species";
-import { antSpeciesData } from "@/constants/AntData";
-import type { Species, SpeciesFilters } from "@/types/api";
+/**
+ * useSpecies Hook
+ * Fetches species list with optional filters and fallback to static data
+ */
 
-// Transform static data to API format
-function transformStaticSpecies(staticData: typeof antSpeciesData): Species[] {
-  return staticData.map((ant) => ({
-    id: ant.id,
-    name: ant.name,
-    scientific_name: ant.scientificName,
-    classification: ant.classification,
-    tags: ant.tags,
-    about: ant.about,
-    characteristics: ant.characteristics,
-    colors: ant.colors,
-    habitat: ant.habitat,
-    distribution: ant.distribution,
-    behavior: ant.behavior,
-    ecological_role: ant.ecologicalRole,
-    image: ant.image, // Use image directly, not images array
-  }));
-}
+import { useState, useEffect, useRef } from 'react';
+import { speciesService } from '@/services/species';
+import type { Species, SpeciesFilters } from '@/types/api';
 
 interface UseSpeciesOptions {
   filters?: SpeciesFilters;
@@ -72,9 +57,8 @@ export function useSpecies(options: UseSpeciesOptions = {}): UseSpeciesReturn {
 
       // If API returns empty but we have fallback, use fallback
       if (response.species.length === 0 && useFallback) {
-        const fallbackData = transformStaticSpecies(antSpeciesData);
-        setSpecies(fallbackData);
-        setTotal(fallbackData.length);
+        setSpecies([]);
+        setTotal(0);
         setIsUsingFallback(true);
       } else {
         setSpecies(response.species);
@@ -89,9 +73,8 @@ export function useSpecies(options: UseSpeciesOptions = {}): UseSpeciesReturn {
 
       // Use fallback data on error
       if (useFallback) {
-        const fallbackData = transformStaticSpecies(antSpeciesData);
-        setSpecies(fallbackData);
-        setTotal(fallbackData.length);
+        setSpecies([]);
+        setTotal(0);
         setIsUsingFallback(true);
       }
     } finally {

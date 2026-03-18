@@ -15,7 +15,9 @@ async function getRefreshedToken(): Promise<string> {
   refreshPromise = (async () => {
     try {
       const storedRefreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
-      if (!storedRefreshToken) throw new Error("No refresh token available");
+      if (!storedRefreshToken) {
+        throw new ApiError(401, "Unauthorized", "No refresh token available");
+      }
 
       const data = await refreshIdToken(storedRefreshToken);
 

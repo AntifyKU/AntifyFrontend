@@ -17,10 +17,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { speciesListForCorrection } from "@/constants/AntData";
 import StarRating from "@/components/StarRating";
 import { feedbackService } from "@/services/feedback";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { useSpecies } from "@/hooks/useSpecies";
 
 // Define the type for route params
 type HelpImproveParams = {
@@ -36,6 +36,8 @@ export default function HelpImproveAIScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<HelpImproveParams>();
   const { imageUri, antId, antName, scientificName, matchPercentage } = params;
+
+  const { species: allSpecies } = useSpecies();
 
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [selectedSpeciesId, setSelectedSpeciesId] = useState<string | null>(
@@ -105,8 +107,10 @@ export default function HelpImproveAIScreen() {
     setSelectedSpeciesId(speciesId);
   };
 
-  const filteredSpecies = speciesListForCorrection.filter((species) =>
-    species.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  // Filter species based on search query
+  const filteredSpecies = allSpecies.filter((species) =>
+    species.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    species.scientific_name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -295,7 +299,7 @@ export default function HelpImproveAIScreen() {
                     {species.name}
                   </Text>
                   <Text className="text-gray-500 text-sm italic">
-                    {species.description}
+                    {species.scientific_name}
                   </Text>
                 </View>
               </Pressable>

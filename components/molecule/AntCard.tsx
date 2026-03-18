@@ -62,7 +62,7 @@ export default function AntCard({
           )}
           {showMatchPercentage && matchPercentage !== undefined && (
             <Text className="text-[#0A9D5C] font-semibold text-sm">
-              {matchPercentage}% Match
+              {matchPercentage.toFixed(2)}% Match
             </Text>
           )}
           {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}
@@ -129,7 +129,7 @@ export default function AntCard({
         )}
         {showMatchPercentage && matchPercentage !== undefined && (
           <Text className="text-[#0A9D5C] font-semibold mt-1">
-            {matchPercentage}% Match
+            {matchPercentage.toFixed(2)}% Match
           </Text>
         )}
         {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}

@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ScrollView, StatusBar, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Badge from "@/components/atom/badge/Badge";
-import { filterOptions, quickDiscoveryCategories } from "@/constants/AntData";
+import { filterOptions, quickDiscoveryCategories } from "@/constants/Filters";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import FilterSection from "@/components/molecule/FilterSection";
@@ -12,6 +12,7 @@ export type FilterState = {
   colors: string[];
   sizes: string[];
   habitats: string[];
+  risks: string[];
   distributions: string[];
 };
 
@@ -77,6 +78,14 @@ export default function FilterModal({
               </View>
             </ScrollView>
           </View>
+
+          {/* Risk */}
+          <FilterSection
+            title="Risk"
+            options={filterOptions.risks}
+            selected={tempFilters.risks}
+            onToggle={(v) => onToggle("risks", v)}
+          />
 
           {/* Color */}
           <FilterSection

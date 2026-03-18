@@ -36,9 +36,7 @@ export default function CardItem(props: CardItemProps) {
 
   const [imageError, setImageError] = useState(false);
   const isSpecies = props.variant === "species";
-  const imageUri = isSpecies
-    ? props.imageUri
-    : undefined;
+  const imageUri = isSpecies ? props.imageUri : undefined;
   const showImage = isSpecies && !!imageUri && !imageError;
 
   return (
@@ -68,27 +66,14 @@ export default function CardItem(props: CardItemProps) {
             onError={() => setImageError(true)}
           />
         ) : (
-          <>
-            <View
-              className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full"
-              style={{ backgroundColor: accentColor, opacity: 0.25 }}
-            />
-            <View
-              className="absolute -top-4 -left-4 w-16 h-16 rounded-full"
-              style={{ backgroundColor: accentColor, opacity: 0.15 }}
-            />
-            <View
-              className="w-14 h-14 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: accentColor + "33" }}
-            >
-              <Text
-                className="text-2xl font-bold"
-                style={{ color: accentColor }}
-              >
-                {name.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          </>
+          <View
+            className="w-16 h-16 rounded-full items-center justify-center"
+            style={{ backgroundColor: accentColor + "33" }}
+          >
+            <Text className="text-2xl font-bold" style={{ color: accentColor }}>
+              {name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
         )}
       </View>
 
