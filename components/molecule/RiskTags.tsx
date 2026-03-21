@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import Badge from '@/components/atom/badge/Badge';
 import { RiskInfo } from '@/types/api';
+import { useTranslation } from "react-i18next";
 
 interface RiskTagsProps {
     riskInfo?: RiskInfo;
@@ -9,6 +10,8 @@ interface RiskTagsProps {
 }
 
 export default function RiskTags({ riskInfo, size = 'small' }: RiskTagsProps) {
+    const { t } = useTranslation();
+
     if (!riskInfo) return null;
 
     const tags = [];
@@ -18,7 +21,7 @@ export default function RiskTags({ riskInfo, size = 'small' }: RiskTagsProps) {
         tags.push(
             <Badge
                 key="venom"
-                label="Venomous"
+                label={t("badges.Venomous")}
                 onPress={() => { }}
                 size={size}
                 showCloseIcon={false}
@@ -36,7 +39,7 @@ export default function RiskTags({ riskInfo, size = 'small' }: RiskTagsProps) {
         tags.push(
             <Badge
                 key="medical"
-                label="Medically Significant"
+                label={t("badges.Medically Significant")}
                 onPress={() => { }}
                 size={size}
                 showCloseIcon={false}
@@ -51,7 +54,7 @@ export default function RiskTags({ riskInfo, size = 'small' }: RiskTagsProps) {
         tags.push(
             <Badge
                 key="allergy"
-                label="Allergy Risk"
+                label={t("badges.Allergy Risk")}
                 onPress={() => { }}
                 size={size}
                 showCloseIcon={false}
@@ -70,7 +73,7 @@ export default function RiskTags({ riskInfo, size = 'small' }: RiskTagsProps) {
             tags.push(
                 <Badge
                     key="sting"
-                    label="Stings"
+                    label={t("badges.Stings")}
                     onPress={() => { }}
                     size={size}
                     showCloseIcon={false}
@@ -85,7 +88,7 @@ export default function RiskTags({ riskInfo, size = 'small' }: RiskTagsProps) {
             tags.push(
                 <Badge
                     key="bite"
-                    label="Bites"
+                    label={t("badges.Bites")}
                     onPress={() => { }}
                     size={size}
                     showCloseIcon={false}

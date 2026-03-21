@@ -25,6 +25,7 @@ import { useSpecies } from "@/hooks/useSpecies";
 import { quickDiscoveryCategories } from "@/constants/Filters";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { openIdentifySheet } from "@/utils/identifyHelper";
+import { useTranslation } from "react-i18next";
 
 function getDailyIndex(listLength: number): number {
   const today = new Date();
@@ -91,6 +92,7 @@ function getLocalSpecies(
 }
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const [location, setLocation] = useState("Loading...");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [locationObj, setLocationObj] =
@@ -220,7 +222,7 @@ export default function HomeScreen() {
         >
           <View>
             <Text className="text-xl font-bold text-gray-900">
-              Your Location
+              {t("home.yourLocation")}
             </Text>
             <View className="flex-row items-center mt-1">
               {isLoadingLocation ? (
@@ -236,7 +238,7 @@ export default function HomeScreen() {
         {/* Identify Ant Button */}
         <View className="px-5 mb-6">
           <PrimaryButton
-            title="Identify Ant"
+            title={t("home.identifyAnt")}
             icon="camera"
             onPress={openIdentifySheet}
             size="large"
@@ -245,7 +247,7 @@ export default function HomeScreen() {
 
         {/* Quick Discovery Section */}
         <View className="mb-6">
-          <SectionHeader title="Quick Discovery" />
+          <SectionHeader title={t("home.quickDiscovery")} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -300,7 +302,7 @@ export default function HomeScreen() {
                 >
                   {icon}
                   <Text className="ml-2 text-gray-700 font-medium">
-                    {category.name}
+                    {t(`home.categories.${category.tag}`)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -310,7 +312,7 @@ export default function HomeScreen() {
 
         {/* Ant of the Day Section */}
         <View className="mb-6">
-          <SectionHeader title="Ant of the Day" />
+          <SectionHeader title={t("home.antOfTheDay")} />
           <View className="px-5">
             {speciesLoading || !featuredAntOfTheDay ? (
               <View className="h-48 items-center justify-center bg-gray-50 rounded-xl">
@@ -335,8 +337,8 @@ export default function HomeScreen() {
         {/* Featured Species Section */}
         <View className="mb-8">
           <SectionHeader
-            title="Featured Species"
-            subtitle="Discover common Thai ants"
+            title={t("home.featuredSpecies")}
+            subtitle={t("home.featuredSubtitle")}
             showSeeMore
             onSeeMorePress={() => router.push("/(tabs)/explore")}
           />
@@ -375,8 +377,8 @@ export default function HomeScreen() {
         {localSpeciesList.length > 0 && (
           <View className="mb-8">
             <SectionHeader
-              title={`Species near ${locationObj?.city || locationObj?.subregion || "you"}`}
-              subtitle="Found in your province"
+              title={t("home.speciesNear", { location: locationObj?.city || locationObj?.subregion || t("home.speciesNearYou") })}
+              subtitle={t("home.foundInProvince")}
             />
             <ScrollView
               horizontal

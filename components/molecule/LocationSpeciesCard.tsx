@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import type { Species } from "@/types/api";
 
 const LOCAL_BOOST = 0.4;
@@ -62,6 +63,7 @@ function computeWeightedScore(aiPercent: number): number {
 }
 
 function ConfidenceBar({ weighted, raw }: { weighted: number; raw: number }) {
+    const { t } = useTranslation();
     const barColor = weighted >= 70 ? "#0A9D5C" : weighted >= 40 ? "#F59E0B" : "#9CA3AF";
     const pct = Math.min(Math.max(weighted, 0), 100);
     const remainder = 100 - pct;
@@ -89,7 +91,7 @@ function ConfidenceBar({ weighted, raw }: { weighted: number; raw: number }) {
             </View>
             {weighted !== raw && (
                 <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
-                    AI confidence: {raw.toFixed(2)}%
+                    {t('locationCard.aiConfidence', { raw: raw.toFixed(2) })}
                 </Text>
             )}
         </View>
@@ -104,7 +106,10 @@ export default function LocationSpeciesCard({
     provinceSpecies,
     loadingProvinceSpecies,
 }: LocationSpeciesCardProps) {
+    const { t } = useTranslation();
     const isLoading = loadingLocation || loadingProvinceSpecies;
+
+    const translatedProvince = province ? t(`badges.${province}`, province) : "";
 
     // THE INTERSECTION: only predictions that are also confirmed in the province
     const matchedPredictions = predictions.filter((pred) => isInProvince(pred, provinceSpecies));
@@ -113,12 +118,12 @@ export default function LocationSpeciesCard({
         <View style={{ marginHorizontal: 16, marginTop: 24 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>
-                    Predicted & Found Near You
+                    {t('locationCard.title')}
                 </Text>
                 <TouchableOpacity
                     onPress={() => Alert.alert(
-                        "Confidence Score",
-                        "This score combines the AI prediction confidence with a 40% boost for species confirmed to live in your current province."
+                        t('locationCard.confidenceScoreInfo'),
+                        t('locationCard.confidenceScoreDesc')
                     )}
                     style={{ padding: 4 }}
                 >
@@ -147,25 +152,25 @@ export default function LocationSpeciesCard({
                     </View>
                     <View style={{ flex: 1 }}>
                         <Text style={{ color: "#0A9D5C", fontWeight: "700", fontSize: 14 }}>
-                            Current Province
+                            {t('locationCard.currentProvince')}
                         </Text>
                         {loadingLocation ? (
                             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
                                 <ActivityIndicator size="small" color="#0A9D5C" style={{ marginRight: 4 }} />
-                                <Text style={{ color: "#328e6e", fontSize: 12 }}>Detecting location…</Text>
+                                <Text style={{ color: "#328e6e", fontSize: 12 }}>{t('locationCard.detectingLocation')}</Text>
                             </View>
                         ) : permissionDenied ? (
-                            <Text style={{ color: "#D97706", fontSize: 12, marginTop: 2 }}>Location access denied</Text>
+                            <Text style={{ color: "#D97706", fontSize: 12, marginTop: 2 }}>{t('locationCard.locationDenied')}</Text>
                         ) : province ? (
-                            <Text style={{ color: "#4B5563", fontSize: 12, marginTop: 2 }}>{province}</Text>
+                            <Text style={{ color: "#4B5563", fontSize: 12, marginTop: 2 }}>{translatedProvince}</Text>
                         ) : (
-                            <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>Unable to detect</Text>
+                            <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{t('locationCard.unableDetect')}</Text>
                         )}
                     </View>
                     {!loadingLocation && !permissionDenied && loadingProvinceSpecies && (
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
                             <ActivityIndicator size="small" color="#9CA3AF" />
-                            <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 4 }}>Searching…</Text>
+                            <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 4 }}>{t('locationCard.searching')}</Text>
                         </View>
                     )}
                 </View>
@@ -177,7 +182,7 @@ export default function LocationSpeciesCard({
                     <View style={{ paddingHorizontal: 16, paddingVertical: 20, alignItems: "center" }}>
                         <MaterialCommunityIcons name="map-marker-off-outline" size={36} color="#D1D5DB" />
                         <Text style={{ color: "#6B7280", fontSize: 13, textAlign: "center", marginTop: 8 }}>
-                            Enable location access to see which predicted species are found near you.
+                            {t('locationCard.enableAccess')}
                         </Text>
                     </View>
                 )}
@@ -187,7 +192,7 @@ export default function LocationSpeciesCard({
                     <View style={{ paddingHorizontal: 16, paddingVertical: 20, flexDirection: "row", alignItems: "center" }}>
                         <ActivityIndicator color="#0A9D5C" />
                         <Text style={{ color: "#9CA3AF", fontSize: 13, marginLeft: 10 }}>
-                            Checking local species database…
+                            {t('locationCard.checkingDatabase')}
                         </Text>
                     </View>
                 )}
@@ -200,7 +205,11 @@ export default function LocationSpeciesCard({
                             <View style={{ backgroundColor: "#dcfce7", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, flexDirection: "row", alignItems: "center" }}>
                                 <Ionicons name="checkmark-circle" size={13} color="#16a34a" style={{ marginRight: 4 }} />
                                 <Text style={{ color: "#16a34a", fontSize: 12, fontWeight: "700" }}>
-                                    {matchedPredictions.length} of {predictions.length} predictions confirmed in {province}
+                                    {t('locationCard.matchesConfirmed', { 
+                                        count: matchedPredictions.length, 
+                                        total: predictions.length, 
+                                        province: translatedProvince 
+                                    })}
                                 </Text>
                             </View>
                         </View>
@@ -234,7 +243,7 @@ export default function LocationSpeciesCard({
                                                 {/* "Found here" badge */}
                                                 <View style={{ backgroundColor: "#dcfce7", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, flexDirection: "row", alignItems: "center" }}>
                                                     <Ionicons name="location" size={10} color="#16a34a" style={{ marginRight: 3 }} />
-                                                    <Text style={{ color: "#16a34a", fontSize: 10, fontWeight: "600" }}>Found here</Text>
+                                                    <Text style={{ color: "#16a34a", fontSize: 10, fontWeight: "600" }}>{t('locationCard.foundHere')}</Text>
                                                 </View>
                                             </View>
                                             <Text style={{ fontSize: 11, color: "#9CA3AF", fontStyle: "italic", marginTop: 1 }} numberOfLines={1}>
@@ -255,7 +264,7 @@ export default function LocationSpeciesCard({
                     <View style={{ paddingHorizontal: 16, paddingVertical: 24, alignItems: "center" }}>
                         <MaterialCommunityIcons name="map-search-outline" size={36} color="#D1D5DB" />
                         <Text style={{ color: "#6B7280", fontSize: 13, textAlign: "center", marginTop: 8 }}>
-                            None of the predicted species are confirmed in {province ?? "your area"}.
+                            {t('locationCard.noneConfirmed', { province: translatedProvince || t('home.unknownLocation') })}
                         </Text>
                     </View>
                 )}
@@ -267,10 +276,11 @@ export default function LocationSpeciesCard({
                         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
                             <MaterialCommunityIcons name="database-check-outline" size={13} color="#0A9D5C" />
                             <Text style={{ fontSize: 12, color: "#6B7280", marginLeft: 6 }}>
+                                {t('locationCard.databasePrefix')}
                                 <Text style={{ fontWeight: "700", color: "#0A9D5C" }}>{provinceSpecies.length}</Text>
-                                {" species total in "}
-                                <Text style={{ fontWeight: "600" }}>{province}</Text>
-                                {" database"}
+                                {t('locationCard.databaseCountSuffix')}
+                                <Text style={{ fontWeight: "600" }}>{translatedProvince}</Text>
+                                {t('locationCard.databaseLocationSuffix')}
                             </Text>
                         </View>
                     </>

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
+import { useTranslation } from "react-i18next";
 import Badge from "@/components/atom/badge/Badge";
 
 type Props = {
@@ -15,6 +16,8 @@ export default function FilterSection({
   selected,
   onToggle,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View className="mb-6">
       <Text className="mb-4 text-lg font-semibold text-gray-800">{title}</Text>
@@ -23,7 +26,7 @@ export default function FilterSection({
         {options.map((option) => (
           <Badge
             key={option}
-            label={option}
+            label={t(`badges.${option}`)}
             isSelected={selected.includes(option)}
             onPress={() => onToggle(option)}
           />

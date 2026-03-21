@@ -26,6 +26,7 @@ import { useState } from "react";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import EmptyState from "@/components/molecule/EmptyState";
 import { groupByRegion } from "@/utils/regionMapper";
+import { useTranslation } from "react-i18next";
 
 type DetailParams = {
   id: string;
@@ -60,8 +61,8 @@ function navigateAfterIdentification(
   });
 }
 
-function promptLogin(message: string) {
-  Alert.alert("Login Required", message, [
+function promptLogin(title: string, message: string) {
+  Alert.alert(title, message, [
     { text: "Cancel", style: "cancel" },
     { text: "Log In", onPress: () => router.push("/(auth)/login") },
   ]);
@@ -118,6 +119,7 @@ function FolderSelectModal({
   readonly onToggleFolder: (id: string) => void;
   readonly onConfirm: (ids: string[]) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Modal
       visible={visible}
@@ -135,10 +137,10 @@ function FolderSelectModal({
         >
           <View className="p-6">
             <Text className="text-xl font-bold text-center text-gray-800 mb-2">
-              Add to Collection
+              {t("detail.addToCollectionModal")}
             </Text>
             <Text className="text-sm text-gray-500 text-center mb-4">
-              Select folders to organize this species
+              {t("detail.selectFolders")}
             </Text>
             <View className="mb-4 max-h-64">
               <ScrollView showsVerticalScrollIndicator={false}>
@@ -158,7 +160,7 @@ function FolderSelectModal({
                 onPress={onClose}
               >
                 <Text className="text-center text-gray-600 font-medium">
-                  Cancel
+                  {t("common.cancel")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -171,8 +173,8 @@ function FolderSelectModal({
                 ) : (
                   <Text className="text-center text-white font-medium">
                     {selectedFolderIds.length > 0
-                      ? "Add to Collection"
-                      : "Skip Folders"}
+                      ? t("detail.addToCollectionModal")
+                      : t("detail.skipFolders")}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -189,15 +191,16 @@ function AcceptedTaxonSection({
 }: {
   readonly acceptedTaxon: NonNullable<any>;
 }) {
+  const { t } = useTranslation();
   return (
     <View className="mb-5">
       <Text className="text-lg font-bold text-gray-800 mb-3">
-        Accepted Taxonomy
+        {t("detail.acceptedTaxonomy")}
       </Text>
       <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
         {acceptedTaxon.scientific_name && (
           <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
-            <Text className="text-gray-600">Scientific Name</Text>
+            <Text className="text-gray-600">{t("detail.scientificName")}</Text>
             <Text
               className="text-gray-800 font-medium italic flex-1 text-right ml-4"
               numberOfLines={2}
@@ -208,15 +211,15 @@ function AcceptedTaxonSection({
         )}
         {acceptedTaxon.rank && (
           <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
-            <Text className="text-gray-600">Rank</Text>
+            <Text className="text-gray-600">{t("common.rank")}</Text>
             <Text className="text-gray-800 font-medium capitalize">
-              {acceptedTaxon.rank}
+              {t(`common.ranks.${acceptedTaxon.rank.toLowerCase()}`)}
             </Text>
           </View>
         )}
         {acceptedTaxon.synonyms && acceptedTaxon.synonyms.length > 0 && (
           <View className="flex-row justify-between py-3 px-4">
-            <Text className="text-gray-600">Synonyms</Text>
+            <Text className="text-gray-600">{t("common.synonyms")}</Text>
             <Text className="text-gray-800 font-medium">
               {acceptedTaxon.synonyms.join(", ")}
             </Text>
@@ -234,10 +237,11 @@ function LookalikesSection({
   readonly lookalikes: readonly string[];
   readonly allSpecies: any[];
 }) {
+  const { t } = useTranslation();
   return (
     <View className="mb-5">
       <Text className="text-lg font-bold text-gray-800 mb-2">
-        Similar Species
+        {t("common.similarSpecies")}
       </Text>
       <View className="flex-col">
         {lookalikes.map((lookalike) => {
@@ -269,50 +273,52 @@ function LookalikesSection({
 }
 
 function RiskSafetySection({ risk }: { readonly risk: NonNullable<any> }) {
+  const { t, i18n } = useTranslation();
+  const isThai = i18n.language === "th";
   return (
     <View className="mb-5">
       <Text className="text-lg font-bold text-gray-800 mb-3">
-        Risk & Safety
+        {t("common.riskSafety")}
       </Text>
       <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
         {risk.sting_or_bite && (
           <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
-            <Text className="text-gray-600">Sting / Bite</Text>
+            <Text className="text-gray-600">{t("common.stingBite")}</Text>
             <Text className="text-gray-800 font-medium capitalize">
-              {risk.sting_or_bite.replaceAll("_", " ")}
+              {t(`common.riskValues.${risk.sting_or_bite.toLowerCase()}`)}
             </Text>
           </View>
         )}
         {risk.medical_importance && (
           <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
-            <Text className="text-gray-600">Medical Importance</Text>
+            <Text className="text-gray-600">{t("common.medicalImportance")}</Text>
             <Text className="text-gray-800 font-medium capitalize">
-              {risk.medical_importance.replaceAll("_", " ")}
+              {t(`common.riskValues.${risk.medical_importance.toLowerCase()}`)}
             </Text>
           </View>
         )}
         {risk.venom && (
           <View className="py-3 px-4 border-b border-gray-100">
             <View className="flex-row justify-between mb-1">
-              <Text className="text-gray-600">Venom</Text>
+              <Text className="text-gray-600">{t("common.venom")}</Text>
               <Text
                 className={`font-medium ${risk.venom.has_venom ? "text-red-500" : "text-[#0A9D5C]"}`}
               >
-                {risk.venom.has_venom ? "Yes" : "No"}
+                {risk.venom.has_venom ? t("common.yes") : t("common.no")}
               </Text>
             </View>
             {risk.venom.details && (
               <Text className="text-gray-500 text-sm">
-                {risk.venom.details}
+                {isThai && risk.venom.details_th ? risk.venom.details_th : risk.venom.details}
               </Text>
             )}
           </View>
         )}
         {risk.allergy_risk_note && (
           <View className="py-3 px-4">
-            <Text className="text-gray-600 mb-1">Allergy Risk</Text>
+            <Text className="text-gray-600 mb-1">{t("common.allergyRisk")}</Text>
             <Text className="text-gray-500 text-sm">
-              {risk.allergy_risk_note}
+              {isThai && risk.allergy_risk_note_th ? risk.allergy_risk_note_th : risk.allergy_risk_note}
             </Text>
           </View>
         )}
@@ -341,6 +347,7 @@ export default function DetailScreen() {
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
   const [showFolderSelect, setShowFolderSelect] = useState(false);
   const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([]);
+  const { t, i18n } = useTranslation();
 
   const { species, loading } = useSpeciesDetail(id);
   const { species: allSpecies } = useSpecies();
@@ -385,7 +392,7 @@ export default function DetailScreen() {
 
   const handleCollectionPress = async () => {
     if (!isAuthenticated) {
-      promptLogin("Please log in to add to your collection");
+      promptLogin(t("detail.loginRequired"), t("detail.loginCollection"));
       return;
     }
     if (isInCollection(id)) {
@@ -410,7 +417,7 @@ export default function DetailScreen() {
 
   const handleSuggestUpdate = () => {
     if (!isAuthenticated) {
-      promptLogin("Please log in to suggest updates to species information");
+      promptLogin(t("detail.loginRequired"), t("detail.loginSuggest"));
       return;
     }
     router.push("/requestformpage");
@@ -423,7 +430,7 @@ export default function DetailScreen() {
       <View className="flex-1 bg-white items-center justify-center">
         <StatusBar barStyle="dark-content" />
         <ActivityIndicator size="large" color="#0A9D5C" />
-        <Text className="mt-4 text-gray-600">Loading species details...</Text>
+        <Text className="mt-4 text-gray-600">{t("detail.loading")}</Text>
       </View>
     );
   }
@@ -445,17 +452,19 @@ export default function DetailScreen() {
           <EmptyState
             icon="alert-circle-outline"
             iconColor="#9CA3AF"
-            title="Species Not Found"
+            title={t("detail.notFoundTitle")}
             titleStyle={{ fontWeight: "600", color: "#333" }}
-            description="Unable to load species details. Please try again."
+            description={t("detail.notFoundDescription")}
             descriptionStyle={{ color: "#374151" }}
-            buttonTitle="Go Back"
+            buttonTitle={t("detail.goBack")}
             onButtonPress={handleBackPress}
           />
         </View>
       </View>
     );
   }
+
+  const isThai = i18n.language === "th";
 
   // Transform API species to display format
   const currentAnt = {
@@ -464,13 +473,13 @@ export default function DetailScreen() {
     scientificName: species.scientific_name,
     classification: species.classification,
     tags: species.tags,
-    about: species.about,
-    characteristics: species.characteristics,
+    about: isThai && species.about_th ? species.about_th : species.about,
+    characteristics: isThai && species.characteristics_th ? species.characteristics_th : species.characteristics,
     colors: species.colors,
     habitat: species.habitat,
     distribution: species.distribution,
-    behavior: species.behavior,
-    ecologicalRole: species.ecological_role,
+    behavior: isThai && species.behavior_th ? species.behavior_th : species.behavior,
+    ecologicalRole: isThai && species.ecological_role_th ? species.ecological_role_th : species.ecological_role,
     image: species.image || "",
     // Extended fields
     provinces: species.distribution_v2?.provinces ?? [],
@@ -546,29 +555,29 @@ export default function DetailScreen() {
           </View>
 
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">About</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">{t("detail.about")}</Text>
             <Text className="text-gray-600 leading-5">{currentAnt.about}</Text>
           </View>
 
           <View className="mb-5">
             <Text className="text-lg font-bold text-gray-800 mb-3">
-              Classification
+              {t("detail.classification")}
             </Text>
             <View className="bg-white border border-gray-100 rounded-xl overflow-hidden">
               <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
-                <Text className="text-gray-600">Family</Text>
+                <Text className="text-gray-600">{t("detail.family")}</Text>
                 <Text className="text-gray-800 font-medium">
                   {currentAnt.classification.family}
                 </Text>
               </View>
               <View className="flex-row justify-between py-3 px-4 border-b border-gray-100">
-                <Text className="text-gray-600">Subfamily</Text>
+                <Text className="text-gray-600">{t("detail.subfamily")}</Text>
                 <Text className="text-gray-800 font-medium">
                   {currentAnt.classification.subfamily}
                 </Text>
               </View>
               <View className="flex-row justify-between py-3 px-4">
-                <Text className="text-gray-600">Genus</Text>
+                <Text className="text-gray-600">{t("detail.genus")}</Text>
                 <Text className="text-[#0A9D5C] font-medium italic">
                   {currentAnt.classification.genus}
                 </Text>
@@ -578,7 +587,7 @@ export default function DetailScreen() {
 
           <View className="mb-5">
             <Text className="text-lg font-bold text-gray-800 mb-2">
-              Characteristics
+              {t("detail.characteristics")}
             </Text>
             <Text className="text-gray-600 leading-5">
               {currentAnt.characteristics}
@@ -586,7 +595,7 @@ export default function DetailScreen() {
           </View>
 
           <View className="mb-5">
-            <Text className="text-lg font-bold text-gray-800 mb-2">Color</Text>
+            <Text className="text-lg font-bold text-gray-800 mb-2">{t("detail.color")}</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.colors.map((color) => (
                 <TagsBadge key={color} tag={color} />
@@ -596,7 +605,7 @@ export default function DetailScreen() {
 
           <View className="mb-5">
             <Text className="text-lg font-bold text-gray-800 mb-2">
-              Habitat
+              {t("detail.habitat")}
             </Text>
             <View className="flex-row flex-wrap">
               {currentAnt.habitat.map((hab) => (
@@ -608,14 +617,14 @@ export default function DetailScreen() {
           {currentAnt.provinces.length > 0 && (
             <View className="mb-5">
               <Text className="text-lg font-bold text-gray-800 mb-2">
-                Distribution by Region
+                {t("detail.distributionByRegion")}
               </Text>
               <View className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 {Object.entries(groupByRegion(currentAnt.provinces)).map(
                   ([region, provinces]) => (
                     <View key={region} className="mb-3 last:mb-0">
                       <Text className="text-sm font-bold text-[#0A9D5C] mb-1 uppercase tracking-wider">
-                        {region}
+                        {t(`detail.regions.${region.toLowerCase()}`)}
                       </Text>
                       <View className="flex-row flex-wrap">
                         {provinces.map((province) => (
@@ -631,7 +640,7 @@ export default function DetailScreen() {
 
           <View className="mb-5">
             <Text className="text-lg font-bold text-gray-800 mb-2">
-              Behavior
+              {t("detail.behavior")}
             </Text>
             <Text className="text-gray-600 leading-5">
               {currentAnt.behavior}
@@ -640,7 +649,7 @@ export default function DetailScreen() {
 
           <View className="mb-5">
             <Text className="text-lg font-bold text-gray-800 mb-2">
-              Ecological Role
+              {t("detail.ecologicalRole")}
             </Text>
             <Text className="text-gray-600 leading-5">
               {currentAnt.ecologicalRole}
@@ -662,12 +671,12 @@ export default function DetailScreen() {
 
           <View className="mb-6">
             <Text className="text-lg font-bold text-gray-800 mb-2">
-              Contribute
+              {t("detail.contribute")}
             </Text>
             <View className="flex-row items-center justify-between">
-              <Text className="text-gray-600">Help improve our database</Text>
+              <Text className="text-gray-600">{t("detail.helpImproveDatabase")}</Text>
               <PrimaryButton
-                title="Suggest Update"
+                title={t("detail.suggestUpdate")}
                 onPress={handleSuggestUpdate}
                 icon="pencil"
                 fullWidth={false}
@@ -692,8 +701,8 @@ export default function DetailScreen() {
             <PrimaryButton
               title={
                 isCurrentInCollection
-                  ? "In Collection"
-                  : "Add to My Collection"
+                  ? t("detail.inCollection")
+                  : t("detail.addToCollection")
               }
               onPress={handleCollectionPress}
               disabled={isCollectionLoading}
@@ -726,7 +735,7 @@ export default function DetailScreen() {
         <View style={{ flex: 1 }}>
           <View style={{ height: BUTTON_HEIGHT }}>
             <PrimaryButton
-              title="Ask Chat"
+              title={t("detail.askChat")}
               onPress={() =>
                 router.push({
                   pathname: "/chatbot",

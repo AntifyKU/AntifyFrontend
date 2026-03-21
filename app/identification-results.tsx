@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -30,6 +31,7 @@ type IdentificationParams = {
 };
 
 export default function IdentificationResultsScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<IdentificationParams>();
   const { imageUri, source } = params;
 
@@ -155,14 +157,14 @@ export default function IdentificationResultsScreen() {
 
     if (isUnidentified) {
       Alert.alert(
-        "Species Not in Database",
-        "We couldn't match this ant to a known species in our database yet. This could be a rare or undocumented species, or the photo may need better lighting / angle for a more accurate result.",
+        t("idResults.unableIdentify"),
+        t("idResults.errorMessage"),
         [
           {
-            text: "Help Improve AI",
+            text: t("idResults.improveAI"),
             onPress: handleProvideFeedback,
           },
-          { text: "OK", style: "cancel" },
+          { text: t("common.ok"), style: "cancel" },
         ]
       );
       return;
@@ -224,10 +226,10 @@ export default function IdentificationResultsScreen() {
           <View className="flex-1 items-center justify-center px-8">
             <ActivityIndicator size="large" color="#0A9D5C" />
             <Text className="mt-6 text-xl font-bold text-gray-800 text-center">
-              Analyzing Image...
+              {t("idResults.analyzing")}
             </Text>
             <Text className="mt-2 text-gray-500 text-center">
-              Our AI is identifying the ant species in your photo
+              {t("idResults.analyzingSubtitle")}
             </Text>
             {imageUri && (
               <View className="mt-8 w-48 h-48 rounded-xl overflow-hidden">
@@ -255,7 +257,7 @@ export default function IdentificationResultsScreen() {
               <Ionicons name="chevron-back" size={28} color="#0A9D5C" />
             </TouchableOpacity>
             <Text className="flex-1 text-center text-xl font-bold text-gray-800 mr-10">
-              Identification Failed
+              {t("idResults.unableIdentify")}
             </Text>
           </View>
         </SafeAreaView>
@@ -266,15 +268,14 @@ export default function IdentificationResultsScreen() {
             color="#EF4444"
           />
           <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            Unable to Identify
+            {t("idResults.unableIdentify")}
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
-            We couldn&#39;t identify the ant in this image. Please try again
-            with a clearer photo.
+            {t("idResults.errorMessage")}
           </Text>
           <View className="mt-8 w-full">
             <PrimaryButton
-              title="Try Again"
+              title={t("idResults.tryAgain")}
               icon="camera-outline"
               onPress={handleIdentifyAnother}
               size="large"
@@ -293,7 +294,7 @@ export default function IdentificationResultsScreen() {
         <SafeAreaView>
           <View className="pt-4 pb-5">
             <ScreenHeader
-              title="Identification Results"
+              title={t("idResults.title")}
               leftIcon="chevron-back"
               onLeftPress={handleBackPress}
             />
@@ -306,10 +307,10 @@ export default function IdentificationResultsScreen() {
             color="#F59E0B"
           />
           <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            Can&apos;t Detect Ant
+            {t("idResults.cantDetect")}
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
-            {speciesResult.message || "The image doesn't appear to contain a real ant. Please try again with a photo of a real ant."}
+            {speciesResult.message || t("idResults.errorMessage")}
           </Text>
           {imageUri && (
             <View className="mt-6 w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
@@ -322,7 +323,7 @@ export default function IdentificationResultsScreen() {
           )}
           <View className="mt-8 w-full">
             <PrimaryButton
-              title="Try Another Photo"
+              title={t("idResults.tryAgain")}
               icon="camera-outline"
               onPress={handleIdentifyAnother}
               size="large"
@@ -341,7 +342,7 @@ export default function IdentificationResultsScreen() {
       <SafeAreaView>
         <View className="pt-4 pb-5">
           <ScreenHeader
-            title="Identification Results"
+            title={t("idResults.title")}
             leftIcon="chevron-back"
             onLeftPress={handleBackPress}
           />
@@ -356,10 +357,10 @@ export default function IdentificationResultsScreen() {
           </View>
           <View>
             <Text className="text-[#0A9D5C] font-bold text-lg">
-              Analysis Complete
+              {t("idResults.analysisComplete")}
             </Text>
             <Text className="text-[#0A9D5C] text-sm">
-              {totalMatches} possible matches found
+              {t("idResults.matchesFound", { count: totalMatches })}
             </Text>
           </View>
         </View>
@@ -367,11 +368,10 @@ export default function IdentificationResultsScreen() {
         {/* Best Match Section */}
         <View className="mx-4 mt-6">
           <Text className="text-xl font-bold text-gray-800 mb-3">
-            Best Match
+            {t("idResults.bestMatch")}
           </Text>
 
           <View className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-            {/* Image Area with placeholder */}
             <View className="h-40 bg-[#e8f5e0] items-center justify-center">
               {imageUri ? (
                 <Image
@@ -390,7 +390,6 @@ export default function IdentificationResultsScreen() {
               )}
             </View>
 
-            {/* Best Match Details */}
             <View className="p-4">
               <Text className="text-lg font-bold text-gray-800">
                 {bestMatch.name}
@@ -399,23 +398,21 @@ export default function IdentificationResultsScreen() {
                 {bestMatch.scientificName}
               </Text>
               <Text className="text-[#0A9D5C] font-semibold mt-1">
-                {bestMatch.matchPercentage.toFixed(2)}% Match
+                {t("idResults.matchPercentage", { value: bestMatch.matchPercentage.toFixed(1) })}%
               </Text>
 
-              {/* Added RiskTags for Best Match */}
-              {(bestMatch as any).riskInfo && (
+              {bestMatch.riskInfo && (
                 <View className="mt-2">
-                  <RiskTags riskInfo={(bestMatch as any).riskInfo} size="small" />
+                  <RiskTags riskInfo={bestMatch.riskInfo} size="small" />
                 </View>
               )}
 
-              {/* Confirm Button */}
               <TouchableOpacity
                 className="mt-4 py-3 rounded-full border-2 border-[#0A9D5C] items-center"
                 onPress={() => handleConfirmAndViewDetails(bestMatch.id)}
               >
                 <Text className="text-[#0A9D5C] font-semibold">
-                  Confirm & View Details
+                  {t("idResults.confirmDetails")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -450,26 +447,28 @@ export default function IdentificationResultsScreen() {
         />
 
         {/* Other Possibilities Section */}
-        <View className="mx-4 mt-6">
-          <Text className="text-lg font-bold text-gray-800 mb-3">
-            Other Possibilities
-          </Text>
+        {otherMatches.length > 0 && (
+          <View className="mx-4 mt-6">
+            <Text className="text-lg font-bold text-gray-800 mb-3">
+              {t("idResults.otherPossibilities")}
+            </Text>
 
-          {otherMatches.map((ant) => (
-            <AntCard
-              key={ant.id}
-              id={ant.id}
-              name={ant.name}
-              description={ant.scientificName}
-              matchPercentage={ant.matchPercentage}
-              image={ant.image}
-              variant="horizontal"
-              showMatchPercentage={true}
-              onPress={() => handleOtherMatchPress(ant)}
-              riskInfo={(ant as any).riskInfo}
-            />
-          ))}
-        </View>
+            {otherMatches.map((ant) => (
+              <AntCard
+                key={ant.id}
+                id={ant.id}
+                name={ant.name}
+                description={ant.scientificName}
+                matchPercentage={ant.matchPercentage}
+                image={ant.image}
+                variant="horizontal"
+                showMatchPercentage={true}
+                onPress={() => handleOtherMatchPress(ant)}
+                riskInfo={ant.riskInfo}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Bottom Padding */}
         <View className="h-24" />
@@ -479,7 +478,7 @@ export default function IdentificationResultsScreen() {
       <View className="absolute bottom-0 left-0 right-0 p-4 bg-white">
         <SafeAreaView edges={["bottom"]}>
           <PrimaryButton
-            title="Identify Another Ant"
+            title={t("idResults.identifyAnother")}
             icon="camera-outline"
             onPress={handleIdentifyAnother}
             size="large"

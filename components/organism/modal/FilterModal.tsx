@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, ScrollView, StatusBar, Modal } from "react-native";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Badge from "@/components/atom/badge/Badge";
 import { filterOptions, quickDiscoveryCategories } from "@/constants/Filters";
@@ -33,6 +34,8 @@ export default function FilterModal({
   onClear,
   onToggle,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -45,10 +48,10 @@ export default function FilterModal({
         {/* Header */}
         <View className="py-6 border-b border-gray-200">
           <ScreenHeader
-            title="Filter"
-            leftText="Cancel"
+            title={t("filter.title")}
+            leftText={t("common.cancel")}
             onLeftPress={onClose}
-            rightText="Clear All"
+            rightText={t("common.clearAll")}
             onRightPress={onClear}
           />
         </View>
@@ -60,14 +63,14 @@ export default function FilterModal({
           {/* Quick Filter */}
           <View className="mt-6 mb-6">
             <Text className="mb-4 text-lg font-semibold text-gray-800">
-              Quick Filter
+              {t("filter.quickFilter")}
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex-row">
                 {quickDiscoveryCategories.map((filter) => (
                   <Badge
                     key={filter.id}
-                    label={filter.name}
+                    label={t(`home.categories.${filter.tag}`)}
                     icon={filter.icon}
                     iconColor={filter.color}
                     isSelected={tempFilters.quickFilters.includes(filter.id)}
@@ -81,7 +84,7 @@ export default function FilterModal({
 
           {/* Risk */}
           <FilterSection
-            title="Risk"
+            title={t("filter.risk")}
             options={filterOptions.risks}
             selected={tempFilters.risks}
             onToggle={(v) => onToggle("risks", v)}
@@ -89,7 +92,7 @@ export default function FilterModal({
           
           {/* Color */}
           <FilterSection
-            title="Color"
+            title={t("filter.color")}
             options={filterOptions.colors}
             selected={tempFilters.colors}
             onToggle={(v) => onToggle("colors", v)}
@@ -97,7 +100,7 @@ export default function FilterModal({
 
           {/* Habitat */}
           <FilterSection
-            title="Habitat"
+            title={t("filter.habitat")}
             options={filterOptions.habitats}
             selected={tempFilters.habitats}
             onToggle={(v) => onToggle("habitats", v)}
@@ -105,7 +108,7 @@ export default function FilterModal({
 
           {/* Distribution */}
           <FilterSection
-            title="Distribution"
+            title={t("filter.distribution")}
             options={filterOptions.distributions}
             selected={tempFilters.distributions}
             onToggle={(v) => onToggle("distributions", v)}
@@ -113,7 +116,7 @@ export default function FilterModal({
         </ScrollView>
 
         <View className="px-6 pt-4">
-          <PrimaryButton title="Apply Filters" onPress={onApply} />
+          <PrimaryButton title={t("filter.applyFilters")} onPress={onApply} />
         </View>
       </SafeAreaView>
     </Modal>

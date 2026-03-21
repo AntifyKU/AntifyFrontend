@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useTranslation } from "react-i18next";
 
 // Get screen dimensions for responsive grid
 const { width } = Dimensions.get('window');
@@ -37,6 +38,7 @@ export default function CollectionScreen() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [showSortOptions, setShowSortOptions] = useState(false);
+  const { t } = useTranslation();
   
   const handleItemPress = (id: string) => {
     router.push({
@@ -91,12 +93,12 @@ export default function CollectionScreen() {
           <Feather name="search" size={20} color="#666" />
           <TextInput
             className="flex-1 ml-2 text-base"
-            placeholder="Norem ipsum"
+            placeholder={t("information.searchPlaceholder")}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-         <Text className="mb-4 text-3xl font-bold text-gray-800">Find for all ant</Text>
+         <Text className="mb-4 text-3xl font-bold text-gray-800">{t("information.title")}</Text>
         {/* Sort and Filter */}
         <View className="flex-row justify-between mb-5">
           {/* Sort Button */}
@@ -106,7 +108,7 @@ export default function CollectionScreen() {
               onPress={toggleSortOptions}
             >
               <Ionicons name="swap-vertical" size={18} color="#333" />
-              <Text className="ml-2 text-base font-medium">Sort</Text>
+              <Text className="ml-2 text-base font-medium">{t("information.sort")}</Text>
               <Ionicons 
                 name={showSortOptions ? "chevron-up" : "chevron-down"} 
                 size={18} 
@@ -122,25 +124,25 @@ export default function CollectionScreen() {
                   className={`px-4 py-3 ${sortOption === 'newest' ? 'bg-gray-100' : ''}`}
                   onPress={() => handleSort('newest')}
                 >
-                  <Text>Newest</Text>
+                  <Text>{t("information.newest")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   className={`px-4 py-3 ${sortOption === 'oldest' ? 'bg-gray-100' : ''}`}
                   onPress={() => handleSort('oldest')}
                 >
-                  <Text>Oldest</Text>
+                  <Text>{t("information.oldest")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   className={`px-4 py-3 ${sortOption === 'a-z' ? 'bg-gray-100' : ''}`}
                   onPress={() => handleSort('a-z')}
                 >
-                  <Text>A-Z</Text>
+                  <Text>{t("information.az")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   className={`px-4 py-3 ${sortOption === 'z-a' ? 'bg-gray-100' : ''}`}
                   onPress={() => handleSort('z-a')}
                 >
-                 <Text>Z-A</Text>
+                 <Text>{t("information.za")}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -152,7 +154,7 @@ export default function CollectionScreen() {
             onPress={handleFilter}
           >
             <Ionicons name="options" size={18} color="#333" />
-            <Text className="mx-2 text-base font-medium">Filter</Text>
+            <Text className="mx-2 text-base font-medium">{t("information.filter")}</Text>
             {activeFilters.length > 0 && (
               <View className="bg-[#328e6e] rounded-full w-6 h-6 items-center justify-center">
                 <Text className="text-xs font-bold text-white">{activeFilters.length}</Text>
