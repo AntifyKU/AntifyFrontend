@@ -20,12 +20,13 @@ export default function FilterSection({
       <Text className="mb-4 text-lg font-semibold text-gray-800">{title}</Text>
       <View className="flex-row flex-wrap">
         {options.map((option) => (
-          <Badge
-            key={option}
-            label={option}
-            isSelected={selected.includes(option)}
-            onPress={() => onToggle(option)}
-          />
+          <View key={option} style={{ marginBottom: 8 }}>
+            <Badge
+              label={option}
+              isSelected={selected.includes(option)}
+              onPress={() => onToggle(option)}
+            />
+          </View>
         ))}
       </View>
     </View>

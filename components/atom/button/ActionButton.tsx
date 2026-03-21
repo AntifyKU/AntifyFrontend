@@ -50,7 +50,7 @@ export default function ActionButton({
       )}
 
       {type === "filter" && badgeCount > 0 && (
-        <View className="ml-2 bg-[#22A45D] rounded-full w-6 h-6 items-center justify-center">
+        <View className="ml-2 bg-[#22A45D] rounded-full items-center justify-center" style={{ width: 24, height: 24 }}>
           <Text className="text-xs font-bold text-white">{badgeCount}</Text>
         </View>
       )}

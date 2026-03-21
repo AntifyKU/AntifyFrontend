@@ -26,6 +26,7 @@ import { quickDiscoveryCategories } from "@/constants/Filters";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import { openIdentifySheet } from "@/utils/identifyHelper";
 import { useTranslation } from "react-i18next";
+import AntTopicsSection from "@/components/organism/AntTopicsSection";
 
 function getDailyIndex(listLength: number): number {
   const today = new Date();
@@ -387,6 +388,9 @@ export default function HomeScreen() {
             </ScrollView>
           </View>
         )}
+
+        {/* Ant Topics & Tips Section */}
+        <AntTopicsSection />
 
         <View className="h-24" />
       </ScrollView>

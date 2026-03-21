@@ -91,17 +91,16 @@ export const ScreenHeader: React.FC<HeaderProps> = ({
   };
 
   return (
-    <View className="flex-row w-full py-5 px-6 items-center justify-between bg-white relative">
-      <View className="z-10 min-w-[60px] items-start">{renderLeft()}</View>
+    <View className="flex-row w-full py-5 px-6 items-center justify-between bg-white">
+      <View className="w-[60px] items-start">{renderLeft()}</View>
       {title && (
-        <View
-          className="absolute left-0 right-0 top-0 bottom-0 justify-center items-center"
-          pointerEvents="none"
-        >
-          <Text className="text-gray-800 text-xl font-bold">{title}</Text>
+        <View className="flex-1 justify-center items-center px-2">
+          <Text className="text-gray-800 text-xl font-bold text-center flex-wrap">
+            {title}
+          </Text>
         </View>
       )}
-      <View className="z-10 min-w-[60px] items-end">{renderRight()}</View>
+      <View className="w-[60px] items-end">{renderRight()}</View>
     </View>
   );
 };

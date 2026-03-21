@@ -9,6 +9,7 @@ interface BaseCardItemProps {
   onMore?: () => void;
   showMore?: boolean;
   backgroundColor?: string;
+  isTopic?: boolean;
 }
 
 interface FolderCardItemProps extends BaseCardItemProps {
@@ -32,6 +33,7 @@ export default function CardItem(props: CardItemProps) {
     onMore,
     showMore = true,
     backgroundColor = "#f9fafb",
+    isTopic = false,
   } = props;
 
   const [imageError, setImageError] = useState(false);
@@ -67,8 +69,14 @@ export default function CardItem(props: CardItemProps) {
           />
         ) : (
           <View
-            className="w-16 h-16 rounded-full items-center justify-center"
-            style={{ backgroundColor: accentColor + "33" }}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 32,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: accentColor + "33",
+            }}
           >
             <Text className="text-2xl font-bold" style={{ color: accentColor }}>
               {name.charAt(0).toUpperCase()}
@@ -78,12 +86,15 @@ export default function CardItem(props: CardItemProps) {
       </View>
 
       {/* Footer */}
-      <View className="px-3 py-3 ml-3">
+      <View
+        className={`px-3 py-3 ${isTopic ? "ml-3 mr-3" : "ml-3"}`}
+        style={isTopic ? { height: 50, justifyContent: "center" } : undefined}
+      >
         <View className="flex-row items-start justify-between">
           <View className="flex-1 pr-2">
             <Text
-              className="font-bold text-gray-900 text-base mb-0.5"
-              numberOfLines={1}
+              className="font-bold text-gray-900 text-base"
+              numberOfLines={isTopic ? 2 : 1}
             >
               {name}
             </Text>

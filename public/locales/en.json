@@ -28,7 +28,15 @@
     "locale": "en-US",
     "required": "Required",
     "processing": "Processing...",
-    "done": "Done"
+    "done": "Done",
+    "tabs": {
+      "references": "References"
+    },
+    "referenceItem": {
+      "authorYear": "{{author}} ({{year}}). ",
+      "yearOnly": "({{year}}). ",
+      "authorOnly": "{{author}} "
+    }
   },
   "auth": {
     "login": {
@@ -642,6 +650,10 @@
       "forest": "Forest",
       "household": "Household",
       "all": "All"
+    },
+    "antTopics": {
+      "title": "Ant Topics & Tips",
+      "subtitle": "Explore fascinating facts and practical guides"
     }
   },
   "identification": {
@@ -712,5 +724,564 @@
     "title": "Oops!",
     "message": "This screen does not exist.",
     "go_home": "Go to home screen!"
+  },
+  "identification_tips": {
+    "title": "How to Identify Ants Like a Pro",
+    "subtitle": "Master the key anatomical features that separate ant species, even the ones that look nearly identical.",
+    "tabs": {
+      "anatomy": {
+        "label": "Anatomy",
+        "sections": {
+          "intro": {
+            "body": "Ants are among the most diverse insects on Earth with **over 20,000 species worldwide**. There are more than 500 recorded in Thailand alone, and hundreds more still awaiting discovery. Identifying them correctly is not easy, but it is absolutely learnable once you know what to look for."
+          },
+          "basicBodyStructure": {
+            "heading": "Basic Body Structure",
+            "body": "Like all insects, ants have three main regions: the **Head**, the **Mesosoma** (thorax), and the **Metasoma** (abdomen). What makes ants unique is the narrow waist called the **Petiole** that sits between the mesosoma and the metasoma.\n\nThe **Head** holds compound eyes, ocelli (in some castes), antennae, and mandibles. The **Mesosoma** carries all six legs and wings in reproductive castes. The **Gaster** (bulbous rear) contains digestive organs and, in stinging species, the venom apparatus.",
+            "imageCaption": "External anatomy of an ant including head, mesosoma, petiole, and gaster labelled"
+          },
+          "petiole": {
+            "heading": "The Petiole (Most Important Feature)",
+            "body": "The petiole is always the **first thing** a myrmecologist checks. It immediately divides ants into two large camps:\n\n**Single node ants** have one petiole segment. This includes Formicinae (Camponotus, Oecophylla, Formica) and Dolichoderinae (Tapinoma, Linepithema).\n\n**Double node ants** have both a petiole and a postpetiole. This group is dominated by Myrmicinae, the largest ant subfamily, which includes fire ants (Solenopsis), leafcutter ants (Atta), and hundreds more.\n\nAlso note the **node shape**. A thin scale-shaped node (weaver ants) versus a thick rounded nodiform node (fire ants) adds another layer of precision.",
+            "imageCaption": "Single node petiole (Formicinae) VS Double node petiole plus postpetiole (Myrmicinae)"
+          },
+          "eyes": {
+            "heading": "Eyes",
+            "body": "Eye size reflects how an ant lives.\n\n**Large eyes** on the sides of the head belong to fast surface-active ants that navigate primarily by vision: Camponotus, Oecophylla, and Polyrhachis.\n\n**Small or vestigial eyes** are the hallmark of underground or army ant species. Driver ant workers (Dorylus) are effectively blind, navigating entirely by pheromone trails.\n\n**Ocelli** are three tiny simple eyes on top of the head. They are always present in queens and males for solar navigation. In workers, their presence or absence is itself diagnostic.",
+            "imageCaption": "Frontal view showing large compound eyes and geniculate antennae"
+          }
+        }
+      },
+      "features": {
+        "label": "Features",
+        "sections": {
+          "antennae": {
+            "heading": "Antennae",
+            "body": "**Segment count:** Most ants have 12 antennal segments, but Myrmicinae often have 10 to 12. Counting requires a 10x loupe or macro photo.\n\n**Antennal club:** The enlarged tip segments are highly diagnostic. A **three-segment club** (Camponotus), four-segment, or no club at all each point to different genera.\n\n**Geniculate (elbowed) shape:** All ant antennae have a long first segment (the scape) followed by a sharp bend. This single feature separates ants from all other insects at a glance."
+          },
+          "mandibles": {
+            "heading": "Mandibles",
+            "body": "**Triangular toothed mandibles** are most common. They belong to generalist species that handle varied food, nest materials, and prey.\n\n**Trap-jaw mandibles** (Odontomachus, Anochetus) can open nearly 180 degrees and snap shut at **64 to 145 meters per second**. This is the fastest recorded animal movement, generating force enough to launch the ant into the air.\n\n**Linear mandibles** are typical of specialist predators in Ponerinae that hunt centipedes and elongated larvae.\n\n**Edentate (toothless) mandibles** are found in army ants. They are designed for cutting rather than gripping.",
+            "imageCaption": "Morphological and Functional Diversity of Ant Mandibles"
+          },
+          "workerSize": {
+            "heading": "Worker Size & Polymorphism",
+            "body": "Worker size is one of the most useful and fastest field diagnostics — you can assess it at a glance without any equipment.\n\n**Monomorphic colonies** have workers all roughly the same size. This applies to the majority of ant species, including most Ponerinae, Tapinoma, and Lasius.\n\n**Polymorphic colonies** contain dramatically different size classes within the same colony:\n\n1. **Minor workers** are the smallest caste, primarily focused on brood care and nest maintenance.\n2. **Media workers** are mid-sized and make up the bulk of foragers.\n3. **Major workers or soldiers** are the largest, with disproportionately large heads and powerful mandibles used for defense and food processing.\n\n**Why size varies so much:** Caste is determined during the larval stage, not genetically fixed. Larvae that receive more and richer food develop into larger workers. A colony actively controls its worker size ratio based on current needs — more soldiers when under threat, more minors when brood is abundant.",
+            "imageCaption": "Atta cephalotes major soldier (left) alongside minor worker (right) from the same species"
+          },
+          "sizeFieldGuide": {
+            "heading": "Size as a Field Guide",
+            "body": "Knowing the typical size range of common Thai species helps narrow down an identification quickly:\n\n**Very small (1–2 mm):** Ghost ant (Tapinoma melanocephalum), Pharaoh ant (Monomorium pharaonis), thief ant (Solenopsis fugax). These are the ants that invade kitchens and are often barely visible to the naked eye.\n\n**Small to medium (2–5 mm):** Fire ant (Solenopsis geminata), black garden ant (Lasius niger), most Pheidole workers. The most commonly encountered size range in urban and suburban environments.\n\n**Medium to large (5–10 mm):** Weaver ant workers (Oecophylla smaragdina), many Camponotus species, trap-jaw ant (Odontomachus). Easy to observe behavioral details without magnification.\n\n**Large (10–20 mm):** Carpenter ant majors (Camponotus gigas can reach 20 mm), bulldog ant (Myrmecia), Dinoponera queens. These are the ants that genuinely startle people on first encounter.\n\n**Important caveat:** Size alone is never sufficient for identification. A large black ant could be Camponotus, Polyrhachis, or Diacamma. Always combine size with petiole node count and other structural features.",
+            "imageCaption": "Size comparison: crazy ant (1.5 mm) to carpenter ant (12.7 mm) against a ruler"
+          },
+          "colorTexture": {
+            "heading": "Color, Texture & Hair",
+            "body": "Color is the most immediately noticeable feature but **most misleading used alone**. The same species varies considerably across geographic ranges, and callow workers (freshly eclosed) are always paler than mature individuals.\n\n**Metallic coloration** in Polyrhachis creates a distinctive sheen. Some species show blue-green or bronze iridescence visible from a distance.\n\n**Two-tone patterns** — red head with black gaster, or pale abdominal banding — are useful secondary confirmers once structural features are checked.\n\n**Pilosity (body hair):** presence, length, direction (erect versus appressed), and density are all used in species-level identification keys."
+          },
+          "behaviorHabitat": {
+            "heading": "Behavior & Habitat Clues",
+            "body": "**Nest type:**\n\nFirst, an underground entrance hole or crater mound is used by the majority of species.\n\nSecond, excavated wood galleries are used by carpenter ants (Camponotus) which excavate soft wood but **do not eat it**.\n\nThird, **silk leaf nests** are used by weaver ants (Oecophylla smaragdina) which bind leaves with silk from their own larvae. No other Thai ant does this.\n\nFourth, hollow plant stems are used by Crematogaster and Azteca in obligate plant mutualisms.\n\n**Smell:** Tapinoma releases a sharp **rotten coconut odor** when crushed. Lasius fuliginosus has a sweet apple-like scent.",
+            "imageCaption": "Oecophylla smaragdina silk leaf nest is the most reliable single behavioral ID feature in Thai forests"
+          }
+        }
+      },
+      "fieldGuide": {
+        "label": "Field Guide",
+        "sections": {
+          "photographyTips": {
+            "heading": "Photography Tips",
+            "body": "**Three essential angles:**\n\n1. **Dorsal** (top-down) view for body proportions, node count, and head shape.\n2. **Lateral** (side-on) view for petiole node profile and mesosoma curve.\n3. **Frontal or face** view for eye size, mandible shape, and antennal insertions.\n\n**Best practices:**\n\nFirst, use a plain contrasting background like a white card or moist white tile.\nSecond, a brief cool-down (not freezing) slows ants for sharper photos.\nThird, record GPS and date because locality data is scientifically valuable and helps confirm species with restricted distributions."
+          },
+          "commonMistakes": {
+            "heading": "Common Mistakes",
+            "body": "**Mistake 1: Color alone.** Color varies too much within a species. Always check structural features first.\n\n**Mistake 2: Single photo angle.** Petiole node count cannot be reliably assessed from dorsal only. You need a lateral view.\n\n**Mistake 3: Confusing castes.** Queens have a larger mesosoma with wing scars. Males have large eyes and wasp-like proportions. Never identify a colony from a male alone.\n\n**Mistake 4: Missing the postpetiole.** In double node ants, the segments can press together and look like one. A flat postpetiole pressed against the gaster is still two nodes.\n\n**Mistake 5: Using size alone.** A large ant is not necessarily Camponotus. Many genera overlap in size range. Size is a starting point, not a conclusion."
+          },
+          "quickChecklist": {
+            "heading": "Quick Field Checklist",
+            "body": "Work through these steps in order when you encounter an unknown ant:\n\n1. **Estimate size.** Very small, small, medium, or large? This immediately narrows possible genera.\n2. **Count the petiole nodes.** Are there one or two?\n3. **Assess node shape.** Is it thin and scale-like, or thick and rounded?\n4. **Check worker size variation.** Are they monomorphic or polymorphic?\n5. **Look at the head.** How large are the eyes? Is an antennal club present?\n6. **Observe mandible shape.** Are they triangular, linear, or trap-jaw?\n7. **Note nest type and foraging behavior.**\n8. **Photograph** dorsal, lateral, and face views on a plain background.\n9. **Use Antify** to submit your photos for AI-assisted species matching."
+          }
+        }
+      }
+    },
+    "references": {
+      "antweb": {
+        "title": "AntWeb: The World's Largest Online Ant Database"
+      },
+      "antwiki": {
+        "title": "Identification at AntWiki"
+      },
+      "theAnts": {
+        "title": "The Ants"
+      },
+      "phylogeny": {
+        "title": "The phylogeny and evolution of ants"
+      },
+      "antcat": {
+        "title": "AntCat: An Online Catalog of the Ants of the World"
+      },
+      "southeastAsia": {
+        "title": "Ants of Southeast Asia: Identification Notes"
+      }
+    }
+  },
+  "lifecycle": {
+    "title": "The Ant Life Cycle",
+    "subtitle": "From a single egg to a colony of millions — the complete story of how an ant colony grows.",
+    "tabs": {
+      "stages": {
+        "label": "Stages",
+        "sections": {
+          "intro": {
+            "body": "Ants are **holometabolous** insects, meaning they undergo complete metamorphosis. Their life cycle includes four stages: egg, larva, pupa, and adult. Each stage looks completely different and serves a unique role in development."
+          },
+          "egg": {
+            "heading": "Egg",
+            "body": "The queen lays **tiny, white eggs** that are usually less than 0.5 mm. Workers constantly clean and move them to prevent fungus and keep them safe.\n\nEggs take about **1 to 4 weeks** to hatch depending on temperature. Warmer conditions speed up development.\n\nThe queen determines the role of each egg. Fertilized eggs become workers or queens, while unfertilized eggs become males.",
+            "imageCaption": "Small white ant eggs grouped together and cared for by workers"
+          },
+          "larva": {
+            "heading": "Larva",
+            "body": "Larvae are **soft, legless, and completely dependent** on workers. Their main role is to eat and grow.\n\nWorkers feed them continuously with liquid food or small prey. As they grow, larvae molt several times.\n\nThis stage is very important because **caste is decided here**. Larvae that receive more nutrition may develop into queens, while others become workers.",
+            "imageCaption": "Larvae being fed and protected by worker ants"
+          },
+          "pupa": {
+            "heading": "Pupa",
+            "body": "During the pupal stage, the ant transforms into its adult form. Inside, its body is completely reorganized.\n\nSome species have exposed pupae, while others form cocoons. These cocoons are often mistaken for eggs.\n\nPupae cannot move and rely entirely on workers for protection and proper conditions.",
+            "imageCaption": "Pupae developing into adult ants, either exposed or inside cocoons"
+          },
+          "adult": {
+            "heading": "Adult",
+            "body": "When development is complete, the ant emerges as a **callow**, which is pale and soft. Over time, its body hardens and darkens.\n\nYoung workers start with simple tasks such as caring for brood, then later move to more complex roles like foraging.\n\nCallows should not be used for identification because their color and structure are not fully developed.",
+            "imageCaption": "Newly emerged ant compared with fully developed workers"
+          }
+        }
+      },
+      "colony": {
+        "label": "Colony",
+        "sections": {
+          "casteSystem": {
+            "heading": "Caste System",
+            "body": "Ant colonies are divided into **different castes**, each with a specific role.\n\nQueens are responsible for reproduction and can live many years.\n\nWorkers handle tasks such as gathering food, caring for young, and defending the colony.\n\nMales exist only for reproduction and usually live for a short time.\n\nSome species also have larger workers specialized for defense.",
+            "imageCaption": "Different castes within an ant colony"
+          },
+          "nuptialFlight": {
+            "heading": "Nuptial Flight",
+            "body": "The **nuptial flight** is when new colonies begin. Winged males and queens leave the nest and mate.\n\nAfter mating, males die while queens land, remove their wings, and search for a place to start a colony.\n\nIn tropical regions like Thailand, this often happens after rain when conditions are ideal.",
+            "imageCaption": "Winged ants leaving the nest during a nuptial flight"
+          },
+          "colonyFounding": {
+            "heading": "Colony Founding",
+            "body": "A queen starts a colony alone in a small chamber. She does not leave to find food and instead uses stored energy.\n\nShe lays eggs and raises the first workers by herself. These first workers are very small but essential.\n\nOnce they grow, they begin foraging and the colony starts to expand."
+          }
+        }
+      },
+      "growth": {
+        "label": "Growth",
+        "sections": {
+          "colonyDevelopment": {
+            "heading": "Colony Development",
+            "body": "In the beginning, the colony is very small and fragile. Over time, the number of workers increases and the colony becomes stronger.\n\nEventually, mature colonies can produce new queens and males, allowing the cycle to continue.\n\nSome species can grow to thousands or even millions of individuals."
+          },
+          "temperature": {
+            "heading": "Temperature",
+            "body": "Temperature strongly affects development speed. Warmer environments lead to faster growth.\n\nIn tropical regions, colonies can grow throughout the year, especially during seasons with abundant food."
+          },
+          "lifespan": {
+            "heading": "Lifespan",
+            "body": "Queens can live for many years, much longer than most insects.\n\nWorkers live shorter lives but still survive longer than many other insects.\n\nMales live only a short time after reproduction.\n\nAs long as the queen survives, the colony can continue to exist."
+          }
+        }
+      }
+    },
+    "references": {
+      "theAnts": {
+        "title": "The Ants"
+      },
+      "superorganism": {
+        "title": "The Superorganism"
+      },
+      "antwikiLifeHistory": {
+        "title": "AntWiki Life History"
+      },
+      "antColonyOptimization": {
+        "title": "Ant Colony Optimization and Swarm Intelligence"
+      }
+    }
+  },
+  "first_aid": {
+    "title": "Ant Stings & Bites — First Aid Guide",
+    "subtitle": "What to do immediately after an ant sting or bite, how to recognize dangerous reactions, and when to seek medical help.",
+    "tabs": {
+      "basics": {
+        "label": "Basics",
+        "sections": {
+          "intro": {
+            "body": "Most ant encounters are harmless — a brief pinch, a moment of irritation, and it's over. But some species deliver genuinely dangerous venom, and **allergic reactions can occur even from species considered medically minor**. Knowing the difference between a normal reaction and a dangerous one could save a life."
+          },
+          "bitesVsStings": {
+            "heading": "Bites vs. Stings — They're Different",
+            "body": "**Bites** use the ant's mandibles (jaws). Most ants bite. The wound is typically a small pinch or scratch, sometimes with formic acid sprayed into it. Pain is mild to moderate and fades within minutes.\n\n**Stings** use a modified ovipositor located at the tip of the abdomen. Only certain species sting — notably fire ants (Solenopsis), jack jumper ants (Myrmecia), bulldog ants, and bullet ants (Paraponera). Stings inject venom directly into tissue and cause significantly more pain and longer-lasting reactions.\n\n**A critical point:** many species do both simultaneously — they bite to anchor themselves, then sting repeatedly. Fire ants are notorious for this behavior. A single fire ant can sting 7–8 times in one attack.",
+            "imageCaption": "Left: mandible bite wound (surface scratch). Right: sting wound (central puncture with surrounding wheal)"
+          },
+          "normalReaction": {
+            "heading": "Normal Reaction — What to Expect",
+            "body": "A **normal local reaction** to an ant sting or bite includes:\n- Immediate sharp pain or burning at the site\n- Redness and swelling within the first few minutes\n- Itching developing over the next 1–2 hours\n- A small raised weal (hive-like bump) at the sting site\n\nFor **fire ant stings specifically**, a characteristic white pustule forms within **8–24 hours**. This is caused by the unique alkaloid venom (solenopsin) — not infection. The pustule can persist for **3–7 days** before resolving on its own.\n\nAll of the above is expected and requires only basic home care."
+          },
+          "basicTreatment": {
+            "heading": "Basic Home Treatment",
+            "body": "For **mild stings and bites** with a normal local reaction:\n\n**Step 1 — Move away:** Leave the area immediately. Fire ants will continue stinging as long as they remain on skin. Brush them off with a dry sweep — water can agitate them and trigger more stings.\n\n**Step 2 — Wash the area:** Clean thoroughly with soap and water to remove surface venom and reduce infection risk.\n\n**Step 3 — Cold compress:** Apply ice wrapped in cloth (never directly on skin) for 10–15 minutes to reduce swelling and numb pain. Repeat as needed.\n\n**Step 4 — Antihistamine:** An oral antihistamine (cetirizine, loratadine, or diphenhydramine) reduces itching and local swelling. Take as directed on the label.\n\n**Step 5 — Topical relief:** Hydrocortisone 1% cream applied to the sting site reduces inflammation and itch. Calamine lotion also helps.\n\n**Step 6 — Leave pustules intact:** If fire ant pustules form, **do not pop them**. Breaking the pustule significantly increases risk of bacterial infection (secondary impetigo) and delays healing.",
+            "imageCaption": "Basic first aid sequence: brush off ants, wash with soap, cold compress, oral antihistamine"
+          }
+        }
+      },
+      "allergicReactions": {
+        "label": "Allergic Reactions",
+        "sections": {
+          "threeLevels": {
+            "heading": "Three Levels of Allergic Response",
+            "body": "Allergic reactions to ant venom range from mildly uncomfortable to life-threatening. Understanding the three levels helps determine the right response:\n\n**Large Local Reaction (LLR):** Swelling and redness that extends significantly beyond the sting site — often covering an entire limb within hours. This is uncomfortable but **not dangerous** in itself. It peaks at 24–48 hours and resolves over 5–10 days. Treat with oral antihistamines and a short course of oral corticosteroids if severe. LLR does not reliably predict risk of anaphylaxis on future stings.\n\n**Systemic (Generalized) Allergic Reaction:** Symptoms appear in a different body part from where the sting occurred. May include hives spreading across the body, facial swelling, nausea, vomiting, or abdominal cramps — without breathing difficulty. Requires **immediate medical attention**.\n\n**Anaphylaxis:** A severe, potentially fatal systemic reaction involving the cardiovascular or respiratory system. Requires **emergency treatment within minutes**."
+          },
+          "recognizingAnaphylaxis": {
+            "heading": "Recognizing Anaphylaxis — Act Immediately",
+            "body": "Anaphylaxis typically develops within **5–30 minutes** of a sting, though it can be delayed up to 2 hours. The hallmark is **rapid progression** affecting multiple body systems at once.\n\n**Warning signs — any of these warrant emergency action:**\n- Hives, flushing, or itching spreading rapidly across the body\n- Swelling of the face, lips, tongue, or throat\n- Difficulty breathing, wheezing, or tightness in the chest\n- Hoarse voice or difficulty swallowing\n- Dizziness, lightheadedness, or sudden drop in blood pressure\n- Rapid or weak pulse\n- Pale, grey, or bluish skin\n- Nausea, vomiting, or sudden diarrhea alongside any respiratory or cardiovascular symptom\n- Sudden intense anxiety or sense of impending doom\n- Loss of consciousness\n\n**A person does not need all of these symptoms.** Two or more body systems being affected after a known sting is sufficient to treat as anaphylaxis.",
+            "imageCaption": "Anaphylaxis recognition: multiple body systems affected within minutes of a sting"
+          },
+          "emergencyResponse": {
+            "heading": "Emergency Response for Anaphylaxis",
+            "body": "**If anaphylaxis is suspected, every second counts.**\n\n**1. Administer epinephrine (EpiPen) immediately** if available. Epinephrine is the only effective first-line treatment for anaphylaxis — antihistamines and steroids act too slowly. Inject into the outer mid-thigh. Can be administered through clothing.\n\n**2. Call emergency services immediately** — 1669 in Thailand — even if epinephrine has been given. The patient needs hospital monitoring for at least 4–6 hours due to the risk of a biphasic (recurrent) reaction.\n\n**3. Position correctly:**\n- Breathing difficulty: sit upright or semi-reclined\n- Dizzy or faint: lay flat with legs elevated\n- Unconscious and breathing: recovery position\n- Never leave an anaphylactic patient standing — collapse can be sudden and without warning\n\n**4. Second epinephrine dose:** Give after 5–15 minutes if symptoms persist and a second auto-injector is available.\n\n**5. Do not substitute antihistamines or steroids for epinephrine.** They may be given as adjuncts but cannot reverse anaphylaxis on their own."
+          },
+          "higherRisk": {
+            "heading": "Who Is at Higher Risk",
+            "body": "Not everyone reacts the same way to ant venom. These factors increase the risk of a severe reaction:\n\n**Previous systemic reaction:** The strongest predictor of future anaphylaxis. Anyone who has had a generalized allergic reaction to an ant sting should carry an EpiPen at all times and see an allergist.\n\n**Asthma:** Increases the risk of a severe respiratory component during anaphylaxis.\n\n**Mast cell disorders:** Conditions such as mastocytosis dramatically increase anaphylaxis risk from any insect venom.\n\n**Multiple simultaneous stings (50+):** Can cause a toxic — not allergic — systemic reaction from sheer venom volume, even in people with no allergy history. Symptoms mimic anaphylaxis and require the same emergency response.\n\n**Beta-blocker medications:** Can worsen anaphylaxis severity and significantly reduce the effectiveness of epinephrine. People on beta-blockers who are venom-allergic require specialist review.\n\n**Very young children and elderly individuals** may experience more severe reactions and have more difficulty communicating symptoms."
+          }
+        }
+      },
+      "speciesPrevention": {
+        "label": "Species & Prevention",
+        "sections": {
+          "dangerousSpecies": {
+            "heading": "Most Medically Important Species",
+            "body": "The vast majority of ant species are medically insignificant. These are the ones that warrant genuine caution:\n\n**Fire ants (Solenopsis invicta / S. geminata)** — the most medically important ants in Thailand and globally. Responsible for the majority of serious ant sting reactions. They attack in groups, sting repeatedly, and their alkaloid venom (solenopsin) causes the characteristic pustule reaction. Extremely aggressive when their mound is disturbed.\n\n**Weaver ant (Oecophylla smaragdina)** — extremely common in Thailand. Bites powerfully and sprays formic acid into the wound. Painful and potentially concerning for sensitive individuals, but generally not dangerous without true allergy.\n\n**Jack jumper ant (Myrmecia pilosula)** — primarily Australia. Responsible for more anaphylaxis deaths than any other ant species. Extremely aggressive, powerful venom, and a high rate of sensitization in exposed populations.\n\n**Bullet ant (Paraponera clavata)** — Central and South America. Delivers the most painful insect sting known to science — rated 4+ on the Schmidt Sting Pain Index, described as 'pure, intense, brilliant pain like walking over flaming charcoal' lasting up to 24 hours.\n\n**Bulldog ants (Myrmecia spp.)** — Australia. Large, aggressive, powerful venom. Significant anaphylaxis potential.",
+            "imageCaption": "Dangerous ant species"
+          },
+          "prevention": {
+            "heading": "Prevention",
+            "body": "**Everyday precautions:**\n- Wear closed-toe shoes and socks in gardens, grass, and natural areas\n- Shake out shoes, clothing, and gardening gloves that have been left outdoors\n- Never disturb ant mounds — give fire ant mounds especially a wide berth\n- Keep food sealed and clean up spills promptly to avoid attracting foraging ants\n- Seal cracks in walls, floors, and foundations to reduce indoor ant access\n\n**For high-risk individuals (known venom allergy):**\n- Always carry a prescribed epinephrine auto-injector (EpiPen) — carry two\n- Wear a medical alert bracelet identifying venom allergy\n- Inform companions where your EpiPen is kept and how to use it\n- Consider **venom immunotherapy (allergy shots)** — highly effective for fire ant allergy, offering up to 98% protection against future anaphylaxis after a full course\n\n**When working outdoors:**\n- Tuck trousers into socks in areas with known ant activity\n- Check before sitting or kneeling on ground in grass or disturbed soil\n- Be especially cautious after rain — ants surface in large numbers after soil flooding"
+          },
+          "longTermManagement": {
+            "heading": "Long-Term Management",
+            "body": "If you or someone you know has experienced a systemic or anaphylactic reaction to an ant sting, these steps are important:\n\n**See an allergist.** Skin prick tests and specific IgE blood tests can confirm ant venom allergy and guide treatment decisions. This is especially important before starting immunotherapy.\n\n**Carry epinephrine auto-injectors.** Get a prescription for two — one may not be enough. Check expiry dates every 6 months and replace before expiry.\n\n**Consider venom immunotherapy (VIT).** Regular subcutaneous injections of increasing venom doses over 3–5 years progressively desensitize the immune system. Fire ant VIT success rates are among the highest of any allergen immunotherapy.\n\n**Create a written emergency action plan.** Specify: when to administer epinephrine, when to call emergency services, and instructions for bystanders. Share it with family members, coworkers, and school staff."
+          },
+          "specialSituations": {
+            "heading": "Special Situations",
+            "body": "**Children:** Young children cannot always communicate symptoms. Watch for sudden crying, skin rubbing, facial swelling, labored breathing, or sudden limpness after a known sting. Administer weight-appropriate antihistamine for mild reactions; use the EpiPen and call emergency services for any systemic signs.\n\n**Sting inside the mouth or throat:** If an ant stings inside the mouth, local swelling can obstruct the airway even without a true systemic allergy. Seek emergency care immediately regardless of allergy history.\n\n**Mass stings (50+ stings):** Toxic — not allergic — systemic reactions can occur from venom overload, including headache, fever, vomiting, and in severe cases, rhabdomyolysis (muscle breakdown). Requires hospital evaluation even in people with no known allergy.\n\n**Stings near the eye:** Rinse gently with clean water. Seek ophthalmology review if pain, persistent redness, or visual changes remain after 30 minutes."
+          }
+        }
+      }
+    },
+    "references": {
+      "eaaci": {
+        "title": "Hymenoptera Venom Allergy — European Academy of Allergy and Clinical Immunology Guidelines"
+      },
+      "fireAntAllergy": {
+        "title": "Fire Ant Venom Allergy"
+      },
+      "wao": {
+        "title": "Anaphylaxis — World Allergy Organization Guidelines"
+      },
+      "schmidtIndex": {
+        "title": "The Schmidt Sting Pain Index"
+      },
+      "venomImmunotherapy": {
+        "title": "Ant Venom Immunotherapy — Clinical Review"
+      },
+      "antwikiMedical": {
+        "title": "Medical Importance of Ants — AntWiki"
+      }
+    }
+  },
+  "home_management": {
+    "title": "Keep Ants Out of Your Home",
+    "subtitle": "Practical, evidence-based strategies for preventing ant invasions, eliminating active infestations, and keeping them out for good.",
+    "tabs": {
+      "prevention": {
+        "label": "Prevention",
+        "sections": {
+          "intro": {
+            "body": "Ants enter homes for three reasons: **food, water, and shelter**. Eliminate access to any of these and you remove the incentive entirely. Prevention is dramatically more effective than any reactive treatment — a colony that never finds your kitchen never needs to be evicted."
+          },
+          "entryPoints": {
+            "heading": "Find and Seal Entry Points",
+            "body": "Ants can enter through gaps as small as **0.5 mm** — smaller than a grain of sand. A thorough inspection and sealing routine is the single most effective long-term prevention measure.\n\n**Common entry points:**\n- Gaps around plumbing pipes where they enter walls or floors\n- Cracks in window frames, door frames, and sills\n- Spaces under exterior doors (even a 1–2 mm gap is sufficient)\n- Expansion joints and cracks in the foundation or floor\n- Where utility cables, conduit, or wiring enter the building\n- Gaps between countertops and walls in kitchens\n- Weep holes in brick walls (essential for ventilation — use fine stainless steel mesh rather than sealing)\n\n**Best materials for sealing:**\n- **Silicone caulk** — ideal for non-moving joints around pipes, windowsills, and wall gaps. Ants cannot chew through cured silicone.\n- **Expanding polyurethane foam** — for larger voids. Note that ants can eventually chew through some foam formulations; apply silicone caulk over it for a durable finish.\n- **Copper mesh** — pack into gaps before applying caulk. Ants cannot chew through it and it doesn't compress over time."
+          },
+          "foodSources": {
+            "heading": "Eliminate Food Sources",
+            "body": "Forager ants are searching constantly. If they find food in your home, they lay a pheromone trail that recruits hundreds of nestmates within hours. Cutting off food access breaks this cycle before it starts.\n\n**Food storage:**\n- Store all food in **airtight, hard-sided containers** — plastic bags and thin cardboard packaging are no barrier to determined ants\n- Bread, fruit, and baked goods left on counters are high-priority targets; store in sealed containers or the refrigerator\n- Pet food bowls are a primary source — don't leave them out overnight; consider placing bowls in a shallow tray of water (moat method)\n\n**Cleanliness habits:**\n- Wipe down kitchen surfaces immediately after cooking and eating\n- Clean under appliances regularly — crumbs accumulate under toasters, microwaves, and stoves\n- Rinse cans, bottles, and containers before recycling — residual sugar is a powerful attractant\n- Empty indoor bins frequently; use bins with tight-fitting lids\n- Clean up cooking grease — many ant species are attracted to fats and oils as much as sugars"
+          },
+          "waterSources": {
+            "heading": "Eliminate Water Sources",
+            "body": "Water is especially critical during Thailand's dry season, when outdoor sources diminish and ants actively seek moisture indoors. Small amounts of standing water are significant attractants.\n\n- Fix all dripping taps and leaking pipes — even a slow drip provides sufficient water for thousands of ants\n- Check under sinks for condensation and pipe leaks regularly\n- Don't leave water standing in sinks, dishes, or pet bowls\n- Ensure air conditioning drainage is directed away from the building and doesn't pool near the foundation\n- Check for damp areas in bathrooms, utility rooms, and storage areas — persistent moisture attracts carpenter ants (Camponotus), which may be nesting in the wet wood"
+          },
+          "outdoorBarriers": {
+            "heading": "Outdoor Barriers",
+            "body": "Most ant invasions originate from nests in the garden or on the building exterior. Reducing ant activity immediately outside the home significantly reduces indoor pressure.\n\n- Maintain a clear **30 cm gap** between mulch, leaf litter, and soil against the building's exterior walls — organic material retains moisture and provides nesting habitat\n- Trim tree branches and shrubs that touch or overhang the roof or walls — these act as highways directly into the building\n- Remove rotting wood, old stumps, and debris piles near the building — carpenter ants (Camponotus) nest in these\n- Keep compost bins tightly sealed and locate them away from the building\n- Store firewood off the ground and away from the house\n- Address standing water in garden areas — flower pot saucers, blocked gutters, and birdbaths should be emptied or refreshed regularly"
+          }
+        }
+      },
+      "treatment": {
+        "label": "Treatment",
+        "sections": {
+          "antTrail": {
+            "heading": "Understanding the Ant Trail",
+            "body": "Before treating an ant problem, it helps to understand what you're actually seeing. When you see a line of ants marching across your kitchen floor, you are watching a **pheromone communication system in action**.\n\nA scout ant found food and returned to the nest, laying an invisible chemical trail (pheromone) as it walked. Other workers follow that trail to the food source, and as they return successfully, they reinforce the trail with their own pheromones. The trail becomes stronger with each successful trip — until hundreds of workers are using it.\n\n**This is why spraying the visible ants achieves almost nothing.** You kill the workers you can see but the nest — which may contain tens of thousands of individuals — continues sending replacements. The pheromone trail also remains active for hours after the ants are killed.",
+            "imageCaption": "An active pheromone trail — the visible ants are a fraction of the colony"
+          },
+          "bait": {
+            "heading": "Bait — The Only Way to Eliminate a Colony",
+            "body": "**Slow-acting bait is the most effective method for eliminating indoor ant problems.** It is the approach used by professional pest controllers and the one recommended by entomologists for household ant control.\n\n**How it works:** Workers carry toxic bait back to the nest as food. The slow-acting insecticide (typically a boric acid compound, hydramethylnon, or fipronil at very low concentration) allows workers time to distribute it to the queen, larvae, and other workers before dying. The whole colony — including the queen — is eliminated within days to weeks.\n\n**Critical rules for bait success:**\n- **Do not spray insecticide near bait stations.** Repellent sprays contaminate the bait and cause workers to avoid it — this is the most common reason bait fails\n- **Place bait directly on or beside the active trail** — not away from it\n- **Do not disturb the trail** while bait is active — the ants carrying bait are doing exactly what you want\n- **Use the correct bait type:** sugar-based baits (gel or liquid) work for species foraging for carbohydrates; protein/oil-based baits work for species foraging for fats and proteins. Many infestations require both\n- **Be patient:** expect 3–14 days for full colony elimination. If the bait is untouched after 48 hours, try a different formulation",
+            "imageCaption": "Bait station placed directly beside an active trail — workers carry toxicant back to the queen"
+          },
+          "sprays": {
+            "heading": "Sprays — When and How to Use Them",
+            "body": "Insecticide sprays have a limited but legitimate role in ant management. Used incorrectly, they make infestations worse by fragmenting colonies and scattering nest sites (a process called **budding** in some species).\n\n**Appropriate uses for sprays:**\n- **Barrier treatment** along the building exterior: spraying the perimeter foundation, door thresholds, and window sills creates a contact-kill zone for ants crossing into the building. Use a residual insecticide (permethrin, bifenthrin, or deltamethrin) and reapply after rain.\n- **Direct nest treatment** if you locate the nest outdoors: drench the nest with a labeled insecticide product. This can eliminate colonies quickly when the nest is accessible.\n- **Crack and crevice treatment** with residual insecticide: inject into wall voids and gaps where ants are entering, leaving a residual deposit that kills ants crossing it\n\n**Never spray indoors randomly.** Repellent sprays applied inside the living space drive ants deeper into the walls and may cause a single colony to split into multiple satellite nests — worsening the problem significantly."
+          },
+          "naturalOptions": {
+            "heading": "Natural and Low-Toxicity Options",
+            "body": "For households preferring to minimize chemical pesticide use, several low-toxicity options have genuine effectiveness:\n\n**Diatomaceous earth (DE):** A fine powder made from fossilized algae. Works by physically damaging the ant's waxy cuticle, causing dehydration. Apply as a thin, dry barrier in areas ants cross — under appliances, along skirting boards, and at entry points. Loses effectiveness when wet. Harmless to mammals but irritating if inhaled — use food-grade DE and apply with care.\n\n**Boric acid bait (DIY):** Mix 1 teaspoon of boric acid with 3 tablespoons of honey or sugar water. Saturate cotton balls and place near trails. Very effective against sugar-feeding species. Low toxicity to mammals at these concentrations.\n\n**Peppermint oil:** A 10–20% solution in water sprayed along entry points and trails disrupts pheromone communication and acts as a short-term deterrent. Effect is temporary — must be reapplied every 1–2 days. Works best as part of a broader prevention strategy.\n\n**Cinnamon powder / cloves:** Physical and olfactory deterrents at entry points. Temporary effect only.\n\n**White vinegar solution:** Equal parts white vinegar and water, sprayed on surfaces. Disrupts pheromone trails and cleans residual scent marks. Good post-infestation cleanup measure.",
+            "imageCaption": "Diatomaceous earth applied as a dry barrier along a skirting board"
+          }
+        }
+      },
+      "speciesGuide": {
+        "label": "Species Guide",
+        "sections": {
+          "identifySpecies": {
+            "heading": "Identify What You're Dealing With",
+            "body": "Different ant species require different treatment approaches. Identifying which species has invaded your home is the most important step toward effective control.\n\n**Ghost ant (Tapinoma melanocephalum):** The most common household ant in Thailand. Tiny (1.3–1.5 mm), pale with dark head and thorax, almost translucent abdomen. Emits a coconut-like smell when crushed. Omnivorous — attracted to sweet and greasy foods. Nests in small, scattered groups in wall voids, potted plants, and under objects. **Treatment:** sugar-based gel bait placed on trails.\n\n**Little black ant / Pharaoh ant (Monomorium spp.):** Very small (1–2 mm), uniform yellow-brown to black. Forms large colonies with multiple queens, making them resistant to treatment. Extremely persistent once established. **Treatment:** slow-acting bait only — sprays cause budding and worsen infestations dramatically.\n\n**Carpenter ant (Camponotus spp.):** Large (6–13 mm), black or bicolor. Does not eat wood — excavates galleries in damp, softened wood for nesting. Indoor presence often indicates a moisture or structural wood problem. **Treatment:** find and fix the moisture source; treat nest directly.",
+            "imageCaption": "Common household species in Thailand"
+          },
+          "fireAnts": {
+            "heading": "Fire Ants Indoors",
+            "body": "**Fire ants (Solenopsis geminata / S. invicta)** occasionally invade homes, particularly during heavy rain when outdoor flooding forces colonies to relocate. They are aggressive and will sting repeatedly if disturbed.\n\n**Signs of fire ants indoors:**\n- Reddish-brown workers, 2–6 mm, variable sizes (polymorphic)\n- Characteristic dome-shaped mound near entry points\n- Workers attack aggressively when the mound is disturbed\n- Multiple people being stung simultaneously\n\n**Treatment approach:**\n- Do not disturb the mound indoors — this triggers mass attack\n- Apply slow-acting fire ant bait (spinosad or hydramethylnon formulations) in multiple stations near but not on the mound\n- Treat the outdoor mound source as well — indoor colonies usually connect to a larger outdoor nest\n- Do not use repellent sprays near the mound — this can cause the colony to move deeper into the structure\n\n**Prevention:** Seal all ground-level entry points before rainy season. Fire ants are significantly more likely to invade during the first heavy rains of the wet season in Thailand."
+          },
+          "professional": {
+            "heading": "When to Call a Professional",
+            "body": "Most household ant problems can be managed with the strategies above. Professional pest control is warranted when:\n\n- **Carpenter ant infestation with structural damage:** If large ants are consistently appearing indoors and you find sawdust-like frass (excrement) near wooden structures, a professional inspection is needed to assess structural impact and locate hidden nests in the building fabric.\n\n- **Persistent Pharaoh ant infestation:** Monomorium pharaonis colonies with multiple queens are extremely difficult to eliminate without professional-grade bait products and systematic placement throughout the building.\n\n- **Large-scale fire ant infestation:** Multiple mounds or a very large colony inside the building structure warrants professional treatment.\n\n- **Recurrent infestations despite thorough prevention:** May indicate a nest within the building structure that requires thermal imaging or drilling access to treat.\n\nWhen hiring a pest controller, specify that you want **bait-based treatment** rather than spray-only programs. Ask what active ingredient is being used and request a treatment warranty."
+          }
+        }
+      }
+    },
+    "references": {
+      "ufIFAS": {
+        "title": "Ant Control for Householders"
+      },
+      "potter": {
+        "title": "Managing Ants in and Around the Home"
+      },
+      "texasAM": {
+        "title": "Fire Ant Management — Texas A&M AgriLife"
+      },
+      "ghostAnt": {
+        "title": "Ghost Ant Biology and Management"
+      },
+      "carpenterAnt": {
+        "title": "Carpenter Ant Management"
+      }
+    }
+  },
+  "fun_facts": {
+    "title": "Mind-Blowing Ant Facts",
+    "subtitle": "Ants are the most successful land animals on Earth. Here's why they've dominated the planet for 130 million years — and why they'll probably outlast us all.",
+    "tabs": {
+      "strengthScale": {
+        "label": "Strength & Scale",
+        "sections": {
+          "intro": {
+            "body": "There are an estimated **20 quadrillion ants** alive on Earth right now — that's 20,000,000,000,000,000 individuals. If you collected them all, their combined biomass would exceed that of all wild birds and wild mammals combined. Ants occupy nearly every terrestrial habitat on the planet, from Arctic tundra to tropical rainforest floors, and have been doing so for **130 million years**."
+          },
+          "strength": {
+            "heading": "Superhuman Strength",
+            "body": "Ants can carry **10 to 50 times their own body weight**, depending on species. The leafcutter ant (Atta) can carry a fragment of leaf weighing 50 times its own mass — equivalent to a human carrying a loaded delivery truck with their teeth.\n\nThis extraordinary strength isn't magic — it's physics. **Strength scales with cross-sectional area** (two-dimensional), while **body weight scales with volume** (three-dimensional). As animals get smaller, the ratio of muscle cross-section to body weight improves dramatically. A human-sized ant wouldn't be 50x stronger than a human — it would actually be weaker than us, because its exoskeleton couldn't support the mass.\n\nThe **Asian weaver ant (Oecophylla smaragdina)** has been measured holding **100 times its own body weight** suspended from a single point — a world record for relative load-bearing.",
+            "imageCaption": "Leafcutter ant carrying a leaf fragment 50x its body weight — equivalent to a human carrying a truck"
+          },
+          "speedSenses": {
+            "heading": "Speed, Senses, and Communication",
+            "body": "**Speed:** The Saharan silver ant (Cataglyphis bombycina) holds the record for fastest ant — reaching **0.855 m/s**, or about 108 body lengths per second. A human running at the equivalent relative speed would sprint at roughly 650 km/h.\n\n**Chemical language:** Ants communicate almost entirely through pheromones. A single ant produces signals from up to **20 different glandular sources**, each encoding different messages — alarm, trail, identity, dominance, distress, death, and more. Ants can distinguish their colony from any other colony in the world by chemical signature alone.\n\n**Hearing without ears:** Ants have no ears. They detect sound as **substrate vibrations** through their legs and a specialized organ in their knees (the subgenual organ). Some species generate precise vibrational signals using their body as an instrument — called stridulation — to communicate underground where chemical signals disperse too slowly."
+          },
+          "trapJaw": {
+            "heading": "The Trap-Jaw — Fastest Movement on Earth",
+            "body": "The trap-jaw ant (Odontomachus bauri) holds the record for the **fastest self-powered movement ever recorded in an animal**.\n\nThe mandibles are held open against a spring-loaded mechanism created by the jaw closing muscles pulling against each other. When trigger hairs on the mandible tip are touched, the lock releases and the jaws snap shut at **35–64 m/s** — covering the full range of motion in **0.13 milliseconds**. That's over **300 times faster than the blink of an eye**.\n\nThe force generated is sufficient to launch the ant itself into the air — a secondary use as a predator-escape mechanism. By striking the mandibles against the ground, the ant can jump **8 cm vertically** and **40 cm horizontally** — extraordinary for an insect a few millimeters long.\n\nAnother trap-jaw species, Mystrium camillae, has been measured at **90 m/s** — the fastest recorded movement of any animal on Earth.",
+            "imageCaption": "High-speed photograph of Odontomachus trap-jaw mandibles at the moment of strike"
+          }
+        }
+      },
+      "civilizations": {
+        "label": "Civilizations",
+        "sections": {
+          "farmers": {
+            "heading": "The Original Farmers — 50 Million Years Before Humans",
+            "body": "**Leafcutter ants** (Atta and Acromyrmex) have been cultivating fungi for **50 million years** — the oldest and most sophisticated agricultural system on Earth.\n\nWorkers cut fresh plant material and carry it to underground fungus gardens. The fungus breaks down the cellulose in the leaves (which the ants themselves cannot digest) and produces nutritious swellings called **gongylidia** that the ants harvest as food. It is a fully co-evolved mutualism — the fungus species cultivated by leafcutters (Leucoagaricus gongylophorus) no longer exists in the wild and has become entirely dependent on the ants.\n\n**The scale is extraordinary.** A mature leafcutter colony of 8 million workers can strip a large tree of every leaf within 24 hours, processing hundreds of kilograms of plant material per year. Their underground farms can occupy chambers larger than a small room.\n\n**They also invented crop protection.** Workers carry antibiotic-producing bacteria (Pseudonocardia) on their cuticle that suppress harmful fungi competing with their crop — an independently developed antimicrobial farming practice that precedes human antibiotics by 50 million years.",
+            "imageCaption": "Leafcutter ant fungus garden — the cultivated fungus (white) fills the entire chamber"
+          },
+          "livestock": {
+            "heading": "Ant Livestock and Slavery",
+            "body": "Leafcutter ants are not the only farmers. **Approximately 50% of ant species engage in some form of mutualistic relationship with other insects**:\n\n**Aphid herding:** Many ant species (Lasius, Formica, Crematogaster) tend aphids like livestock. They stroke the aphids with their antennae to stimulate 'milking' — the production of a sugar-rich droplet called honeydew. In return, the ants protect aphids from predators and parasitoids, carry them to better feeding locations, and even bring them underground into the nest during winter. Some ant species have become so dependent on aphids that they carry aphid eggs into the nest each autumn, ensuring a fresh herd the following spring.\n\n**Slave-making ants:** Species like Polyergus (shining amazon ants) conduct raids on other ant species — fighting their way into a neighboring colony, killing or driving off the adults, and carrying the pupae back to their own nest. The kidnapped workers (which have no mechanism to distinguish their natal colony from any other) emerge and work normally for the raiding colony's benefit. Polyergus workers have mandibles so specialized for warfare that they cannot even feed themselves without slave workers to help them."
+          },
+          "architecture": {
+            "heading": "Living Architecture",
+            "body": "**Army ants** (Eciton burchellii and Dorylus spp.) build structures from their own bodies — a phenomenon called **bivouacking** and **bridge formation**.\n\nEvery night, army ants form a living nest — called a bivouac — by linking their bodies together in chains and sheets, creating a structure that houses the queen and up to **700,000 workers** in a roughly spherical mass. Temperature inside is regulated by the living walls. When the colony moves, the structure disassembles in minutes.\n\nDuring raids, workers encountering a gap in the terrain immediately begin constructing a living bridge — workers grasp the substrate and each other, forming a stable platform that hundreds of thousands of workers then cross. **The bridge self-optimizes** over time: if workers are walking around a long detour to avoid a bridge, new ants stop and fill in the detour — shortening the total path. If the bridge is too wide (more ants stopping to form it than walking over it), it narrows again. This collective optimization happens with no central coordination.\n\nFire ants (Solenopsis invicta) form living **rafts** when floods hit. Workers interlock their bodies to create a water-repellent floating platform, with the queen protected in the interior. These rafts can survive on water for **weeks**.",
+            "imageCaption": "Fire ant living raft — waterproof structure formed by interlocked workers, queen protected at center"
+          },
+          "supercolony": {
+            "heading": "The Supercolony",
+            "body": "Most ant colonies behave with extreme aggression toward members of other colonies — even their own species. But some species have evolved a radically different social structure: the **unicolonial supercolony**, where individual colonies recognize each other as non-hostile and effectively function as a single distributed entity.\n\nThe **Argentine ant (Linepithema humile)** has formed what may be the largest cooperative structure in the animal kingdom. Introduced to Europe from South America, they have formed three enormous supercolonies:\n- The **Main European Supercolony** stretches over **6,000 km** along the Mediterranean coast from the Atlantic to northern Italy\n- The **Iberian Supercolony** runs along most of Portugal and Spain\n- The **Catalan Supercolony** in northeast Spain\n\nWorkers from any part of the Main Supercolony can be placed anywhere else in its 6,000 km range and will be treated as nestmates — because they share the same cuticular hydrocarbon signature.\n\nIn their native South America, Argentine ants are competitively normal — different colonies fight each other. It is the invasion of a new habitat (with no co-evolved competitors) that selected for the ultra-cooperative supercolony structure.",
+            "imageCaption": "The Main European Argentine ant supercolony — 6,000 km of continuous cooperative territory"
+          }
+        }
+      },
+      "weirdBiology": {
+        "label": "Weird Biology",
+        "sections": {
+          "zombieFungus": {
+            "heading": "The Zombie Ant Fungus",
+            "body": "**Ophiocordyceps unilateralis** is a parasitic fungus that has evolved to manipulate the behavior of carpenter ants (Camponotus leonardi) with extraordinary precision.\n\n**The sequence:**\n1. Fungal spores attach to a foraging ant's cuticle and germinate, sending hyphae through the exoskeleton into the body cavity\n2. The fungus spreads through muscle tissue, releasing compounds that **hijack the ant's motor system** — not the brain\n3. At a precise time of day, the ant climbs 25–30 cm up a plant stem — the optimal height and temperature for fungal fruiting body development\n4. The ant bites down on a leaf vein with extraordinary force and **locks its mandibles permanently** — it can no longer release its grip\n5. The ant dies. The fungus produces a fruiting body from the back of the head that releases spores onto foraging ants passing below\n\n**The precision is remarkable.** The height, direction, and timing of the final climb are controlled by the fungus to maximize spore dispersal to the specific ant trails below. Different Ophiocordyceps species infect different ant species, and each has adapted to that host's specific microhabitat and behavior.\n\nHealthy colonies have evolved behavioral immunity: worker ants detect infected nestmates by chemical signature changes and carry them far from the colony before the spores are released.",
+            "imageCaption": "Ophiocordyceps fruiting body erupting from the head of an infected carpenter ant"
+          },
+          "explodingAnts": {
+            "heading": "Ants That Explode",
+            "body": "**Camponotus saundersi**, a carpenter ant species from Malaysia and Brunei, has evolved one of the most extreme defense mechanisms in the animal kingdom: **autothysis**, or voluntary self-explosion.\n\nWorkers have enormously enlarged mandibular glands running the full length of the body, filled with a toxic, sticky substance. When the ant is threatened — particularly when the colony is under attack by another ant species — the worker can contract its body wall muscles with enough force to **rupture its own cuticle**, spraying the glandular contents in a radius of several centimeters.\n\nThe sticky, corrosive substance entangles and immobilizes attackers, and the toxic components kill or incapacitate them. The worker dies, but it takes multiple enemies with it — a form of altruistic sacrifice that protects the colony.\n\nThis behavior is not unique to Camponotus saundersi — at least **nine species** of ants across different genera have independently evolved autothysis, suggesting strong selective pressure for suicidal defense in social insects."
+          },
+          "silkWeaving": {
+            "heading": "Silk Weaving Without Silk Glands",
+            "body": "Adult ants have no silk glands — those were lost in the evolutionary transition from solitary wasp ancestors. Yet **weaver ants (Oecophylla smaragdina)** build nests entirely from silk.\n\nThey solved this problem by **using their own larvae as tools**.\n\nWhen constructing or repairing a nest, workers pull leaves together — sometimes forming chains of ants, each gripping the one ahead, to bridge the gap between two leaves. Other workers then pick up late-stage larvae (which still produce silk) and move them back and forth across the junction in a weaving motion, each pass depositing a thin silk thread that bonds the leaves together.\n\nThe larvae make no choice in this — they are completely passive tools in the operation. Workers appear to stimulate silk production by gently squeezing the larva. **A single large nest can require the cooperative effort of thousands of workers and larvae simultaneously.**\n\nThe nests are remarkably strong — able to survive tropical storms — and the colony may maintain 100–500 connected leaf nests spread across several trees in a defended territory.",
+            "imageCaption": "Weaver ant workers pulling leaves together while others use larvae as silk dispensers to bind them"
+          },
+          "navigation": {
+            "heading": "Navigation Without GPS",
+            "body": "**Desert ants (Cataglyphis fortis)** of the Sahara navigate across featureless terrain with precision that rivals modern engineering — using only their body as a measuring instrument.\n\n**Path integration:** Cataglyphis continuously calculates its position relative to the nest by tracking direction (using polarized light from the sky as a compass) and distance (by counting steps — confirmed by experiments that glued stilts to their legs or amputated sections of their legs, causing them to overshoot or undershoot the nest respectively). They maintain a constantly updated vector to home and can return in a perfectly straight line from hundreds of meters away after a randomly winding search.\n\n**Landmark learning:** On their first few foraging trips, workers learn visual landmarks near the nest entrance and use them for close-range homing. Distant landmarks are used for route following on established trails.\n\n**Solar compensation:** The sun moves 15° per hour across the sky. Cataglyphis has an internal circadian clock that automatically compensates for this movement — if confined underground for several hours and then released, they return home using the correct solar angle for the time of day, not the angle at the time of capture.\n\nThey also navigate in complete darkness using the magnetic field — though this is not the primary system."
+          }
+        }
+      }
+    },
+    "references": {
+      "theAnts": {
+        "title": "The Ants"
+      },
+      "superorganism": {
+        "title": "The Superorganism"
+      },
+      "globalBiomass": {
+        "title": "Global ant biomass — current biology"
+      },
+      "trapJaw": {
+        "title": "Trap-jaw ant strike kinematics"
+      },
+      "zombieFungus": {
+        "title": "Ophiocordyceps — zombie ant fungus"
+      },
+      "argentineAnt": {
+        "title": "Argentine ant supercolony structure"
+      },
+      "pathIntegration": {
+        "title": "Path integration in desert ants"
+      },
+      "weaverBiology": {
+        "title": "AntWiki — Weaver Ant Biology"
+      }
+    }
+  },
+  "hobbyist": {
+    "title": "Ant Keeping — Complete Starter Guide",
+    "subtitle": "Everything you need to start your own colony — from catching your first queen to building a thriving formicarium.",
+    "tabs": {
+      "gettingStarted": {
+        "label": "Getting Started",
+        "sections": {
+          "intro": {
+            "body": "Ant keeping — called **myrmecology as a hobby** or simply ant-keeping — is the practice of maintaining live ant colonies in purpose-built enclosures. It is one of the fastest-growing invertebrate hobbies in Southeast Asia, and for good reason: ant colonies are endlessly active, biologically fascinating, and require relatively little space or equipment to maintain successfully."
+          },
+          "firstQueen": {
+            "heading": "Getting Your First Queen",
+            "body": "**The only correct starting point is a mated queen.** Never attempt to start a colony by collecting workers from the wild — workers without a queen cannot reproduce and the 'colony' will die within weeks as workers age and are not replaced.\n\n**Method 1 — Catch during nuptial flight (best option):**\nThe ideal time to find founding queens is during and immediately after nuptial flights. In Thailand, these occur most commonly in **April–June** after the first substantial rains of the wet season, and again in September–October. Look for wingless or recently-winged queens on the ground near ant mounds, on walls and fences, or attracted to lights at night. A queen that has shed her wings is a mated, founding queen — exactly what you need.\n\n**Method 2 — Buy from a reputable seller:**\nEstablished ant keeping communities in Thailand have reliable sellers offering mated queens of common species. Buy only from sellers who can specify the exact species and provide a healthy queen with at least some brood already present. Avoid sellers offering 'worker ants only' or unnamed 'black ant' colonies.\n\n**Never collect from established wild colonies.** This is harmful to the colony, usually illegal to do commercially, and yields workers that will soon die without a queen."
+          },
+          "testTubeSetup": {
+            "heading": "The Founding Setup — Test Tube Method",
+            "body": "The **test tube method** is the globally standard setup for founding ant queens, used by beginners and experienced keepers alike. It is simple, effective, and mimics the claustral founding conditions the queen would choose naturally.\n\n**What you need:**\n- Borosilicate glass test tube, 16–20 mm diameter × 150 mm length (plastic works but glass is better)\n- Cotton wool or lab-grade cotton\n- Distilled or filtered water\n- Dark material to cover the tube (paper, fabric, or cardboard)\n\n**Setup:**\n1. Fill the test tube approximately **1/3 with water**\n2. Insert a small cotton plug — it sits just above the water surface, held in place by the water's meniscus, providing humidity while preventing drowning\n3. Place the queen in the tube\n4. Plug the open end loosely with another cotton plug — this allows air exchange while preventing escape\n5. Cover the entire tube to make it dark — queens found in the dark are significantly less stressed and begin laying sooner\n\n**Critical rule:** Once the queen is in, **leave her completely alone** for 4–8 weeks. Do not check, do not move, do not add food. The founding queen lives off her own fat reserves and broken-down flight muscles during this period. Disturbance is the primary cause of founding failure.",
+            "imageCaption": "Labeled test tube founding setup"
+          },
+          "foundingPhase": {
+            "heading": "The Founding Phase — What to Expect",
+            "body": "Understanding the founding timeline helps you distinguish normal development from a problem.\n\n**Week 1–2:** The queen lays her first eggs. Eggs are tiny, oval, and white — easy to miss. The queen will be seen moving them, licking them, and keeping them in a pile. This is normal brood care behavior.\n\n**Week 2–4:** Eggs hatch into larvae — small, legless, grub-like shapes. The queen continues to feed and tend them from her body reserves.\n\n**Week 4–6:** Larvae pupate. Depending on species, you will see either naked pupae (pale, motionless, ant-shaped) or cocoons (oval, tan-colored, often mistaken for large eggs).\n\n**Week 6–8:** The first workers eclose — these are **nanitics**, the smallest workers the colony will ever produce, developed on the queen's minimal resources. Their emergence marks the transition to the growth phase.\n\n**Once nanitics are present:** You can begin offering small amounts of food and the colony can be moved to a larger setup if needed. The nanitics will begin foraging, and the queen will resume laying — now with worker support, brood development accelerates significantly.",
+            "imageCaption": "Queen in founding tube"
+          }
+        }
+      },
+      "housing": {
+        "label": "Housing",
+        "sections": {
+          "whenToMove": {
+            "heading": "When to Move to a Formicarium",
+            "body": "The test tube is not a permanent home. Move the colony to a formicarium when:\n- The colony has **30–50+ workers** (for most small species) or **10–20 workers** for larger species like Camponotus\n- The test tube is visibly crowded\n- Workers are spending significant time outside the cotton plug, indicating they need more space\n\nAlways move the **entire test tube** into the new setup rather than trying to transfer ants directly. Place the plugged test tube in the outworld area with the plug loosened. The colony will move at their own pace — do not force them. Moving usually takes 1–7 days depending on species.",
+            "imageCaption": "Colony development stages: founding queen → nanitics → early colony → mature colony"
+          },
+          "formicariumTypes": {
+            "heading": "Formicarium Types",
+            "body": "**Acrylic / glass formicaria:** Clear panels with carved or molded nest channels. The most popular type for hobbyists because colonies are fully visible at all times. Provide excellent observation but require careful humidity management — acrylic dries out quickly. Best for species that naturally nest in dry conditions or hard substrates.\n\n**Ytong / lightweight concrete (AAC) formicaria:** Carved from autoclaved aerated concrete (sold as building insulation blocks). Maintains excellent passive humidity due to the porous structure. Heavier than acrylic but provides the most naturalistic microclimate. Particularly good for tropical species from Thailand. Can be carved with basic tools.\n\n**Soil / sand formicaria:** Natural substrate in a glass or acrylic container, usually with a viewing pane against one glass wall. Provides the most naturalistic environment and allows natural burrowing behavior. Colonies excavate their own chambers. Disadvantage: tunnels are often not visible and colonies can be harder to monitor. Best for naturalistic setups and species that prefer sandy or loamy substrates.\n\n**Test tube rack / modular setups:** Multiple connected test tubes in a rack, useful for small colonies or as a transition setup. Expandable by adding more tubes.",
+            "imageCaption": "Left to right: acrylic nest (visible channels), ytong nest (porous concrete), soil setup (naturalistic)"
+          },
+          "outworld": {
+            "heading": "The Outworld",
+            "body": "A formicarium is only the **nest** — where the colony sleeps, raises brood, and the queen lays eggs. Ants also need a **foraging arena** (outworld) connected to the nest where they can explore, hunt, and find food.\n\nThe outworld serves several critical functions:\n- Provides space for foraging behavior and stimulation\n- Keeps food and waste away from the nest, preventing mold\n- Allows you to place food items without disturbing the nest\n- Provides the colony with a distinct 'outside' environment, which is important for colony hygiene (ants carry waste to the outworld naturally)\n\n**Escape prevention** is the most important outworld design consideration. Options:\n- **PTFE (Teflon) escape prevention fluid:** Applied to the inner walls of the outworld as a slippery barrier. Most effective for small and medium-sized species.\n- **Vaseline / petroleum jelly strip:** Applied around the inner rim. Effective but needs reapplication and can be breached by determined large species.\n- **Tall smooth acrylic or glass walls** (at least 15 cm of smooth vertical surface): Sufficient for many species that cannot climb smooth surfaces.",
+            "imageCaption": "Colony connected to outworld — workers explore, feed, and deposit waste outside the nest"
+          },
+          "tempHumidity": {
+            "heading": "Temperature and Humidity",
+            "body": "**Temperature** is the single most important variable for colony health and brood development. Most Thai native species thrive at **24–28°C** year-round — which conveniently matches normal indoor temperatures in Thailand for most of the year.\n\nIf your home drops below 22°C (unusual in Thailand but possible with heavy air conditioning), consider a heat mat beneath part of the nest — ants will self-regulate by moving brood between warm and cool zones.\n\n**Humidity** requirements vary significantly by species and nest zone:\n- The **nest area** should have a humidity gradient — moister toward the brood chambers, drier toward the nest entrance. Provide this by applying water to one end of the nest or using a water reservoir connected via cotton.\n- The **outworld** should be drier than the nest — high humidity in the outworld promotes mold growth in food remains\n- **Never flood** the nest with water. Excess moisture causes fungal outbreaks that can collapse a colony. Damp is correct; wet is fatal.\n\n**Species-specific notes:**\n- Ghost ant (Tapinoma melanocephalum): high humidity requirement, 70–80%\n- Weaver ant (Oecophylla smaragdina): moderate humidity, prefers arboreal setup\n- Carpenter ant (Camponotus spp.): moderate humidity in nest, drier outworld"
+          }
+        }
+      },
+      "feedingCare": {
+        "label": "Feeding & Care",
+        "sections": {
+          "whatAntsEat": {
+            "heading": "What Ants Eat",
+            "body": "Ant colonies require **two categories of food**: protein and carbohydrates. Both are essential and neither can substitute for the other.\n\n**Protein** is used primarily for **brood development** — larvae cannot develop without it. A colony with abundant protein but no carbohydrates will survive but produce little brood. A colony with no protein will struggle to develop its next generation of workers.\n\n**Carbohydrates** (sugars) are the primary **energy source** for adult workers — fueling all activity, movement, and heat generation.\n\n**A colony that is actively producing brood needs significantly more protein than a colony in maintenance mode.** Adjust feeding accordingly."
+          },
+          "proteinSources": {
+            "heading": "Protein Sources",
+            "body": "**Live insects:**\nThe most natural and stimulating option. Crickets, mealworms, wax moth larvae, and Dubia roaches are widely available in Thailand. **Always feed insects of an appropriate size** — prey larger than the workers is dangerous and can injure or kill ants. For small colonies, cut or crush insects before offering.\n\n**Frozen / thawed insects:**\nMore convenient than live insects and reduces risk of prey injury to ants. Freeze insects, thaw individually before feeding, and remove uneaten portions within 24 hours.\n\n**Egg yolk:**\nExcellent and easily controlled protein source. Hard-boil and cool an egg, then offer small pieces of yolk directly. Workers distribute it efficiently throughout the colony. High in fat as well as protein — do not overfeed.\n\n**Processed meat (plain, unseasoned):**\nTiny pieces of plain cooked chicken, beef, or shrimp work well for many species. Never use seasoned, salted, or spiced meat — many seasonings are toxic to ants."
+          },
+          "carbSources": {
+            "heading": "Carbohydrate Sources",
+            "body": "**Sugar water / honey water:**\nThe most practical carbohydrate source. Mix **1 part honey or white sugar with 3 parts water** and offer in a small bottle cap or on a cotton ball. Change every 2–3 days to prevent fermentation and mold. Avoid artificial sweeteners — many are toxic to insects.\n\n**Commercial ant gel (formicarist products):**\nAvailable from ant keeping suppliers. Ready to use, mold-resistant, and convenient. More expensive than DIY but reduces waste.\n\n**Fresh fruit:**\nSmall pieces of apple, grape, melon, or mango placed in the outworld. Naturally attractive to most species. Remove within 24 hours — fruit molds quickly in humid conditions.\n\n**Caution:** Never offer honey directly from the jar — the high sugar concentration can cause honey to stick to and drown small ants. Always dilute."
+          },
+          "feedingSchedule": {
+            "heading": "Feeding Schedule and Quantities",
+            "body": "**Small founding colony (queen + 1–20 workers):**\nOffer protein **once per week** — a single small insect leg or a pea-sized piece of egg yolk. Carbohydrates can be available continuously via a small sugar water drop. Very small colonies are easily overfed — excess food causes mold and stress.\n\n**Young colony (20–100 workers):**\nProtein **twice per week**, carbohydrates continuously. Amounts: small cricket or equivalent protein, 0.5–1 ml sugar water.\n\n**Growing colony (100–500 workers):**\nProtein **3× per week**, carbohydrates continuously. Increase quantities as the colony grows — watch how quickly food is consumed and adjust accordingly.\n\n**Established colony (500+ workers):**\nProtein **daily or every 2 days**, carbohydrates continuously. Large colonies like leafcutters or carpenter ants may need significant daily feeding.\n\n**General rules:**\n- Always remove uneaten protein within **24 hours** — dead insects are a major source of fungal outbreaks\n- If ants are ignoring food, either the colony is not hungry or the food type is wrong — do not pile up more food\n- Fast the colony for 2–3 days before introducing new food types to increase acceptance"
+          },
+          "beginnerSpecies": {
+            "heading": "Recommended Beginner Species in Thailand",
+            "body": "**Oecophylla smaragdina (Weaver ant / มดแดง):**\nThailand's most iconic ant and an excellent beginner species. Fast-growing, active, highly visible behavior. Requires an arboreal (tree branch) setup with leaves for nest building — not a traditional formicarium. Moderately aggressive; handle the setup with care. Founding queens are common after rains.\n\n**Camponotus spp. (Carpenter ants / มดช่างไม้):**\nLarge, slow-growing, docile. Fascinating polymorphic workers with huge major soldiers. Ideal for keepers who want a visible, impressive colony without aggressive behavior. Very long-lived — queens can live 15–20 years. Require wood or cork substrate for nesting.\n\n**Anoplolepis gracilipes (Yellow crazy ant):**\nExtremely fast-moving and active, entertaining to watch. Very fast colony growth. Omnivorous. Not aggressive to handlers. A good species for keepers who want rapid development.\n\n**Polyrhachis spp. (Spiny ants):**\nDistinctive spined workers, metallic coloration. Moderate growth rate. Build carton-style nests using plant fibers. Unique and rewarding to keep."
+          }
+        }
+      }
+    },
+    "references": {
+      "theAnts": {
+        "title": "The Ants"
+      },
+      "antkeepingWiki": {
+        "title": "Antkeeping Wiki — Founding"
+      },
+      "antFarmThailand": {
+        "title": "AntFarm Thailand Community Guidelines"
+      },
+      "antwikiFormicarium": {
+        "title": "AntWiki — Formicarium"
+      },
+      "oecophyllaKeeping": {
+        "title": "Oecophylla smaragdina — Biology and Keeping"
+      }
+    }
   }
 }

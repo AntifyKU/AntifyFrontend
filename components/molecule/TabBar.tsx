@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openIdentifySheet } from "@/utils/identifyHelper";
 import { router, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
@@ -16,7 +17,7 @@ export default function TabBar({
   const insets = useSafeAreaInsets();
   const activeColor = "#22A45D";
   const inactiveColor = "#6B7280";
-
+  const { t } = useTranslation();
   const visibleRoutes = state.routes.filter(
     (route) => !["index", "collection", "information"].includes(route.name),
   );
@@ -158,7 +159,9 @@ export default function TabBar({
             }}
           >
             <Ionicons name="chatbox-outline" size={26} color={inactiveColor} />
-            <Text style={{ color: inactiveColor, fontSize: 12 }}>แชทบอท</Text>
+            <Text style={{ color: inactiveColor, fontSize: 12 }}>
+              {t("tabs.chatbot")}
+            </Text>
           </TouchableOpacity>
 
           {rightTabs.map(renderTab)}
