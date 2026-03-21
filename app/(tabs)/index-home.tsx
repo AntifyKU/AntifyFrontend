@@ -180,7 +180,11 @@ export default function HomeScreen() {
   const handleCategoryPress = (categoryName: string, tag?: string) => {
     router.push({
       pathname: "/(tabs)/explore",
-      params: { category: categoryName, tag: tag || categoryName.toLowerCase() },
+      params: { 
+        category: categoryName, 
+        tag: tag || categoryName.toLowerCase(),
+        ts: Date.now().toString()
+      },
     });
   };
 

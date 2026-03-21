@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import ListCard from "@/components/ListCard";
 import SearchBar from "@/components/SearchBar";
@@ -35,6 +35,31 @@ export default function ExploreScreen() {
     setTempFilters,
     toggleFilter,
   } = useExploreFilters();
+  const { tag, ts } = useLocalSearchParams<{ tag?: string; ts?: string }>();
+
+  const lastProcessedTs = useRef<string | undefined>(undefined);
+
+  // Handle incoming tag/category from home page
+  useEffect(() => {
+    if (tag && ts !== lastProcessedTs.current) {
+      // Map tag to quick filter ID
+      const tagToId: Record<string, string> = {
+        "venomous": "1",
+        "predator": "2",
+        "invasive": "3",
+        "scavenger": "4"
+      };
+      
+      const filterId = tagToId[tag.toLowerCase()];
+      if (filterId) {
+        setAppliedFilters(prev => ({
+          ...prev,
+          quickFilters: [filterId]
+        }));
+        lastProcessedTs.current = ts;
+      }
+    }
+  }, [tag, ts, setAppliedFilters]);
 
   const activeFilterCount =
     appliedFilters.quickFilters.length +
@@ -67,14 +92,25 @@ export default function ExploreScreen() {
       // Quick Filter
       if (appliedFilters.quickFilters.length > 0) {
         const ok = appliedFilters.quickFilters.every((id) => {
-          if (id === "1") {
-            return item.risk?.venom?.has_venom === true || item.risk?.sting_or_bite === "sting";
+          if (id === "1") { // Venomous
+            return item.risk?.venom?.has_venom === true || 
+                   item.risk?.sting_or_bite?.toLowerCase().includes("sting") ||
+                   item.tags?.some(t => t.toLowerCase().includes("venom"));
           }
-          if (id === "2") {
-            return item.habitat?.some((h: string) => h.toLowerCase().includes("forest") || h.toLowerCase().includes("tree") || h.toLowerCase().includes("wood"));
+          if (id === "2") { // Predator
+            return item.ecological_role?.toLowerCase().includes("predator") || 
+                   item.behavior?.toLowerCase().includes("hunt") ||
+                   item.tags?.some(t => t.toLowerCase().includes("predator"));
           }
-          if (id === "3") {
-            return item.habitat?.some((h: string) => h.toLowerCase().includes("urban") || h.toLowerCase().includes("building"));
+          if (id === "3") { // Invasive
+            return item.tags?.some(t => t.toLowerCase().includes("invasive")) ||
+                   item.about?.toLowerCase().includes("invasive") ||
+                   item.name.toLowerCase().includes("fire ant"); // Common invasive
+          }
+          if (id === "4") { // Scavenger
+            return item.ecological_role?.toLowerCase().includes("scavenger") || 
+                   item.behavior?.toLowerCase().includes("scaveng") ||
+                   item.tags?.some(t => t.toLowerCase().includes("scavenger"));
           }
           return false;
         });
@@ -84,23 +120,23 @@ export default function ExploreScreen() {
 
       // Color
       if (appliedFilters.colors.length > 0) {
-        const ok = appliedFilters.colors.every((c) =>
-          item.colors.some((ic) => ic.toLowerCase().includes(c.toLowerCase())),
+        const ok = appliedFilters.colors.every((c: string) =>
+          item.colors.some((ic: string) => ic.toLowerCase().includes(c.toLowerCase())),
         );
         if (!ok) return false;
       }
 
       // Habitat
       if (appliedFilters.habitats.length > 0) {
-        const ok = appliedFilters.habitats.every((h) =>
-          item.habitat.some((ih) => ih.toLowerCase().includes(h.toLowerCase())),
+        const ok = appliedFilters.habitats.every((h: string) =>
+          item.habitat.some((ih: string) => ih.toLowerCase().includes(h.toLowerCase())),
         );
         if (!ok) return false;
       }
 
       // Risk
       if (appliedFilters.risks && appliedFilters.risks.length > 0) {
-        const ok = appliedFilters.risks.every((r) => {
+        const ok = appliedFilters.risks.every((r: string) => {
           const lowerR = r.toLowerCase();
           if (lowerR === "venomous") {
             return item.risk?.venom?.has_venom === true;
@@ -118,7 +154,7 @@ export default function ExploreScreen() {
 
       // Distribution
       if (appliedFilters.distributions.length > 0) {
-        const ok = appliedFilters.distributions.every((d) => {
+        const ok = appliedFilters.distributions.every((d: string) => {
           const inDistribution = item.distribution?.some((id: string) =>
             id.toLowerCase().includes(d.toLowerCase())
           );

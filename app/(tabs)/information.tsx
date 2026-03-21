@@ -42,7 +42,7 @@ export default function CollectionScreen() {
   
   const handleItemPress = (id: string) => {
     router.push({
-      pathname: '/detail',
+      pathname: '/detail/[id]',
       params: { id }
     });
   };
