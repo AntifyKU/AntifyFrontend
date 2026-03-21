@@ -1,8 +1,9 @@
 // Quick discovery/filter categories
 export const quickDiscoveryCategories = [
-    { id: "1", name: "Venomous", icon: "alert", color: "#FF6B35" },
-    { id: "2", name: "Forest", icon: "tree", color: "#328e6e" },
-    { id: "3", name: "Household", icon: "home", color: "#3B82F6" },
+    { id: "1", name: "Venomous", tag: "venomous", icon: "alert", color: "#FF6B35" },
+    { id: "2", name: "Predator", tag: "predator", icon: "sword", color: "#EF4444" },
+    { id: "3", name: "Invasive", tag: "invasive", icon: "bug", color: "#F59E0B" },
+    { id: "4", name: "Scavenger", tag: "scavenger", icon: "magnify", color: "#3B82F6" },
 ];
 
 // Filter options - Updated to match actual species data

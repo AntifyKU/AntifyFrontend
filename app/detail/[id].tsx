@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import Badge from "@/components/atom/badge/Badge";
+import TagsBadge from "@/components/atom/badge/TagsBadge";
 import { useSpeciesDetail } from "@/hooks/useSpeciesDetail";
 import { useSpecies } from "@/hooks/useSpecies";
 import RiskTags from "@/components/molecule/RiskTags";
@@ -25,6 +25,7 @@ import { useFolders } from "@/hooks/useFolders";
 import { useState } from "react";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import EmptyState from "@/components/molecule/EmptyState";
+import { groupByRegion } from "@/utils/regionMapper";
 
 type DetailParams = {
   id: string;
@@ -540,12 +541,7 @@ export default function DetailScreen() {
 
           <View className="flex-row flex-wrap mb-4">
             {currentAnt.tags.map((tag) => (
-              <View
-                key={tag}
-                className="bg-[#0A9D5C] rounded-full px-4 py-1.5 mr-2 mb-2"
-              >
-                <Text className="text-sm text-white font-medium">{tag}</Text>
-              </View>
+              <TagsBadge key={tag} tag={tag} />
             ))}
           </View>
 
@@ -593,13 +589,7 @@ export default function DetailScreen() {
             <Text className="text-lg font-bold text-gray-800 mb-2">Color</Text>
             <View className="flex-row flex-wrap">
               {currentAnt.colors.map((color) => (
-                <Badge
-                  key={color}
-                  label={color}
-                  onPress={() => {}}
-                  size="small"
-                  showCloseIcon={false}
-                />
+                <TagsBadge key={color} tag={color} />
               ))}
             </View>
           </View>
@@ -610,13 +600,7 @@ export default function DetailScreen() {
             </Text>
             <View className="flex-row flex-wrap">
               {currentAnt.habitat.map((hab) => (
-                <Badge
-                  key={hab}
-                  label={hab}
-                  onPress={() => {}}
-                  size="small"
-                  showCloseIcon={false}
-                />
+                <TagsBadge key={hab} tag={hab} />
               ))}
             </View>
           </View>
@@ -624,18 +608,23 @@ export default function DetailScreen() {
           {currentAnt.provinces.length > 0 && (
             <View className="mb-5">
               <Text className="text-lg font-bold text-gray-800 mb-2">
-                Observed Provinces
+                Distribution by Region
               </Text>
-              <View className="flex-row flex-wrap">
-                {currentAnt.provinces.map((province) => (
-                  <Badge
-                    key={province}
-                    label={province}
-                    onPress={() => {}}
-                    size="small"
-                    showCloseIcon={false}
-                  />
-                ))}
+              <View className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                {Object.entries(groupByRegion(currentAnt.provinces)).map(
+                  ([region, provinces]) => (
+                    <View key={region} className="mb-3 last:mb-0">
+                      <Text className="text-sm font-bold text-[#0A9D5C] mb-1 uppercase tracking-wider">
+                        {region}
+                      </Text>
+                      <View className="flex-row flex-wrap">
+                        {provinces.map((province) => (
+                          <TagsBadge key={province} tag={province} />
+                        ))}
+                      </View>
+                    </View>
+                  ),
+                )}
               </View>
             </View>
           )}
