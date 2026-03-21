@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from "@/config/api";
 import type {
   FeedbackRequest,
   FeedbackResponse,
-  AICorrectionRequest,
+  AIFeedbackRequest,
   SpeciesCorrectionRequest,
 } from "@/types/api";
 
@@ -16,15 +16,13 @@ export async function submitFeedback(
   });
 }
 
-export async function submitAICorrection(
-  correction: AICorrectionRequest,
+export async function submitAIFeedback(
+  feedback: AIFeedbackRequest,
   authToken?: string,
 ): Promise<FeedbackResponse> {
-  return apiClient.post<FeedbackResponse>(
-    API_ENDPOINTS.feedbackAI,
-    correction,
-    { authToken },
-  );
+  return apiClient.post<FeedbackResponse>(API_ENDPOINTS.feedbackAI, feedback, {
+    authToken,
+  });
 }
 
 export async function submitSpeciesCorrection(
@@ -41,7 +39,7 @@ export async function submitSpeciesCorrection(
 
 export const feedbackService = {
   submitFeedback,
-  submitAICorrection,
+  submitAIFeedback,
   submitSpeciesCorrection,
 };
 

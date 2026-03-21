@@ -519,7 +519,9 @@
     "submittingButton": "Submitting...",
     "footerNote": "Your feedback is anonymous and used solely to improve species identification accuracy.",
     "validationTitle": "Selection Required",
-    "validationMessage": "Please indicate if the identification was correct."
+    "validationMessage": "Please indicate if the identification was correct.",
+    "successTitle": "Thank you!",
+    "successMessage": "Your feedback has been submitted successfully."
   },
   "identify": {
     "title": "Identify Ant",

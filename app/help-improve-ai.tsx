@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   View,
@@ -8,48 +6,52 @@ import {
   TextInput,
   ScrollView,
   StatusBar,
-  Image,
   StyleSheet,
   ActivityIndicator,
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import StarRating from "@/components/StarRating";
 import { feedbackService } from "@/services/feedback";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
-import { useSpecies } from "@/hooks/useSpecies";
+import AntCard from "@/components/molecule/AntCard";
 
-// Define the type for route params
 type HelpImproveParams = {
   imageUri?: string;
-  antId?: string;
   antName?: string;
   scientificName?: string;
-  matchPercentage?: string;
-  source?: string;
+  confidence?: string;
 };
 
 export default function HelpImproveAIScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<HelpImproveParams>();
-  const { imageUri, antId, antName, scientificName, matchPercentage } = params;
-
-  const { species: allSpecies } = useSpecies();
+  const { imageUri, antName, scientificName, confidence } =
+    useLocalSearchParams<HelpImproveParams>();
 
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [selectedSpeciesId, setSelectedSpeciesId] = useState<string | null>(
-    null,
-  );
   const [rating, setRating] = useState<number>(0);
   const [additionalNotes, setAdditionalNotes] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleBackPress = () => {
-    router.back();
+  const confidenceFloat = confidence ? Number.parseFloat(confidence) : null;
+
+  const formatConfidenceValue = (value: number): string => {
+    return value <= 1 ? (value * 100).toFixed(2) : value.toFixed(2);
+  };
+
+  const confidencePercent =
+    confidenceFloat !== null && !Number.isNaN(confidenceFloat)
+      ? formatConfidenceValue(confidenceFloat)
+      : null;
+
+  const getMatchPercentage = (): number | undefined => {
+    if (confidenceFloat === null || Number.isNaN(confidenceFloat)) {
+      return undefined;
+    }
+    return confidenceFloat <= 1 ? confidenceFloat * 100 : confidenceFloat;
   };
 
   const handleSubmitFeedback = async () => {
@@ -62,105 +64,69 @@ export default function HelpImproveAIScreen() {
     }
 
     setIsSubmitting(true);
-
     try {
-      if (isCorrect === false && selectedSpeciesId) {
-        const correctionData = {
-          original_prediction: antName || "",
-          correct_species_id: selectedSpeciesId,
-          notes: additionalNotes || undefined,
-        };
-
-        await feedbackService.submitAICorrection(correctionData);
+      let normalizedConfidence: number | undefined;
+      if (confidenceFloat === null) {
+        normalizedConfidence = undefined;
+      } else if (confidenceFloat <= 1) {
+        normalizedConfidence = confidenceFloat;
       } else {
-        const feedbackData = {
-          rating,
-          additional_notes: additionalNotes || undefined,
-          species_id: antId || undefined,
-        };
-
-        await feedbackService.submitFeedback(feedbackData);
+        normalizedConfidence = confidenceFloat / 100;
       }
 
-      router.dismissAll();
-      router.replace("/(tabs)/index-home");
+      await feedbackService.submitAIFeedback({
+        original_prediction: scientificName ?? antName ?? "",
+        confidence_was: normalizedConfidence,
+        is_correct: isCorrect,
+        additional_notes: additionalNotes || undefined,
+        rating: rating > 0 ? rating : undefined,
+      });
+      Alert.alert(
+        t("helpImprove.successTitle"),
+        t("helpImprove.successMessage"),
+      );
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-
-      router.dismissAll();
-      router.replace("/(tabs)/index-home");
+      if (error instanceof Error) {
+        console.error("Error submitting feedback:", error.message);
+      } else {
+        console.error("Error submitting feedback:", error);
+      }
     } finally {
       setIsSubmitting(false);
+      router.dismissAll();
+      router.replace("/(tabs)/index-home");
     }
   };
-
-  const handleCorrectPress = () => {
-    setIsCorrect(true);
-    setSelectedSpeciesId(null);
-  };
-
-  const handleIncorrectPress = () => {
-    setIsCorrect(false);
-  };
-
-  const handleSpeciesSelect = (speciesId: string) => {
-    setSelectedSpeciesId(speciesId);
-  };
-
-  // Filter species based on search query
-  const filteredSpecies = allSpecies.filter((species) =>
-    species.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    species.scientific_name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   return (
     <View className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
 
-      {/* Header */}
       <SafeAreaView edges={["top"]}>
         <View className="pt-4 pb-5">
           <ScreenHeader
             title={t("helpImprove.title")}
-            leftIcon="chevron-back"
-            onLeftPress={handleBackPress}
+            leftIcon="close"
+            onLeftPress={() => router.push("/(tabs)/index-home")}
           />
         </View>
       </SafeAreaView>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Ant Card Preview */}
-        <View className="mx-4 mt-4 bg-[#e8f5e0] rounded-xl p-3 flex-row items-center">
-          {/* Thumbnail */}
-          <View className="w-20 h-20 rounded-lg bg-[#d4e8c7] items-center justify-center mr-3 overflow-hidden">
-            {imageUri ? (
-              <Image
-                source={{ uri: imageUri }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <MaterialCommunityIcons name="image" size={32} color="#328e6e" />
-            )}
-          </View>
-
-          {/* Details */}
-          <View className="flex-1">
-            <Text className="font-bold text-gray-800 text-lg">
-              {antName || "Weaver Ant"}
-            </Text>
-            <Text className="text-gray-500 text-sm italic">
-              {scientificName || "Oecophylla smaragdina"}
-            </Text>
-            <Text className="text-[#0A9D5C] font-semibold">
-              {t("helpImprove.matchPercentage", {
-                value: matchPercentage || "85",
-              })}
-            </Text>
-          </View>
+        {/* Result card */}
+        <View className="mx-4 mt-4">
+          <AntCard
+            id=""
+            name={antName ?? "—"}
+            scientificName={scientificName ?? "—"}
+            image={imageUri}
+            matchPercentage={getMatchPercentage()}
+            showMatchPercentage={confidencePercent !== null}
+            variant="horizontal"
+          />
         </View>
 
-        {/* Was this identification correct? */}
+        {/* Correct / Incorrect */}
         <View className="mx-4 mt-8">
           <Text className="text-xl font-bold text-gray-800 text-center mb-2">
             {t("helpImprove.questionTitle")}
@@ -169,7 +135,6 @@ export default function HelpImproveAIScreen() {
             {t("helpImprove.questionSubtitle")}
           </Text>
 
-          {/* Yes/No Buttons */}
           <View className="flex-row justify-center gap-4">
             <Pressable
               className={`flex-1 py-4 rounded-xl items-center border-2 ${
@@ -177,7 +142,7 @@ export default function HelpImproveAIScreen() {
                   ? "bg-[#0A9D5C] border-[#0A9D5C]"
                   : "bg-white border-gray-200"
               }`}
-              onPress={handleCorrectPress}
+              onPress={() => setIsCorrect(true)}
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View
@@ -206,7 +171,7 @@ export default function HelpImproveAIScreen() {
                   ? "bg-[#EF4444] border-[#EF4444]"
                   : "bg-white border-gray-200"
               }`}
-              onPress={handleIncorrectPress}
+              onPress={() => setIsCorrect(false)}
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View
@@ -231,83 +196,7 @@ export default function HelpImproveAIScreen() {
           </View>
         </View>
 
-        {/* Species Selection (only shown when "No, Incorrect" is selected) */}
-        {isCorrect === false && (
-          <View className="mx-4 mt-6">
-            <Text className="text-lg font-bold text-gray-800 mb-3">
-              {t("helpImprove.selectSpecies")}
-            </Text>
-
-            {/* Search Input */}
-            <View className="flex-row items-center bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4">
-              <Ionicons name="search" size={20} color="#9ca3af" />
-              <TextInput
-                className="flex-1 ml-2 text-gray-700"
-                placeholder={t("helpImprove.searchPlaceholder")}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </View>
-
-            {/* Species not in list option */}
-            <Pressable
-              className={`flex-row items-center p-3 mb-2 rounded-xl border ${
-                selectedSpeciesId === "not-in-list"
-                  ? "border-[#0A9D5C] bg-[#e8f5e0]"
-                  : "border-gray-200"
-              }`}
-              onPress={() => handleSpeciesSelect("not-in-list")}
-              style={({ pressed }) => pressed && styles.pressed}
-            >
-              <Text className="text-gray-600">
-                {t("helpImprove.notInList")}
-              </Text>
-            </Pressable>
-
-            {/* Species List */}
-            {filteredSpecies.map((species) => (
-              <Pressable
-                key={species.id}
-                className={`flex-row items-center p-3 mb-2 rounded-xl border ${
-                  selectedSpeciesId === species.id
-                    ? "border-[#0A9D5C] bg-[#e8f5e0]"
-                    : "border-gray-200"
-                }`}
-                onPress={() => handleSpeciesSelect(species.id)}
-                style={({ pressed }) => pressed && styles.pressed}
-              >
-                {/* Thumbnail */}
-                <View className="w-12 h-12 rounded-lg bg-[#d4e8c7] items-center justify-center mr-3 overflow-hidden">
-                  {species.image ? (
-                    <Image
-                      source={{ uri: species.image }}
-                      className="w-full h-full"
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="image"
-                      size={20}
-                      color="#328e6e"
-                    />
-                  )}
-                </View>
-
-                {/* Details */}
-                <View className="flex-1">
-                  <Text className="font-bold text-gray-800">
-                    {species.name}
-                  </Text>
-                  <Text className="text-gray-500 text-sm italic">
-                    {species.scientific_name}
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {/* Rate prediction quality */}
+        {/* Star rating */}
         <View className="mx-4 mt-6">
           <Text className="text-lg font-bold text-gray-800 mb-3">
             {t("helpImprove.rateTitle")}
@@ -315,7 +204,7 @@ export default function HelpImproveAIScreen() {
           <StarRating rating={rating} onRatingChange={setRating} />
         </View>
 
-        {/* Additional Notes */}
+        {/* Notes */}
         <View className="mx-4 mt-6">
           <Text className="text-lg font-bold text-gray-800 mb-3">
             {t("helpImprove.notesTitle")}
@@ -331,7 +220,7 @@ export default function HelpImproveAIScreen() {
           />
         </View>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <View className="mx-4 mt-8 mb-4">
           <Pressable
             className={`bg-[#0A9D5C] rounded-full py-4 flex-row items-center justify-center ${
@@ -359,14 +248,12 @@ export default function HelpImproveAIScreen() {
           </Pressable>
         </View>
 
-        {/* Footer Note */}
         <View className="mx-4 mb-8">
           <Text className="text-center text-gray-400 text-sm">
             {t("helpImprove.footerNote")}
           </Text>
         </View>
 
-        {/* Bottom Padding */}
         <View className="h-8" />
       </ScrollView>
     </View>
@@ -374,7 +261,5 @@ export default function HelpImproveAIScreen() {
 }
 
 const styles = StyleSheet.create({
-  pressed: {
-    opacity: 0.7,
-  },
+  pressed: { opacity: 0.7 },
 });

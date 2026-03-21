@@ -31,7 +31,7 @@ type DetailParams = {
   fromIdentification?: string;
   antName?: string;
   scientificName?: string;
-  matchPercentage?: string;
+  confidence?: string;
   imageUri?: string;
   source?: string;
 };
@@ -44,7 +44,7 @@ function navigateAfterIdentification(
   source: string | undefined,
   antName: string,
   scientificName: string,
-  matchPercentage: string | undefined,
+  confidence: string | undefined,
 ) {
   router.replace({
     pathname: "/help-improve-ai",
@@ -54,7 +54,7 @@ function navigateAfterIdentification(
       source,
       antName,
       scientificName,
-      matchPercentage,
+      confidence,
     },
   });
 }
@@ -327,7 +327,7 @@ export default function DetailScreen() {
     fromIdentification,
     antName,
     scientificName,
-    matchPercentage,
+    confidence,
     imageUri,
     source,
   } = params;
@@ -352,7 +352,7 @@ export default function DetailScreen() {
         source,
         antName || species?.name || "",
         scientificName || species?.scientific_name || "",
-        matchPercentage,
+        confidence,
       );
     } else {
       router.back();
@@ -448,7 +448,6 @@ export default function DetailScreen() {
     );
   }
 
-  // Transform API species to display format
   const currentAnt = {
     id: species.id,
     name: species.name,
@@ -463,7 +462,6 @@ export default function DetailScreen() {
     behavior: species.behavior,
     ecologicalRole: species.ecological_role,
     image: species.image || "",
-    // Extended fields
     provinces: species.distribution_v2?.provinces ?? [],
     acceptedTaxon: species.accepted_taxon,
     lookalikes: species.lookalikes ?? [],
@@ -506,7 +504,6 @@ export default function DetailScreen() {
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Image Header */}
         <View className="relative">
           {currentAnt.image ? (
             <Image
@@ -521,7 +518,6 @@ export default function DetailScreen() {
           )}
         </View>
 
-        {/* Content */}
         <View className="px-5 pt-5">
           <Text className="text-2xl font-bold text-gray-800 mb-1">
             {currentAnt.name}
@@ -667,71 +663,70 @@ export default function DetailScreen() {
         <View className="h-32" />
       </ScrollView>
 
-      {/* Bottom Fixed Buttons */}
-  <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
-    <SafeAreaView edges={["bottom"]}>
-      <View className="flex-row px-4 py-3 gap-3">
-        <View style={{ flex: 2 }}>
-          <View style={{ height: BUTTON_HEIGHT }}>
-            <PrimaryButton
-              title={
-                isCurrentInCollection
-                  ? "In Collection"
-                  : "Add to My Collection"
-              }
-              onPress={handleCollectionPress}
-              disabled={isCollectionLoading}
-              icon={isCurrentInCollection ? "checkmark" : "add"}
-              fullWidth
-              variant={isCurrentInCollection ? "outlined" : "filled"}
-              iconColor={isCurrentInCollection ? "#0A9D5C" : "#FFFFFF"}
-              style={{
-                height: BUTTON_HEIGHT,
-                borderColor: "#0A9D5C",
-                backgroundColor: isCurrentInCollection
-                  ? "#E8F6EF"
-                  : "#0A9D5C",
-                shadowColor: isCurrentInCollection
-                  ? "transparent"
-                  : "#0A9D5C",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: isCurrentInCollection ? 0 : 0.3,
-                shadowRadius: 8,
-                elevation: isCurrentInCollection ? 0 : 6,
-              }}
-              textStyle={{
-                color: isCurrentInCollection ? "#0A9D5C" : "#FFFFFF",
-                fontWeight: "600",
-              }}
-            />
-          </View>
-        </View>
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <SafeAreaView edges={["bottom"]}>
+          <View className="flex-row px-4 py-3 gap-3">
+            <View style={{ flex: 2 }}>
+              <View style={{ height: BUTTON_HEIGHT }}>
+                <PrimaryButton
+                  title={
+                    isCurrentInCollection
+                      ? "In Collection"
+                      : "Add to My Collection"
+                  }
+                  onPress={handleCollectionPress}
+                  disabled={isCollectionLoading}
+                  icon={isCurrentInCollection ? "checkmark" : "add"}
+                  fullWidth
+                  variant={isCurrentInCollection ? "outlined" : "filled"}
+                  iconColor={isCurrentInCollection ? "#0A9D5C" : "#FFFFFF"}
+                  style={{
+                    height: BUTTON_HEIGHT,
+                    borderColor: "#0A9D5C",
+                    backgroundColor: isCurrentInCollection
+                      ? "#E8F6EF"
+                      : "#0A9D5C",
+                    shadowColor: isCurrentInCollection
+                      ? "transparent"
+                      : "#0A9D5C",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: isCurrentInCollection ? 0 : 0.3,
+                    shadowRadius: 8,
+                    elevation: isCurrentInCollection ? 0 : 6,
+                  }}
+                  textStyle={{
+                    color: isCurrentInCollection ? "#0A9D5C" : "#FFFFFF",
+                    fontWeight: "600",
+                  }}
+                />
+              </View>
+            </View>
 
-        <View style={{ flex: 1 }}>
-          <View style={{ height: BUTTON_HEIGHT }}>
-            <PrimaryButton
-              title="Ask Chat"
-              onPress={() =>
-                router.push({
-                  pathname: "/chatbot",
-                  params: { initialAntName: currentAnt.name },
-                })
-              }
-              fullWidth
-              variant="outlined"
-              style={{
-                height: BUTTON_HEIGHT,
-                borderColor: "#0A9D5C",
-                shadowColor: "transparent",
-              }}
-              textStyle={{ fontWeight: "600" }}
-            />
+            <View style={{ flex: 1 }}>
+              <View style={{ height: BUTTON_HEIGHT }}>
+                <PrimaryButton
+                  title="Ask Chat"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/chatbot",
+                      params: { initialAntName: currentAnt.name },
+                    })
+                  }
+                  fullWidth
+                  variant="outlined"
+                  style={{
+                    height: BUTTON_HEIGHT,
+                    borderColor: "#0A9D5C",
+                    shadowColor: "transparent",
+                  }}
+                  textStyle={{ fontWeight: "600" }}
+                />
+              </View>
+            </View>
           </View>
-        </View>
+        </SafeAreaView>
       </View>
-    </SafeAreaView>
-  </View>
-    </View >
+    </View>
   );
 }
 

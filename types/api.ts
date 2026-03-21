@@ -70,7 +70,6 @@ export interface Species {
   image: string;
   created_at?: string;
   updated_at?: string;
-  // Extended Firestore fields
   slug?: string;
   input_label?: string;
   normalized?: NormalizedInfo;
@@ -172,6 +171,7 @@ export interface AddToCollectionRequest {
 }
 
 // Feedback Types
+
 export interface FeedbackRequest {
   rating: number;
   likes?: string[];
@@ -186,18 +186,20 @@ export interface FeedbackResponse {
   message: string;
 }
 
-export interface AICorrectionRequest {
+export interface AIFeedbackRequest {
   original_prediction: string;
-  correct_species_id: string;
-  image_base64?: string;
-  notes?: string;
+  confidence_was?: number;
+  is_correct: boolean;
+  additional_notes?: string;
+  rating?: number;
 }
 
 export interface SpeciesCorrectionRequest {
-  field: string;
-  original_value: string;
+  field_name: string;
+  current_value: string;
   suggested_value: string;
-  notes?: string;
+  reason: string;
+  source?: string;
 }
 
 // Auth Types

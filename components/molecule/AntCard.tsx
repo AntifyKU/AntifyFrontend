@@ -53,7 +53,7 @@ export default function AntCard({
         </View>
 
         {/* Details */}
-        <View className="flex-1 px-4 py-3 justify-center">
+        <View className="flex-1 px-4 py-3 justify-center bg-[#e8f5e0]">
           <Text className="font-bold text-gray-800">{name}</Text>
           {(description || scientificName) && (
             <Text className="text-gray-500 text-sm italic" numberOfLines={1}>

@@ -92,6 +92,7 @@ export default function IdentificationResultsScreen() {
             effectiveInfo?.scientific_name ?? bestPrediction.class_name,
           image: effectiveInfo?.image ?? "",
           matchPercentage: Number((bestPrediction.confidence * 100).toFixed(1)),
+          confidence: bestPrediction.confidence,
           riskInfo: effectiveInfo?.risk,
           isInDatabase: effectiveInfo !== null,
         };
@@ -120,6 +121,7 @@ export default function IdentificationResultsScreen() {
               scientificName: validSpecies?.scientific_name ?? pred.class_name,
               image: validSpecies?.image ?? "",
               matchPercentage: Number((pred.confidence * 100).toFixed(1)),
+              confidence: pred.confidence,
               riskInfo: validSpecies?.risk,
             };
           })
@@ -158,6 +160,7 @@ export default function IdentificationResultsScreen() {
                   imageUri,
                   antName: bestMatch.name,
                   scientificName: bestMatch.scientificName,
+                  confidence: String(bestMatch.confidence),
                   source,
                 },
               }),
@@ -169,7 +172,13 @@ export default function IdentificationResultsScreen() {
     }
     router.push({
       pathname: "/detail/[id]",
-      params: { id: antId, imageUri, source, fromIdentification: "true" },
+      params: {
+        id: antId,
+        imageUri,
+        source,
+        fromIdentification: "true",
+        confidence: String(bestMatch.confidence),
+      },
     });
   };
 
@@ -207,7 +216,7 @@ export default function IdentificationResultsScreen() {
         <SafeAreaView>
           <View className="flex-row items-center px-4 py-2">
             <TouchableOpacity onPress={handleBackPress} className="p-2">
-              <Ionicons name="chevron-back" size={28} color="#0A9D5C" />
+              <Ionicons name="chevron-back" size={28} color="#333" />
             </TouchableOpacity>
             <Text className="flex-1 text-center text-xl font-bold text-gray-800 mr-10">
               {t("identification.failed_title")}

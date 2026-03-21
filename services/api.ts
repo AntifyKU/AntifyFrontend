@@ -96,11 +96,17 @@ async function parseResponse<T>(response: Response): Promise<T> {
 
 async function parseErrorResponse(response: Response): Promise<ApiError> {
   const errorData = await response.json().catch(() => ({}));
-  return new ApiError(
-    response.status,
-    response.statusText,
-    errorData.detail || errorData.message,
-  );
+  const detail = errorData.detail;
+  let message: string;
+  if (typeof detail === "string") {
+    message = detail;
+  } else if (detail !== null && detail !== undefined) {
+    message = JSON.stringify(detail);
+  } else {
+    message = errorData.message ?? `${response.status} ${response.statusText}`;
+  }
+
+  return new ApiError(response.status, response.statusText, message);
 }
 
 async function retryWithRefreshedToken<T>(
