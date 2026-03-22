@@ -202,12 +202,7 @@ export default function ProfileScreen() {
   if (!isAuthenticated) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <View className="pt-4 pb-5">
-          <ScreenHeader
-            title={t("profile.title")}
-            rightActions={headerActions}
-          />
-        </View>
+        <ScreenHeader title={t("profile.title")} rightActions={headerActions} />
         <ScrollView>
           <View className="items-center py-8">
             <View className="w-28 h-28 rounded-full bg-[#0A9D5C] items-center justify-center mb-4">

@@ -1,17 +1,8 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  ActivityIndicator,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { View, Text, Image, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import type { Species } from "@/types/api";
 import { useTranslation } from "react-i18next";
-
-const LOCAL_BOOST = 0.4;
+import type { Species } from "@/types/api";
 
 export interface LocationSpeciesPrediction {
   id: string;
@@ -22,22 +13,25 @@ export interface LocationSpeciesPrediction {
 }
 
 interface LocationSpeciesCardProps {
-  readonly predictions: LocationSpeciesPrediction[];
+  readonly predictions: readonly LocationSpeciesPrediction[];
   readonly province: string | null;
   readonly loadingLocation: boolean;
   readonly permissionDenied: boolean;
-  readonly provinceSpecies: Species[];
+  readonly provinceSpecies: readonly Species[];
   readonly loadingProvinceSpecies: boolean;
 }
 
+/** Normalize a scientific name for fuzzy comparison */
 function normalizeSci(name?: string): string {
   if (!name) return "";
-  return name.toLowerCase().replaceAll("_", " ").replace(/\.$/, "").trim();
+  return name.toLowerCase().replaceAll("_", " ").replaceAll(".", "").trim();
 }
 
+/** True if a prediction matches a Firestore province species.
+ *  Uses partial name matching so "Acropyga sp" matches "Acropyga" */
 function isInProvince(
   pred: LocationSpeciesPrediction,
-  provinceSpecies: Species[],
+  provinceSpecies: readonly Species[],
 ): boolean {
   const predSci = normalizeSci(pred.scientificName);
   const predName = pred.name?.toLowerCase().trim() ?? "";
@@ -47,9 +41,7 @@ function isInProvince(
 
     const speciesSci = normalizeSci(s.scientific_name);
     const speciesName = s.name?.toLowerCase().trim() ?? "";
-
     if (predName && speciesName && predName === speciesName) return true;
-
     if (predSci && speciesSci) {
       if (predSci === speciesSci) return true;
       if (predSci.startsWith(speciesSci) || speciesSci.startsWith(predSci))
@@ -61,7 +53,7 @@ function isInProvince(
 }
 
 function computeWeightedScore(aiPercent: number): number {
-  return Math.min(Number((aiPercent * (1 + LOCAL_BOOST)).toFixed(2)), 100);
+  return Math.min(Number(aiPercent.toFixed(2)), 100);
 }
 
 function ConfidenceBar({
@@ -73,13 +65,13 @@ function ConfidenceBar({
 }) {
   const { t } = useTranslation();
 
-  const getBarColor = (): string => {
-    if (weighted >= 70) return "#0A9D5C";
-    if (weighted >= 40) return "#F59E0B";
+  const getBarColor = (value: number): string => {
+    if (value >= 70) return "#0A9D5C";
+    if (value >= 40) return "#F59E0B";
     return "#9CA3AF";
   };
 
-  const barColor = getBarColor();
+  const barColor = getBarColor(weighted);
   const pct = Math.min(Math.max(weighted, 0), 100);
   const remainder = 100 - pct;
 
@@ -116,7 +108,7 @@ function ConfidenceBar({
       </View>
       {weighted !== raw && (
         <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
-          {t("location_card.ai_confidence", { percentage: raw.toFixed(2) })}
+          {t("location_card.ai_confidence", { raw: raw.toFixed(2) })}
         </Text>
       )}
     </View>
@@ -134,9 +126,55 @@ export default function LocationSpeciesCard({
   const { t } = useTranslation();
   const isLoading = loadingLocation || loadingProvinceSpecies;
 
+  const translatedProvince = province ? t(`badges.${province}`, province) : "";
+
   const matchedPredictions = predictions.filter((pred) =>
     isInProvince(pred, provinceSpecies),
   );
+
+  const getProvinceStatusContent = () => {
+    if (loadingLocation) {
+      return (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 2,
+          }}
+        >
+          <ActivityIndicator
+            size="small"
+            color="#0A9D5C"
+            style={{ marginRight: 4 }}
+          />
+          <Text style={{ color: "#328e6e", fontSize: 12 }}>
+            {t("location_card.detecting")}
+          </Text>
+        </View>
+      );
+    }
+    if (permissionDenied) {
+      return (
+        <Text style={{ color: "#D97706", fontSize: 12, marginTop: 2 }}>
+          {t("location_card.denied")}
+        </Text>
+      );
+    }
+    if (province) {
+      return (
+        <Text style={{ color: "#4B5563", fontSize: 12, marginTop: 2 }}>
+          {translatedProvince}
+        </Text>
+      );
+    }
+    return (
+      <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+        {t("location_card.unable_to_detect")}
+      </Text>
+    );
+  };
+
+  const provinceStatusContent = getProvinceStatusContent();
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 24 }}>
@@ -151,21 +189,6 @@ export default function LocationSpeciesCard({
         <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>
           {t("location_card.title")}
         </Text>
-        <TouchableOpacity
-          onPress={() =>
-            Alert.alert(
-              t("location_card.score_info_title"),
-              t("location_card.score_info_desc"),
-            )
-          }
-          style={{ padding: 4 }}
-        >
-          <Ionicons
-            name="information-circle-outline"
-            size={20}
-            color="#9CA3AF"
-          />
-        </TouchableOpacity>
       </View>
 
       <View
@@ -182,6 +205,7 @@ export default function LocationSpeciesCard({
           borderColor: "#E5E7EB",
         }}
       >
+        {/* Header */}
         <View
           style={{
             backgroundColor: "#e8f5e0",
@@ -208,45 +232,13 @@ export default function LocationSpeciesCard({
             <Text style={{ color: "#0A9D5C", fontWeight: "700", fontSize: 14 }}>
               {t("location_card.current_province")}
             </Text>
-            {loadingLocation && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 2,
-                }}
-              >
-                <ActivityIndicator
-                  size="small"
-                  color="#0A9D5C"
-                  style={{ marginRight: 4 }}
-                />
-                <Text style={{ color: "#328e6e", fontSize: 12 }}>
-                  {t("location_card.detecting")}
-                </Text>
-              </View>
-            )}
-            {!loadingLocation && permissionDenied && (
-              <Text style={{ color: "#D97706", fontSize: 12, marginTop: 2 }}>
-                {t("location_card.denied")}
-              </Text>
-            )}
-            {!loadingLocation && !permissionDenied && province && (
-              <Text style={{ color: "#4B5563", fontSize: 12, marginTop: 2 }}>
-                {province}
-              </Text>
-            )}
-            {!loadingLocation && !permissionDenied && !province && (
-              <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
-                {t("location_card.unable_to_detect")}
-              </Text>
-            )}
+            {provinceStatusContent}
           </View>
           {!loadingLocation && !permissionDenied && loadingProvinceSpecies && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <ActivityIndicator size="small" color="#9CA3AF" />
               <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 4 }}>
-                {t("location_card.searching")}
+                {t("locationCard.searching")}
               </Text>
             </View>
           )}
@@ -254,6 +246,7 @@ export default function LocationSpeciesCard({
 
         <View style={{ height: 1, backgroundColor: "#E5E7EB" }} />
 
+        {/* Permission denied */}
         {permissionDenied && (
           <View
             style={{
@@ -280,6 +273,7 @@ export default function LocationSpeciesCard({
           </View>
         )}
 
+        {/* Loading skeleton */}
         {!permissionDenied && isLoading && (
           <View
             style={{
@@ -296,8 +290,10 @@ export default function LocationSpeciesCard({
           </View>
         )}
 
+        {/* Intersection results */}
         {!permissionDenied && !isLoading && matchedPredictions.length > 0 && (
           <>
+            {/* Summary chip */}
             <View
               style={{
                 paddingHorizontal: 16,
@@ -326,9 +322,9 @@ export default function LocationSpeciesCard({
                   style={{ color: "#16a34a", fontSize: 12, fontWeight: "700" }}
                 >
                   {t("location_card.confirmed_in", {
-                    matched: matchedPredictions.length,
+                    count: matchedPredictions.length,
                     total: predictions.length,
-                    province: province,
+                    province: translatedProvince,
                   })}
                 </Text>
               </View>
@@ -350,6 +346,7 @@ export default function LocationSpeciesCard({
                       paddingVertical: 12,
                     }}
                   >
+                    {/* Thumbnail */}
                     <View
                       style={{
                         width: 52,
@@ -384,6 +381,7 @@ export default function LocationSpeciesCard({
                       )}
                     </View>
 
+                    {/* Info */}
                     <View style={{ flex: 1 }}>
                       <View
                         style={{
@@ -404,6 +402,7 @@ export default function LocationSpeciesCard({
                         >
                           {pred.name}
                         </Text>
+                        {/* "Found here" badge */}
                         <View
                           style={{
                             backgroundColor: "#dcfce7",
@@ -463,6 +462,7 @@ export default function LocationSpeciesCard({
           </>
         )}
 
+        {/* Empty state: no predicted species confirmed locally */}
         {!permissionDenied && !isLoading && matchedPredictions.length === 0 && (
           <View
             style={{
@@ -485,12 +485,13 @@ export default function LocationSpeciesCard({
               }}
             >
               {t("location_card.none_confirmed", {
-                province: province ?? t("home.unknown_location"),
+                province: translatedProvince || t("home.unknown_location"),
               })}
             </Text>
           </View>
         )}
 
+        {/* Footer */}
         {!permissionDenied && !isLoading && province && (
           <>
             <View style={{ height: 1, backgroundColor: "#E5E7EB" }} />
@@ -510,7 +511,7 @@ export default function LocationSpeciesCard({
               <Text style={{ fontSize: 12, color: "#6B7280", marginLeft: 6 }}>
                 {t("location_card.total_in_db", {
                   count: provinceSpecies.length,
-                  province: province,
+                  province: translatedProvince,
                 })}
               </Text>
             </View>

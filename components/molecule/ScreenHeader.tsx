@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -38,18 +38,14 @@ export const ScreenHeader: React.FC<HeaderProps> = ({
         </TouchableOpacity>
       );
     }
-
     if (leftText && onLeftPress) {
       return (
         <TouchableOpacity onPress={onLeftPress} activeOpacity={0.7}>
-          <Text className="text-[#22A45D] text-base font-medium">
-            {leftText}
-          </Text>
+          <Text className="text-[#22A45D] text-base font-medium">{leftText}</Text>
         </TouchableOpacity>
       );
     }
-
-    return <View className="w-6 h-6" />;
+    return <View style={{ width: 24, height: 24 }} />;
   };
 
   const renderRight = () => {
@@ -57,18 +53,13 @@ export const ScreenHeader: React.FC<HeaderProps> = ({
       return (
         <View className="flex-row items-center gap-4">
           {rightActions.map((action, index) => (
-            <TouchableOpacity
-              key={action.icon + index}
-              onPress={action.onPress}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity key={action.icon + index} onPress={action.onPress} activeOpacity={0.7}>
               <Ionicons name={action.icon} size={24} color="#333" />
             </TouchableOpacity>
           ))}
         </View>
       );
     }
-
     if (rightIcon && onRightPress) {
       return (
         <TouchableOpacity onPress={onRightPress} activeOpacity={0.7}>
@@ -76,31 +67,65 @@ export const ScreenHeader: React.FC<HeaderProps> = ({
         </TouchableOpacity>
       );
     }
-
     if (rightText && onRightPress) {
       return (
         <TouchableOpacity onPress={onRightPress} activeOpacity={0.7}>
-          <Text className="text-[#22A45D] text-base font-medium">
-            {rightText}
-          </Text>
+          <Text className="text-[#22A45D] text-base font-medium">{rightText}</Text>
         </TouchableOpacity>
       );
     }
-
-    return <View className="w-6 h-6" />;
+    return <View style={{ width: 24, height: 24 }} />;
   };
 
   return (
-    <View className="flex-row w-full py-5 px-6 items-center justify-between bg-white">
-      <View className="w-[60px] items-start">{renderLeft()}</View>
+    <View style={styles.container}>
+      {/* Left และ Right อยู่ปกติ */}
+      <View style={styles.side}>{renderLeft()}</View>
+
+      {/* Title absolute เต็มความกว้างของหน้าจอ ไม่ถูก padding ของ parent กิน */}
       {title && (
-        <View className="flex-1 justify-center items-center px-2">
-          <Text className="text-gray-800 text-xl font-bold text-center flex-wrap">
+        <View style={styles.titleContainer} pointerEvents="none">
+          <Text style={styles.titleText} numberOfLines={0}>
             {title}
           </Text>
         </View>
       )}
-      <View className="w-[60px] items-end">{renderRight()}</View>
+
+      <View style={[styles.side, styles.sideRight]}>{renderRight()}</View>
     </View>
   );
 };
+
+const SIDE_WIDTH = 72;
+
+const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    backgroundColor: "white",
+  },
+  side: {
+    width: SIDE_WIDTH,
+    alignItems: "flex-start",
+    zIndex: 1,
+  },
+  sideRight: {
+    alignItems: "flex-end",
+  },
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: SIDE_WIDTH,
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1f2937",
+    textAlign: "center",
+  },
+});

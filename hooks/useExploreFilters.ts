@@ -5,7 +5,6 @@ export function useExploreFilters() {
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
     quickFilters: [],
     colors: [],
-    sizes: [],
     habitats: [],
     risks: [],
     distributions: [],

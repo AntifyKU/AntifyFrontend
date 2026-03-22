@@ -7,8 +7,10 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIdentification } from "@/hooks/useIdentification";
@@ -21,7 +23,6 @@ import { useLocation } from "@/hooks/useLocation";
 import LocationSpeciesCard from "@/components/molecule/LocationSpeciesCard";
 import { useProvinceSpecies } from "@/hooks/useProvinceSpecies";
 import { openIdentifySheet } from "@/utils/identifyHelper";
-import { useTranslation } from "react-i18next";
 
 type IdentificationParams = {
   imageUri?: string;
@@ -139,6 +140,21 @@ export default function IdentificationResultsScreen() {
 
   const handleBackPress = () => router.back();
 
+  const handleProvideFeedback = () => {
+    if (!bestMatch) return;
+
+    router.push({
+      pathname: "/help-improve-ai",
+      params: {
+        imageUri,
+        antName: bestMatch.name,
+        scientificName: bestMatch.scientificName,
+        confidence: String(bestMatch.confidence),
+        source,
+      },
+    });
+  };
+
   const handleConfirmAndViewDetails = (antId: string) => {
     if (!bestMatch) return;
     const isUnidentified =
@@ -152,18 +168,8 @@ export default function IdentificationResultsScreen() {
         t("identification.alert_not_found_desc"),
         [
           {
-            text: t("identification.help_improve"),
-            onPress: () =>
-              router.push({
-                pathname: "/help-improve-ai",
-                params: {
-                  imageUri,
-                  antName: bestMatch.name,
-                  scientificName: bestMatch.scientificName,
-                  confidence: String(bestMatch.confidence),
-                  source,
-                },
-              }),
+            text: t("idResults.improveAI"),
+            onPress: handleProvideFeedback,
           },
           { text: t("common.ok"), style: "cancel" },
         ],
@@ -230,14 +236,62 @@ export default function IdentificationResultsScreen() {
             color="#EF4444"
           />
           <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            {t("identification.unable_to_identify")}
+            {t("idResults.unableIdentify")}
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
-            {t("identification.unable_desc")}
+            {t("idResults.errorMessage")}
           </Text>
           <View className="mt-8 w-full">
             <PrimaryButton
-              title={t("identification.try_again")}
+              title={t("idResults.tryAgain")}
+              icon="camera-outline"
+              onPress={handleIdentifyAnother}
+              size="large"
+            />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // Show rejection state when safety gate rejects the image
+  if (speciesResult && !speciesResult.success) {
+    return (
+      <View className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaView>
+          <View className="pt-4 pb-5">
+            <ScreenHeader
+              title={t("idResults.title")}
+              leftIcon="chevron-back"
+              onLeftPress={handleBackPress}
+            />
+          </View>
+        </SafeAreaView>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialCommunityIcons
+            name="image-off-outline"
+            size={64}
+            color="#F59E0B"
+          />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
+            {t("idResults.cantDetect")}
+          </Text>
+          <Text className="mt-2 text-gray-500 text-center">
+            {speciesResult.message || t("idResults.errorMessage")}
+          </Text>
+          {imageUri && (
+            <View className="mt-6 w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
+              <Image
+                source={{ uri: imageUri }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          <View className="mt-8 w-full">
+            <PrimaryButton
+              title={t("idResults.tryAgain")}
               icon="camera-outline"
               onPress={handleIdentifyAnother}
               size="large"
@@ -308,25 +362,25 @@ export default function IdentificationResultsScreen() {
                 {bestMatch.scientificName}
               </Text>
               <Text className="text-[#0A9D5C] font-semibold mt-1">
-                {t("identification.match_label", {
-                  percentage: bestMatch.matchPercentage.toFixed(2),
+                {t("helpImprove.matchPercentage", {
+                  value: bestMatch.matchPercentage.toFixed(1),
                 })}
               </Text>
-              {(bestMatch as any).riskInfo && (
+
+              {bestMatch.riskInfo && (
                 <View className="mt-2">
-                  <RiskTags
-                    riskInfo={(bestMatch as any).riskInfo}
-                    size="small"
-                  />
+                  <RiskTags riskInfo={bestMatch.riskInfo} size="small" />
                 </View>
               )}
-              <View className="mt-4">
-                <PrimaryButton
-                  title={t("identification.confirm_details")}
-                  variant="outlined"
-                  onPress={() => handleConfirmAndViewDetails(bestMatch.id)}
-                />
-              </View>
+
+              <TouchableOpacity
+                className="mt-4 py-3 rounded-full border-2 border-[#0A9D5C] items-center"
+                onPress={() => handleConfirmAndViewDetails(bestMatch.id)}
+              >
+                <Text className="text-[#0A9D5C] font-semibold">
+                  {t("identification.confirm_details")}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -374,6 +428,7 @@ export default function IdentificationResultsScreen() {
           ))}
         </View>
         <View className="h-32" />
+        {/* Bottom Padding */}
       </ScrollView>
 
       <View className="absolute bottom-0 left-0 right-0 p-4 bg-white">

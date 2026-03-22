@@ -8,6 +8,7 @@ export interface SpeciesClassification {
 export interface VenomInfo {
   has_venom: boolean;
   details?: string;
+  details_th?: string;
   source?: string;
 }
 
@@ -57,16 +58,21 @@ export interface Provenance {
 export interface Species {
   id: string;
   name: string;
+  name_th?: string;
   scientific_name: string;
   classification: SpeciesClassification;
   tags: string[];
   about: string;
+  about_th?: string;
   characteristics: string;
+  characteristics_th?: string;
   colors: string[];
   habitat: string[];
   distribution: string[];
   behavior: string;
+  behavior_th?: string;
   ecological_role: string;
+  ecological_role_th?: string;
   image: string;
   created_at?: string;
   updated_at?: string;

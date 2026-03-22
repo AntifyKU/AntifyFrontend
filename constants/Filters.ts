@@ -1,14 +1,14 @@
 // Quick discovery/filter categories
 export const quickDiscoveryCategories = [
-    { id: "1", name: "Venomous", icon: "alert", color: "#FF6B35" },
-    { id: "2", name: "Forest", icon: "tree", color: "#328e6e" },
-    { id: "3", name: "Household", icon: "home", color: "#3B82F6" },
+    { id: "1", name: "Venomous", tag: "venomous", icon: "alert", color: "#FF6B35" },
+    { id: "2", name: "Predator", tag: "predator", icon: "sword", color: "#EF4444" },
+    { id: "3", name: "Invasive", tag: "invasive", icon: "bug", color: "#F59E0B" },
+    { id: "4", name: "Scavenger", tag: "scavenger", icon: "magnify", color: "#3B82F6" },
 ];
 
 // Filter options - Updated to match actual species data
 export const filterOptions = {
     colors: ["Black", "Brown", "Variable", "Orange", "Golden", "Silver", "Yellow", "Reddish-brown"],
-    sizes: ["Tiny (< 2mm)", "Small (2-5mm)", "Medium (5-10mm)", "Large (10-15mm)", "Giant (> 15mm)"],
     habitats: ["Trees", "Urban Areas", "Forest", "Forest Floor", "Shrubs", "Under bark", "Dead Wood", "Soil"],
     distributions: [
         "Amnat Charoen", "Ang Thong", "Bangkok", "Bueng Kan", "Buri Ram", "Chachoengsao", "Chai Nat", "Chaiyaphum", "Chanthaburi", "Chiang Mai", 
@@ -20,5 +20,5 @@ export const filterOptions = {
         "Samut Songkhram", "Saraburi", "Satun", "Sing Buri", "Sisaket", "Songkhla", "Sukhothai", "Suphan Buri", "Surat Thani", "Surin", "Tak", 
         "Trang", "Trat", "Ubon Ratchathani", "Udon Thani", "Uthai Thani", "Uttaradit", "Yala", "Yasothon"
     ],
-    risks: ["Bite", "Sting", "Venomous"],
+    risks: ["Bites", "Stings", "Venomous"],
 };

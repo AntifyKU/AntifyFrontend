@@ -275,7 +275,9 @@ const HistorySection: React.FC = () => {
                   <ListCard
                     id={item.id}
                     title={item.speciesName}
-                    description={`${Math.round(item.confidence * 100)}% confidence • ${formatDate(item.identifiedAt)}`}
+                    description={`${t("helpImprove.matchPercentage", {
+                      value: (item.confidence * 100).toFixed(1),
+                    })} • ${formatDate(item.identifiedAt)}`}
                     image={item.imageBase64}
                     onPress={() => handleCardPress(item)}
                     onMore={() => handleItemMore(item)}

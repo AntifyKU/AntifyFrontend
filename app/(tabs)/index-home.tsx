@@ -174,10 +174,14 @@ export default function HomeScreen() {
     router.push({ pathname: `/detail/[id]`, params: { id: antId } });
   };
 
-  const handleCategoryPress = (categoryName: string) => {
+  const handleCategoryPress = (categoryName: string, tag?: string) => {
     router.push({
       pathname: "/(tabs)/explore",
-      params: { category: categoryName },
+      params: {
+        category: categoryName,
+        tag: tag || categoryName.toLowerCase(),
+        ts: Date.now().toString(),
+      },
     });
   };
 
@@ -246,44 +250,58 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
           >
-            {quickDiscoveryCategories.map((tag) => {
+            {quickDiscoveryCategories.map((category) => {
               let icon;
-              const translatedName = t(
-                `home.categories.${tag.name.toLowerCase()}`,
-                { defaultValue: tag.name },
-              );
 
-              if (tag.name === "Venomous") {
+              if (category.name === "Venomous") {
                 icon = (
                   <MaterialCommunityIcons
                     name="alert"
                     size={16}
-                    color={tag.color}
+                    color={category.color}
                   />
                 );
-              } else if (tag.name === "Forest") {
+              } else if (category.name === "Predator") {
                 icon = (
                   <MaterialCommunityIcons
-                    name="tree"
+                    name="sword"
                     size={16}
-                    color={tag.color}
+                    color={category.color}
                   />
                 );
-              } else if (tag.name === "Household") {
-                icon = <Ionicons name="home" size={16} color={tag.color} />;
+              } else if (category.name === "Invasive") {
+                icon = (
+                  <MaterialCommunityIcons
+                    name="bug"
+                    size={16}
+                    color={category.color}
+                  />
+                );
+              } else if (category.name === "Scavenger") {
+                icon = (
+                  <MaterialCommunityIcons
+                    name="magnify"
+                    size={16}
+                    color={category.color}
+                  />
+                );
               } else {
-                icon = <Ionicons name="sparkles" size={16} color={tag.color} />;
+                icon = (
+                  <Ionicons name="sparkles" size={16} color={category.color} />
+                );
               }
 
               return (
                 <TouchableOpacity
-                  key={tag.id}
+                  key={category.id}
                   className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
-                  onPress={() => handleCategoryPress(tag.name)}
+                  onPress={() =>
+                    handleCategoryPress(category.name, category.tag)
+                  }
                 >
                   {icon}
                   <Text className="ml-2 text-gray-700 font-medium">
-                    {translatedName}
+                    {t(`badge.${category.tag}`)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -359,7 +377,7 @@ export default function HomeScreen() {
                 location:
                   locationObj?.city ||
                   locationObj?.subregion ||
-                  t("home.unknown_location"),
+                  t("home.speciesNearYou"),
               })}
               subtitle={t("home.found_in_province")}
             />

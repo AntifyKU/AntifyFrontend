@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import ListCard from "@/components/ListCard";
 import SearchBar from "@/components/atom/SearchBar";
@@ -21,7 +21,7 @@ import { useSpecies } from "@/hooks/useSpecies";
 import EmptyState from "@/components/molecule/EmptyState";
 
 export default function ExploreScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSort, setShowSort] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
@@ -34,6 +34,31 @@ export default function ExploreScreen() {
     setTempFilters,
     toggleFilter,
   } = useExploreFilters();
+  const { tag, ts } = useLocalSearchParams<{ tag?: string; ts?: string }>();
+
+  const lastProcessedTs = useRef<string | undefined>(undefined);
+
+  // Handle incoming tag/category from home page
+  useEffect(() => {
+    if (tag && ts !== lastProcessedTs.current) {
+      // Map tag to quick filter ID
+      const tagToId: Record<string, string> = {
+        venomous: "1",
+        predator: "2",
+        invasive: "3",
+        scavenger: "4",
+      };
+
+      const filterId = tagToId[tag.toLowerCase()];
+      if (filterId) {
+        setAppliedFilters((prev) => ({
+          ...prev,
+          quickFilters: [filterId],
+        }));
+        lastProcessedTs.current = ts;
+      }
+    }
+  }, [tag, ts, setAppliedFilters]);
 
   const activeFilterCount =
     appliedFilters.quickFilters.length +
@@ -48,136 +73,138 @@ export default function ExploreScreen() {
     [],
   );
 
-  const isForestHabitat = React.useCallback(
-    (habitat: string[]) =>
-      habitat?.some(
-        (h: string) =>
-          h.toLowerCase().includes("forest") ||
-          h.toLowerCase().includes("tree") ||
-          h.toLowerCase().includes("wood"),
-      ),
-    [],
-  );
-
-  const isUrbanHabitat = React.useCallback(
-    (habitat: string[]) =>
-      habitat?.some(
-        (h: string) =>
-          h.toLowerCase().includes("urban") ||
-          h.toLowerCase().includes("building"),
-      ),
-    [],
-  );
-
-  const matchesSearch = (item: any, query: string) => {
-    if (!query) return true;
-    return (
-      item.name.toLowerCase().includes(query) ||
-      item.scientific_name.toLowerCase().includes(query)
-    );
-  };
+  const isThai = i18n.language === "th";
 
   const matchesQuickFilter = React.useCallback(
-    (item: any, id: string) => {
-      if (id === "1") {
-        return (
-          item.risk?.venom?.has_venom === true ||
-          item.risk?.sting_or_bite === "sting"
-        );
-      }
-      if (id === "2") {
-        return isForestHabitat(item.habitat);
-      }
-      if (id === "3") {
-        return isUrbanHabitat(item.habitat);
-      }
-      return false;
+    (item: any): boolean => {
+      if (appliedFilters.quickFilters.length === 0) return true;
+
+      return appliedFilters.quickFilters.every((id) => {
+        if (id === "1") {
+          // Venomous
+          return (
+            item.risk?.venom?.has_venom === true ||
+            item.risk?.sting_or_bite?.toLowerCase().includes("sting") ||
+            item.tags?.some((t: string) => t.toLowerCase().includes("venom"))
+          );
+        }
+        if (id === "2") {
+          // Predator
+          return (
+            item.ecological_role?.toLowerCase().includes("predator") ||
+            item.behavior?.toLowerCase().includes("hunt") ||
+            item.tags?.some((t: string) => t.toLowerCase().includes("predator"))
+          );
+        }
+        if (id === "3") {
+          // Invasive
+          return (
+            item.tags?.some((t: string) =>
+              t.toLowerCase().includes("invasive"),
+            ) ||
+            item.about?.toLowerCase().includes("invasive") ||
+            item.name.toLowerCase().includes("fire ant")
+          );
+        }
+        if (id === "4") {
+          // Scavenger
+          return (
+            item.ecological_role?.toLowerCase().includes("scavenger") ||
+            item.behavior?.toLowerCase().includes("scaveng") ||
+            item.tags?.some((t: string) =>
+              t.toLowerCase().includes("scavenger"),
+            )
+          );
+        }
+        return false;
+      });
     },
-    [isForestHabitat, isUrbanHabitat],
+    [appliedFilters.quickFilters],
   );
 
-  const matchesColorItem = (item: any, color: string) => {
-    return item.colors.some((ic: string) =>
-      ic.toLowerCase().includes(color.toLowerCase()),
-    );
-  };
+  const matchesColorFilter = React.useCallback(
+    (item: any): boolean => {
+      if (appliedFilters.colors.length === 0) return true;
+      return appliedFilters.colors.every((c: string) =>
+        item.colors.some((ic: string) =>
+          ic.toLowerCase().includes(c.toLowerCase()),
+        ),
+      );
+    },
+    [appliedFilters.colors],
+  );
 
-  const matchesHabitatItem = (item: any, habitat: string) => {
-    return item.habitat.some((ih: string) =>
-      ih.toLowerCase().includes(habitat.toLowerCase()),
-    );
-  };
+  const matchesHabitatFilter = React.useCallback(
+    (item: any): boolean => {
+      if (appliedFilters.habitats.length === 0) return true;
+      return appliedFilters.habitats.every((h: string) =>
+        item.habitat.some((ih: string) =>
+          ih.toLowerCase().includes(h.toLowerCase()),
+        ),
+      );
+    },
+    [appliedFilters.habitats],
+  );
 
-  const matchesRiskItem = (item: any, risk: string) => {
-    const lowerR = risk.toLowerCase();
-    if (lowerR === "venomous") {
-      return item.risk?.venom?.has_venom === true;
-    }
-    if (lowerR === "bites" || lowerR === "bite") {
-      return item.risk?.sting_or_bite?.toLowerCase().includes("bite");
-    }
-    if (lowerR === "sting") {
-      return item.risk?.sting_or_bite?.toLowerCase().includes("sting");
-    }
-    return false;
-  };
+  const matchesRiskFilter = React.useCallback(
+    (item: any): boolean => {
+      if (!appliedFilters.risks || appliedFilters.risks.length === 0) return true;
 
-  const matchesDistributionItem = (item: any, distribution: string) => {
-    const inDistribution = item.distribution?.some((id: string) =>
-      id.toLowerCase().includes(distribution.toLowerCase()),
-    );
-    const inProvinces = item.distribution_v2?.provinces?.some((p: string) =>
-      p.toLowerCase().includes(distribution.toLowerCase()),
-    );
-    return inDistribution || inProvinces;
-  };
+      return appliedFilters.risks.every((r: string) => {
+        const lowerR = r.toLowerCase();
+        if (lowerR === "venomous") {
+          return item.risk?.venom?.has_venom === true;
+        }
+        if (lowerR === "bites" || lowerR === "bite") {
+          return item.risk?.sting_or_bite?.toLowerCase().includes("bite");
+        }
+        if (lowerR === "sting") {
+          return item.risk?.sting_or_bite?.toLowerCase().includes("sting");
+        }
+        return false;
+      });
+    },
+    [appliedFilters.risks],
+  );
+
+  const matchesDistributionFilter = React.useCallback(
+    (item: any): boolean => {
+      if (appliedFilters.distributions.length === 0) return true;
+
+      return appliedFilters.distributions.every((d: string) => {
+        const inDistribution = item.distribution?.some((id: string) =>
+          id.toLowerCase().includes(d.toLowerCase()),
+        );
+        const inProvinces = item.distribution_v2?.provinces?.some((p: string) =>
+          p.toLowerCase().includes(d.toLowerCase()),
+        );
+        return inDistribution || inProvinces;
+      });
+    },
+    [appliedFilters.distributions],
+  );
 
   const filteredAndSortedSpecies = useMemo(() => {
-    const matchesQuickFilters = (item: any) => {
-      if (appliedFilters.quickFilters.length === 0) return true;
-      return appliedFilters.quickFilters.every((id) =>
-        matchesQuickFilter(item, id),
-      );
-    };
-
-    const matchesColors = (item: any) => {
-      if (appliedFilters.colors.length === 0) return true;
-      return appliedFilters.colors.every((c) => matchesColorItem(item, c));
-    };
-
-    const matchesHabitats = (item: any) => {
-      if (appliedFilters.habitats.length === 0) return true;
-      return appliedFilters.habitats.every((h) => matchesHabitatItem(item, h));
-    };
-
-    const matchesRisks = (item: any) => {
-      if (!appliedFilters.risks || appliedFilters.risks.length === 0)
-        return true;
-      return appliedFilters.risks.every((r) => matchesRiskItem(item, r));
-    };
-
-    const matchesDistributions = (item: any) => {
-      if (appliedFilters.distributions.length === 0) return true;
-      return appliedFilters.distributions.every((d) =>
-        matchesDistributionItem(item, d),
-      );
-    };
-
     let result = species.filter((item) => {
       // Hide junk taxonomy labels
       if (JUNK_LABELS.has(item.name.toLowerCase().trim())) return false;
 
       // Search
       const query = searchQuery.toLowerCase().trim();
-      if (!matchesSearch(item, query)) return false;
+      if (query) {
+        const match =
+          item.name.toLowerCase().includes(query) ||
+          item.scientific_name.toLowerCase().includes(query);
+        if (!match) return false;
+      }
 
       // Apply all filters
       return (
-        matchesQuickFilters(item) &&
-        matchesColors(item) &&
-        matchesHabitats(item) &&
-        matchesRisks(item) &&
-        matchesDistributions(item)
+        matchesQuickFilter(item) &&
+        matchesColorFilter(item) &&
+        matchesHabitatFilter(item) &&
+        matchesRiskFilter(item) &&
+        matchesDistributionFilter(item)
       );
     });
 
@@ -202,9 +229,12 @@ export default function ExploreScreen() {
     species,
     JUNK_LABELS,
     searchQuery,
-    appliedFilters,
     sortOption,
     matchesQuickFilter,
+    matchesColorFilter,
+    matchesHabitatFilter,
+    matchesRiskFilter,
+    matchesDistributionFilter,
   ]);
 
   const handleItemPress = (id: string) => {
@@ -238,7 +268,6 @@ export default function ExploreScreen() {
           setTempFilters({
             quickFilters: [],
             colors: [],
-            sizes: [],
             habitats: [],
             distributions: [],
             risks: [],
@@ -248,7 +277,7 @@ export default function ExploreScreen() {
       />
 
       {/* Header */}
-      <View className="pt-4 pb-5">
+      <View style={{ paddingTop: 16, paddingBottom: 20 }}>
         <ScreenHeader title={t("explore.title")} />
       </View>
 
@@ -315,16 +344,26 @@ export default function ExploreScreen() {
         {/* List */}
         {!loading && (
           <View className="px-5">
-            {filteredAndSortedSpecies.map((item) => (
-              <ListCard
-                key={item.id}
-                id={item.id}
-                title={item.name}
-                description={item.about.substring(0, 80) + "..."}
-                image={item.image || ""}
-                onPress={() => handleItemPress(item.id)}
-              />
-            ))}
+            {filteredAndSortedSpecies.map((item) => {
+              const aboutText =
+                (isThai && item.about_th ? item.about_th : item.about) || "";
+
+              const shortText =
+                aboutText.length > 80
+                  ? aboutText.substring(0, 80) + "..."
+                  : aboutText;
+
+              return (
+                <ListCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.name}
+                  description={shortText}
+                  image={item.image || ""}
+                  onPress={() => handleItemPress(item.id)}
+                />
+              );
+            })}
           </View>
         )}
 

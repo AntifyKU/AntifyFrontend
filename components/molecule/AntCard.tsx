@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RiskTags from "@/components/molecule/RiskTags";
+import { useTranslation } from "react-i18next";
 
 interface AntCardProps {
   id: string;
@@ -30,7 +31,7 @@ export default function AntCard({
 }: Readonly<AntCardProps>) {
   const [imageError, setImageError] = useState(false);
   const showImage = image && !imageError;
-
+  const { t } = useTranslation();
   if (variant === "horizontal") {
     return (
       <TouchableOpacity
@@ -62,7 +63,9 @@ export default function AntCard({
           )}
           {showMatchPercentage && matchPercentage !== undefined && (
             <Text className="text-[#0A9D5C] font-semibold text-sm mt-1">
-              {matchPercentage.toFixed(2)}% Match
+              {t("helpImprove.matchPercentage", {
+                value: matchPercentage.toFixed(1),
+              })}
             </Text>
           )}
           {riskInfo && (
@@ -133,7 +136,9 @@ export default function AntCard({
         )}
         {showMatchPercentage && matchPercentage !== undefined && (
           <Text className="text-[#0A9D5C] font-semibold mt-1">
-            {matchPercentage.toFixed(2)}% Match
+            {t("helpImprove.matchPercentage", {
+              value: matchPercentage.toFixed(1),
+            })}
           </Text>
         )}
         {riskInfo && <RiskTags riskInfo={riskInfo} size="small" />}

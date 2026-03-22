@@ -22,7 +22,6 @@ function RootLayoutNav() {
       <Stack.Screen name="welcome" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="detail" />
       <Stack.Screen name="help-improve-ai" />
       <Stack.Screen
         name="chatbot"
