@@ -1,10 +1,10 @@
 import React from "react";
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Image, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import type { Species } from "@/types/api";
 
-const LOCAL_BOOST = 0.4;
+
 
 export interface LocationSpeciesPrediction {
     id: string;
@@ -59,7 +59,7 @@ function isInProvince(pred: LocationSpeciesPrediction, provinceSpecies: Species[
 }
 
 function computeWeightedScore(aiPercent: number): number {
-    return Math.min(Number((aiPercent * (1 + LOCAL_BOOST)).toFixed(2)), 100);
+    return Math.min(Number(aiPercent.toFixed(2)), 100);
 }
 
 function ConfidenceBar({ weighted, raw }: { weighted: number; raw: number }) {
@@ -120,15 +120,6 @@ export default function LocationSpeciesCard({
                 <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>
                     {t('locationCard.title')}
                 </Text>
-                <TouchableOpacity
-                    onPress={() => Alert.alert(
-                        t('locationCard.confidenceScoreInfo'),
-                        t('locationCard.confidenceScoreDesc')
-                    )}
-                    style={{ padding: 4 }}
-                >
-                    <Ionicons name="information-circle-outline" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
             </View>
 
             <View

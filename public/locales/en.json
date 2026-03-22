@@ -917,7 +917,7 @@
   "locationCard": {
     "title": "Predicted & Found Near You",
     "confidenceScoreInfo": "Confidence Score",
-    "confidenceScoreDesc": "This score combines the AI prediction confidence with a 40% boost for species confirmed to live in your current province.",
+    "confidenceScoreDesc": "This score combines the AI prediction confidence with a location-based boost for species confirmed to live in your current province. \n\nReason: This boost effectively prioritizes local species and acts as a tie-breaker for similar-looking ants, ensuring the most geographically likely results appear first without overriding clear visual evidence.",
     "currentProvince": "Current Province",
     "detectingLocation": "Detecting location…",
     "locationDenied": "Location access denied",

@@ -398,7 +398,7 @@ export default function IdentificationResultsScreen() {
                 {bestMatch.scientificName}
               </Text>
               <Text className="text-[#0A9D5C] font-semibold mt-1">
-                {t("idResults.matchPercentage", { value: bestMatch.matchPercentage.toFixed(1) })}%
+                {t("idResults.matchPercentage", { value: bestMatch.matchPercentage.toFixed(1) })}
               </Text>
 
               {bestMatch.riskInfo && (
