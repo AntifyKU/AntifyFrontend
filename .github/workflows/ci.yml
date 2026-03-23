@@ -14,7 +14,7 @@ on:
 
 jobs:
   lint:
-    name: Lint & Type Check
+    name: Lint, Type Check & Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,6 +34,9 @@ jobs:
 
       - name: Run TypeScript type check
         run: npx tsc --noEmit
+
+      - name: Run unit tests
+        run: npm test -- --runInBand
 
   sonarcloud:
     name: SonarCloud Analysis

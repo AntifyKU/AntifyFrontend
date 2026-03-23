@@ -37,6 +37,7 @@
       "yearOnly": "({{year}}). ",
       "authorOnly": "{{author}} "
     },
+    "ref_tab": "References",
     "ecologyTitle": "Ecology & Role",
     "rank": "Rank",
     "synonyms": "Synonyms",
@@ -729,7 +730,7 @@
     "found_here": "Found here",
     "ai_confidence": "AI confidence: {{percentage}}%",
     "none_confirmed": "None of the predicted species are confirmed in {{province}}.",
-    "total_in_db": "{{count}} species total in {{province}} database"
+    "total_in_db": "About {{count}} species can be found in {{province}}"
   },
   "onboarding": {
     "skip": "Skip",

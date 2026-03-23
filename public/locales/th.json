@@ -37,6 +37,7 @@
       "yearOnly": "({{year}}). ",
       "authorOnly": "{{author}} "
     },
+    "ref_tab": "อ้างอิง",
     "ecologyTitle": "นิเวศวิทยาและบทบาท",
     "rank": "อันดับ",
     "synonyms": "ชื่อพ้อง",
@@ -650,7 +651,7 @@
     "found_here": "พบในพื้นที่นี้",
     "ai_confidence": "ความแม่นยำจาก AI: {{percentage}}%",
     "none_confirmed": "ไม่พบข้อมูลยืนยันของมดที่ว่าจะอยู่ในพื้นที่ {{province}}",
-    "total_in_db": "พบมดทั้งหมด {{count}} สายพันธุ์ในฐานข้อมูลจังหวัด {{province}}"
+    "total_in_db": "มีโอกาสพบมดประมาณ {{count}} ชนิด ในจังหวัด{{province}}"
   },
   "onboarding": {
     "skip": "ข้าม",

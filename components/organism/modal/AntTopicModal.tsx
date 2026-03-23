@@ -188,7 +188,7 @@ export default function AntTopicModal({
   if (!topic) return null;
 
   // Tab labels are already translated by useTranslatedTopic
-  const referencesLabel = t("common.ref_tabs.references");
+  const referencesLabel = t("common.ref_tab");
 
   const tabsWithReferences =
     topic.references.length > 0

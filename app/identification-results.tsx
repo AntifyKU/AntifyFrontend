@@ -329,7 +329,7 @@ export default function IdentificationResultsScreen() {
             <Ionicons name="checkmark" size={22} color="#fff" />
           </View>
           <View className="flex-1 gap-1">
-            <Text className="text-[#0A9D5C] font-medium text-lg leading-tight">
+            <Text className="text-[#0A9D5C] font-bold text-lg leading-tight">
               {t("identification.analysis_complete")}
             </Text>
             <Text className="text-gray-800 text-base opacity-75 mt-0.5">
