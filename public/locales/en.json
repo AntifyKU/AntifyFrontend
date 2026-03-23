@@ -1327,6 +1327,11 @@
     "color": "Body Color",
     "habitat": "Habitat",
     "distribution": "Distribution",
+    "distributionPlaceholder": "Select provinces",
+    "provinceSearchPlaceholder": "Search provinces...",
+    "comboboxSelectedCount": "{{count}} selected",
+    "comboboxNoResults": "No results found",
+    "comboboxDefaultPlaceholder": "Select an option",
     "applyFilters": "Apply Filters"
   },
   "badge": {

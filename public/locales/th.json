@@ -1248,6 +1248,11 @@
     "color": "สีลำตัว",
     "habitat": "แหล่งอาศัย",
     "distribution": "พื้นที่พบ",
+    "distributionPlaceholder": "เลือกจังหวัด",
+    "provinceSearchPlaceholder": "ค้นหาจังหวัด...",
+    "comboboxSelectedCount": "เลือกแล้ว {{count}} รายการ",
+    "comboboxNoResults": "ไม่พบรายการที่ตรงกับการค้นหา",
+    "comboboxDefaultPlaceholder": "เลือกตัวเลือก",
     "applyFilters": "แสดงผล"
   },
   "badge": {

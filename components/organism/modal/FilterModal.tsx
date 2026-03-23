@@ -7,6 +7,7 @@ import { filterOptions, quickDiscoveryCategories } from "@/constants/Filters";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import FilterSection from "@/components/molecule/FilterSection";
+import Combobox from "@/components/atom/Combobox";
 
 export type FilterState = {
   quickFilters: string[];
@@ -44,6 +45,7 @@ export default function FilterModal({
       <SafeAreaView className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
         <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
+
         {/* Header */}
         <View className="py-6 border-b border-gray-200">
           <ScreenHeader
@@ -105,12 +107,21 @@ export default function FilterModal({
           />
 
           {/* Distribution */}
-          <FilterSection
-            title={t("filter.distribution")}
-            options={filterOptions.distributions}
-            selected={tempFilters.distributions}
-            onToggle={(v) => onToggle("distributions", v)}
-          />
+          <View className="mb-6">
+            <Text className="mb-4 text-lg font-semibold text-gray-800">
+              {t("filter.distribution")}
+            </Text>
+            <Combobox
+              placeholder={t("filter.distributionPlaceholder")}
+              searchPlaceholder={t("filter.provinceSearchPlaceholder")}
+              options={filterOptions.distributions}
+              selected={tempFilters.distributions}
+              onToggle={(v) => onToggle("distributions", v)}
+              getOptionLabel={(value) =>
+                t(`badge.${value.toLowerCase()}`, { defaultValue: value })
+              }
+            />
+          </View>
         </ScrollView>
 
         <View className="px-6 pt-4">
