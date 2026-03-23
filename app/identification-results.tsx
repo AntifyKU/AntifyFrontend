@@ -1,339 +1,446 @@
-"use client"
-
-import { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo } from "react";
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    Image,
-    StatusBar,
-    ScrollView,
-    ActivityIndicator,
-} from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { router, useLocalSearchParams } from "expo-router"
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { identificationResultsData, antSpeciesData } from "@/constants/AntData"
-import { useIdentification } from "@/hooks/useIdentification"
-import { useSpecies } from "@/hooks/useSpecies"
-import AntCard from "@/components/AntCard"
-import PrimaryButton from "@/components/PrimaryButton"
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  StatusBar,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+import { router, useLocalSearchParams } from "expo-router";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useIdentification } from "@/hooks/useIdentification";
+import AntCard from "@/components/molecule/AntCard";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import RiskTags from "@/components/molecule/RiskTags";
+import { useSpecies } from "@/hooks/useSpecies";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { useLocation } from "@/hooks/useLocation";
+import LocationSpeciesCard from "@/components/molecule/LocationSpeciesCard";
+import { useProvinceSpecies } from "@/hooks/useProvinceSpecies";
+import { openIdentifySheet } from "@/utils/identifyHelper";
 
-// Define the type for route params
 type IdentificationParams = {
-    imageUri?: string
-    source?: string // 'camera', 'gallery'
-}
-
-// Helper to find species info from API or static data
-function findSpeciesInfo(classNames: string[], allSpecies: typeof antSpeciesData) {
-    return classNames.map((className, index) => {
-        // Try to match by name (case insensitive)
-        const found = allSpecies.find(s => 
-            s.name.toLowerCase().includes(className.toLowerCase()) ||
-            s.scientificName.toLowerCase().includes(className.toLowerCase()) ||
-            className.toLowerCase().includes(s.name.toLowerCase())
-        );
-        
-        if (found) {
-            return {
-                id: found.id,
-                name: found.name,
-                scientificName: found.scientificName,
-                image: found.image,
-                matchPercentage: 0, // Will be overwritten
-            };
-        }
-        
-        // Fallback to using the class name as display
-        return {
-            id: `unknown-${index}`,
-            name: className.replace(/_/g, ' '),
-            scientificName: className,
-            image: '',
-            matchPercentage: 0,
-        };
-    });
-}
+  imageUri?: string;
+  source?: string;
+};
 
 export default function IdentificationResultsScreen() {
-    const params = useLocalSearchParams<IdentificationParams>()
-    const { imageUri, source } = params
+  const { t } = useTranslation();
+  const params = useLocalSearchParams<IdentificationParams>();
+  const { imageUri, source } = params;
 
-    // Use the identification hook
-    const { 
-        classificationResult, 
-        loading: identifyLoading, 
-        error: identifyError,
-        identifyImage 
-    } = useIdentification()
+  const {
+    speciesResult,
+    speciesInfo,
+    loading: identifyLoading,
+    error: identifyError,
+    identifySpecies,
+  } = useIdentification();
 
-    // Get species list for matching predictions to species info
-    const { species: speciesList } = useSpecies()
+  const { species: allSpecies } = useSpecies();
+  const {
+    province,
+    loading: locationLoading,
+    permissionDenied,
+  } = useLocation();
+  const { provinceSpecies, loading: loadingProvinceSpecies } =
+    useProvinceSpecies(province);
 
-    // State for processed results
-    const [hasIdentified, setHasIdentified] = useState(false)
+  const [hasIdentified, setHasIdentified] = useState(false);
 
-    // Trigger identification when image is available
-    useEffect(() => {
-        if (imageUri && !hasIdentified && !identifyLoading) {
-            setHasIdentified(true)
-            identifyImage(imageUri)
-        }
-    }, [imageUri, hasIdentified, identifyLoading, identifyImage])
+  useEffect(() => {
+    if (imageUri && !hasIdentified && !identifyLoading) {
+      setHasIdentified(true);
+      identifySpecies(imageUri);
+    }
+  }, [imageUri, hasIdentified, identifyLoading, identifySpecies]);
 
-    // Process identification results
-    const { bestMatch, otherMatches, totalMatches, isUsingFallback } = useMemo(() => {
-        // If we have API results, use them
-        if (classificationResult?.success && classificationResult.top5_predictions?.length > 0) {
-            const predictions = classificationResult.top5_predictions;
-            
-            // Map predictions to species info - use static data for species lookup
-            const allSpecies = antSpeciesData;
-            const classNames = predictions.map(p => p.class_name);
-            const speciesInfoList = findSpeciesInfo(classNames, allSpecies);
-            
-            // Add confidence percentages
-            const matchesWithConfidence = speciesInfoList.map((info, index) => ({
-                ...info,
-                matchPercentage: Math.round(predictions[index].confidence * 100),
-            }));
-            
-            return {
-                bestMatch: matchesWithConfidence[0],
-                otherMatches: matchesWithConfidence.slice(1),
-                totalMatches: matchesWithConfidence.length,
-                isUsingFallback: false,
-            };
-        }
-        
-        // Fallback to static mock data
-        return {
-            bestMatch: identificationResultsData[0],
-            otherMatches: identificationResultsData.slice(1),
-            totalMatches: identificationResultsData.length,
-            isUsingFallback: true,
+  const { bestMatch, otherMatches, totalMatches } = useMemo(() => {
+    const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
+    const isJunk = (name: string) =>
+      JUNK_LABELS.has(name.toLowerCase().replaceAll("_", " ").trim());
+
+    if (
+      speciesResult?.success &&
+      speciesResult.predictions &&
+      speciesResult.predictions.length > 0
+    ) {
+      const predictions = speciesResult.predictions.filter(
+        (p) => !isJunk(p.class_name),
+      );
+
+      if (predictions.length > 0) {
+        const bestPrediction = predictions[0];
+        const isOriginalTop =
+          bestPrediction.class_name === speciesResult.predictions[0].class_name;
+        const speciesInfoIsJunk = speciesInfo
+          ? isJunk(speciesInfo.name)
+          : false;
+        const effectiveInfo =
+          isOriginalTop && !speciesInfoIsJunk ? speciesInfo : null;
+
+        const bestMatchItem = {
+          id: effectiveInfo?.id ?? `prediction-0`,
+          name:
+            effectiveInfo?.name ??
+            bestPrediction.class_name.replaceAll("_", " "),
+          scientificName:
+            effectiveInfo?.scientific_name ?? bestPrediction.class_name,
+          image: effectiveInfo?.image ?? "",
+          matchPercentage: Number((bestPrediction.confidence * 100).toFixed(1)),
+          confidence: bestPrediction.confidence,
+          riskInfo: effectiveInfo?.risk,
+          isInDatabase: effectiveInfo !== null,
         };
-    }, [classificationResult])
 
-    const handleBackPress = () => {
-        router.back()
+        const otherMatchItems = predictions
+          .slice(1)
+          .map((pred, index) => {
+            const matchedSpecies = allSpecies.find(
+              (s) =>
+                s.scientific_name === pred.class_name ||
+                s.id === pred.species_id ||
+                s.name.toLowerCase() ===
+                  pred.class_name.replaceAll("_", " ").toLowerCase(),
+            );
+
+            const validSpecies =
+              matchedSpecies && !isJunk(matchedSpecies.name)
+                ? matchedSpecies
+                : null;
+            return {
+              id:
+                validSpecies?.id ??
+                pred.species_id ??
+                `prediction-${index + 1}`,
+              name: validSpecies?.name ?? pred.class_name.replaceAll("_", " "),
+              scientificName: validSpecies?.scientific_name ?? pred.class_name,
+              image: validSpecies?.image ?? "",
+              matchPercentage: Number((pred.confidence * 100).toFixed(1)),
+              confidence: pred.confidence,
+              riskInfo: validSpecies?.risk,
+            };
+          })
+          .filter((item) => !isJunk(item.name));
+
+        return {
+          bestMatch: bestMatchItem,
+          otherMatches: otherMatchItems,
+          totalMatches: predictions.length,
+        };
+      }
     }
+    return { bestMatch: null, otherMatches: [], totalMatches: 0 };
+  }, [speciesResult, speciesInfo, allSpecies]);
 
-    const handleConfirmAndViewDetails = (antId: string) => {
-        // Navigate to help-improve-ai page first before going to detail
-        router.push({
-            pathname: '/help-improve-ai',
-            params: {
-                antId: antId,
-                imageUri,
-                source,
-                antName: bestMatch.name,
-                scientificName: bestMatch.scientificName,
-                matchPercentage: bestMatch.matchPercentage?.toString()
-            }
-        })
+  const handleBackPress = () => router.back();
+
+  const handleProvideFeedback = () => {
+    if (!bestMatch) return;
+
+    router.push({
+      pathname: "/help-improve-ai",
+      params: {
+        imageUri,
+        antName: bestMatch.name,
+        scientificName: bestMatch.scientificName,
+        confidence: String(bestMatch.confidence),
+        source,
+      },
+    });
+  };
+
+  const handleConfirmAndViewDetails = (antId: string) => {
+    if (!bestMatch) return;
+    const isUnidentified =
+      !antId ||
+      antId.startsWith("prediction-") ||
+      (bestMatch as any).isInDatabase !== true;
+
+    if (isUnidentified) {
+      Alert.alert(
+        t("identification.alert_not_found_title"),
+        t("identification.alert_not_found_desc"),
+        [
+          {
+            text: t("idResults.improveAI"),
+            onPress: handleProvideFeedback,
+          },
+          { text: t("common.ok"), style: "cancel" },
+        ],
+      );
+      return;
     }
+    router.push({
+      pathname: "/detail/[id]",
+      params: {
+        id: antId,
+        imageUri,
+        source,
+        fromIdentification: "true",
+        confidence: String(bestMatch.confidence),
+      },
+    });
+  };
 
-    const handleProvideFeedback = () => {
-        router.push({
-            pathname: "/feedback",
-            params: {
-                imageUri: imageUri,
-                antName: bestMatch.name,
-                scientificName: bestMatch.scientificName,
-                source: source,
-            },
-        })
-    }
+  const handleIdentifyAnother = () => {
+    router.dismissAll();
+    openIdentifySheet();
+  };
 
-    const handleIdentifyAnother = () => {
-        router.dismissAll()
-        router.replace('/(tabs)/index-home')
-    }
-
-    const handleOtherMatchPress = (ant: { id: string; name: string; scientificName: string; image: string; matchPercentage: number }) => {
-        router.push({
-            pathname: '/detail/[id]',
-            params: { id: ant.id, imageUri: ant.image, source: 'result' }
-        })
-    }
-
-    // Show loading state while identifying
-    if (identifyLoading) {
-        return (
-            <View className="flex-1 bg-white">
-                <StatusBar barStyle="dark-content" />
-                <SafeAreaView className="flex-1">
-                    <View className="flex-1 items-center justify-center px-8">
-                        <ActivityIndicator size="large" color="#0A9D5C" />
-                        <Text className="mt-6 text-xl font-bold text-gray-800 text-center">
-                            Analyzing Image...
-                        </Text>
-                        <Text className="mt-2 text-gray-500 text-center">
-                            Our AI is identifying the ant species in your photo
-                        </Text>
-                        {imageUri && (
-                            <View className="mt-8 w-48 h-48 rounded-xl overflow-hidden">
-                                <Image
-                                    source={{ uri: imageUri }}
-                                    className="w-full h-full"
-                                    resizeMode="cover"
-                                />
-                            </View>
-                        )}
-                    </View>
-                </SafeAreaView>
-            </View>
-        )
-    }
-
-    // Show error state if identification failed and no fallback
-    if (identifyError && !bestMatch) {
-        return (
-            <View className="flex-1 bg-white">
-                <StatusBar barStyle="dark-content" />
-                <SafeAreaView>
-                    <View className="flex-row items-center px-4 py-2">
-                        <TouchableOpacity onPress={handleBackPress} className="p-2">
-                            <Ionicons name="chevron-back" size={28} color="#0A9D5C" />
-                        </TouchableOpacity>
-                        <Text className="flex-1 text-center text-xl font-bold text-gray-800 mr-10">
-                            Identification Failed
-                        </Text>
-                    </View>
-                </SafeAreaView>
-                <View className="flex-1 items-center justify-center px-8">
-                    <MaterialCommunityIcons name="alert-circle-outline" size={64} color="#EF4444" />
-                    <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-                        Unable to Identify
-                    </Text>
-                    <Text className="mt-2 text-gray-500 text-center">
-                        We couldn't identify the ant in this image. Please try again with a clearer photo.
-                    </Text>
-                    <PrimaryButton
-                        title="Try Again"
-                        icon="camera-outline"
-                        onPress={handleIdentifyAnother}
-                        size="large"
-                    />
-                </View>
-            </View>
-        )
-    }
-
+  if (identifyLoading) {
     return (
-        <View className="flex-1 bg-white">
-            <StatusBar barStyle="dark-content" />
+      <View className="flex-1 bg-white">
+        <SafeAreaView className="flex-1">
+          <View className="flex-1 items-center justify-center px-8">
+            <ActivityIndicator size="large" color="#0A9D5C" />
+            <Text className="mt-6 text-xl font-bold text-gray-800 text-center">
+              {t("identification.analyzing")}
+            </Text>
+            <Text className="mt-2 text-gray-500 text-center">
+              {t("identification.analyzing_desc")}
+            </Text>
+            {imageUri && (
+              <View className="mt-8 w-48 h-48 rounded-xl overflow-hidden">
+                <Image source={{ uri: imageUri }} className="w-full h-full" />
+              </View>
+            )}
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
-            {/* Header */}
-            <SafeAreaView>
-                <View className="flex-row items-center px-4 py-2">
-                    <TouchableOpacity onPress={handleBackPress} className="p-2">
-                        <Ionicons name="chevron-back" size={28} color="#0A9D5C" />
-                    </TouchableOpacity>
-                    <Text className="flex-1 text-center text-xl font-bold text-gray-800 mr-10">
-                        Identification Results
-                    </Text>
-                </View>
-            </SafeAreaView>
-
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-                {/* Analysis Complete Banner */}
-                <View className="mx-4 mt-4 bg-[#e8f5e0] rounded-xl p-4 flex-row items-center">
-                    <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-3">
-                        <Ionicons name="checkmark-circle" size={28} color="#0A9D5C" />
-                    </View>
-                    <View>
-                        <Text className="text-[#0A9D5C] font-bold text-lg">Analysis Complete</Text>
-                        <Text className="text-[#0A9D5C] text-sm">{totalMatches} possible matches found</Text>
-                    </View>
-                </View>
-
-                {/* Best Match Section */}
-                <View className="mx-4 mt-6">
-                    <Text className="text-xl font-bold text-gray-800 mb-3">Best Match</Text>
-
-                    <View className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-                        {/* Image Area with placeholder */}
-                        <View className="h-40 bg-[#e8f5e0] items-center justify-center">
-                            {imageUri ? (
-                                <Image
-                                    source={{ uri: imageUri }}
-                                    className="w-full h-full"
-                                    resizeMode="cover"
-                                />
-                            ) : (
-                                <View className="items-center justify-center">
-                                    <MaterialCommunityIcons name="image" size={48} color="#328e6e" />
-                                </View>
-                            )}
-                        </View>
-
-                        {/* Best Match Details */}
-                        <View className="p-4">
-                            <Text className="text-lg font-bold text-gray-800">{bestMatch.name}</Text>
-                            <Text className="text-gray-500 text-sm italic">{bestMatch.scientificName}</Text>
-                            <Text className="text-[#0A9D5C] font-semibold mt-1">{bestMatch.matchPercentage}% Match</Text>
-
-                            {/* Confirm Button */}
-                            <TouchableOpacity
-                                className="mt-4 py-3 rounded-full border-2 border-[#0A9D5C] items-center"
-                                onPress={() => handleConfirmAndViewDetails(bestMatch.id)}
-                            >
-                                <Text className="text-[#0A9D5C] font-semibold">Confirm & View Details</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Help Improve AI Section */}
-                <View className="mx-4 mt-6">
-                    <Text className="text-center text-gray-600 mb-3">Help improve our AI accuracy</Text>
-
-                    <TouchableOpacity
-                        className="py-3 rounded-full border border-gray-300 flex-row items-center justify-center"
-                        onPress={handleProvideFeedback}
-                    >
-                        <Ionicons name="thumbs-up-outline" size={20} color="#0A9D5C" />
-                        <Text className="text-[#0A9D5C] font-semibold ml-2">Provide Feedback</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Other Possibilities Section */}
-                <View className="mx-4 mt-6">
-                    <Text className="text-lg font-bold text-gray-800 mb-3">Other Possibilities</Text>
-
-                    {otherMatches.map((ant) => (
-                        <AntCard
-                            key={ant.id}
-                            id={ant.id}
-                            name={ant.name}
-                            description={ant.scientificName}
-                            matchPercentage={ant.matchPercentage}
-                            image={ant.image}
-                            variant="horizontal"
-                            showMatchPercentage={true}
-                            onPress={() => handleOtherMatchPress(ant)}
-                        />
-                    ))}
-                </View>
-
-                {/* Bottom Padding */}
-                <View className="h-24" />
-            </ScrollView>
-
-            {/* Bottom Button */}
-            <View className="absolute bottom-0 left-0 right-0 p-4 bg-white">
-                <SafeAreaView edges={['bottom']}>
-                    <PrimaryButton
-                        title="Identify Another Ant"
-                        icon="camera-outline"
-                        onPress={handleIdentifyAnother}
-                        size="large"
-                    />
-                </SafeAreaView>
-            </View>
+  if (identifyError || !bestMatch) {
+    return (
+      <View className="flex-1 bg-white">
+        <SafeAreaView>
+          <View className="flex-row items-center px-4 py-2">
+            <TouchableOpacity onPress={handleBackPress} className="p-2">
+              <Ionicons name="chevron-back" size={28} color="#333" />
+            </TouchableOpacity>
+            <Text className="flex-1 text-center text-xl font-bold text-gray-800 mr-10">
+              {t("identification.failed_title")}
+            </Text>
+          </View>
+        </SafeAreaView>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialCommunityIcons
+            name="alert-circle-outline"
+            size={64}
+            color="#EF4444"
+          />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
+            {t("idResults.unableIdentify")}
+          </Text>
+          <Text className="mt-2 text-gray-500 text-center">
+            {t("idResults.errorMessage")}
+          </Text>
+          <View className="mt-8 w-full">
+            <PrimaryButton
+              title={t("idResults.tryAgain")}
+              icon="camera-outline"
+              onPress={handleIdentifyAnother}
+              size="large"
+            />
+          </View>
         </View>
-    )
+      </View>
+    );
+  }
+
+  // Show rejection state when safety gate rejects the image
+  if (speciesResult && !speciesResult.success) {
+    return (
+      <View className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaView>
+          <View className="pt-4 pb-5">
+            <ScreenHeader
+              title={t("idResults.title")}
+              leftIcon="chevron-back"
+              onLeftPress={handleBackPress}
+            />
+          </View>
+        </SafeAreaView>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialCommunityIcons
+            name="image-off-outline"
+            size={64}
+            color="#F59E0B"
+          />
+          <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
+            {t("idResults.cantDetect")}
+          </Text>
+          <Text className="mt-2 text-gray-500 text-center">
+            {speciesResult.message || t("idResults.errorMessage")}
+          </Text>
+          {imageUri && (
+            <View className="mt-6 w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
+              <Image
+                source={{ uri: imageUri }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          <View className="mt-8 w-full">
+            <PrimaryButton
+              title={t("idResults.tryAgain")}
+              icon="camera-outline"
+              onPress={handleIdentifyAnother}
+              size="large"
+            />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-white">
+      <SafeAreaView>
+        <View className="pt-4">
+          <ScreenHeader
+            title={t("identification.title")}
+            leftIcon="chevron-back"
+            onLeftPress={handleBackPress}
+          />
+        </View>
+      </SafeAreaView>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View
+          className="mx-4 bg-[#e8f5e0] rounded-2xl p-5 flex-row items-center gap-4"
+          style={{
+            shadowColor: "#0A9D5C",
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 2,
+          }}
+        >
+          <View className="w-11 h-11 rounded-full bg-[#0A9D5C] items-center justify-center">
+            <Ionicons name="checkmark" size={22} color="#fff" />
+          </View>
+          <View className="flex-1 gap-1">
+            <Text className="text-[#0A9D5C] font-bold text-lg leading-tight">
+              {t("identification.analysis_complete")}
+            </Text>
+            <Text className="text-gray-800 text-base opacity-75 mt-0.5">
+              {t("identification.matches_found", { count: totalMatches })}
+            </Text>
+          </View>
+        </View>
+
+        <View className="mx-4 mt-6">
+          <Text className="text-xl font-bold text-gray-800 mb-3">
+            {t("identification.best_match")}
+          </Text>
+          <View className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-200">
+            <View className="h-40 bg-[#e8f5e0] items-center justify-center">
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} className="w-full h-full" />
+              ) : (
+                <MaterialCommunityIcons
+                  name="image"
+                  size={48}
+                  color="#328e6e"
+                />
+              )}
+            </View>
+            <View className="p-4">
+              <Text className="text-lg font-bold text-gray-800">
+                {bestMatch.name}
+              </Text>
+              <Text className="text-gray-500 text-sm italic">
+                {bestMatch.scientificName}
+              </Text>
+              <Text className="text-[#0A9D5C] font-semibold mt-1">
+                {t("helpImprove.matchPercentage", {
+                  value: bestMatch.matchPercentage.toFixed(1),
+                })}
+              </Text>
+
+              {bestMatch.riskInfo && (
+                <View className="mt-2">
+                  <RiskTags riskInfo={bestMatch.riskInfo} size="small" />
+                </View>
+              )}
+
+              <TouchableOpacity
+                className="mt-4 py-3 rounded-full border-2 border-[#0A9D5C] items-center"
+                onPress={() => handleConfirmAndViewDetails(bestMatch.id)}
+              >
+                <Text className="text-[#0A9D5C] font-semibold">
+                  {t("identification.confirm_details")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <LocationSpeciesCard
+          predictions={[
+            {
+              id: bestMatch.id,
+              name: bestMatch.name,
+              scientificName: bestMatch.scientificName,
+              image: bestMatch.image,
+              matchPercentage: bestMatch.matchPercentage,
+            },
+            ...otherMatches,
+          ]}
+          province={province}
+          loadingLocation={locationLoading}
+          permissionDenied={permissionDenied}
+          provinceSpecies={provinceSpecies}
+          loadingProvinceSpecies={loadingProvinceSpecies}
+        />
+
+        <View className="mx-4 mt-6">
+          <Text className="text-xl font-bold text-gray-800 mb-3">
+            {t("identification.other_possibilities")}
+          </Text>
+          {otherMatches.map((ant) => (
+            <AntCard
+              key={ant.id}
+              id={ant.id}
+              name={ant.name}
+              description={ant.scientificName}
+              matchPercentage={ant.matchPercentage}
+              image={ant.image}
+              variant="horizontal"
+              showMatchPercentage={true}
+              onPress={() =>
+                router.push({
+                  pathname: "/detail/[id]",
+                  params: { id: ant.id },
+                })
+              }
+              riskInfo={(ant as any).riskInfo}
+            />
+          ))}
+        </View>
+        <View className="h-32" />
+        {/* Bottom Padding */}
+      </ScrollView>
+
+      <View className="absolute bottom-0 left-0 right-0 p-4 bg-white">
+        <SafeAreaView edges={["bottom"]}>
+          <PrimaryButton
+            title={t("identification.identify_another")}
+            icon="camera-outline"
+            onPress={handleIdentifyAnother}
+            size="large"
+          />
+        </SafeAreaView>
+      </View>
+    </View>
+  );
 }

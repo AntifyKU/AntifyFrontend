@@ -1,108 +1,127 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   Pressable,
-  Image,
-  SafeAreaView,
   StatusBar,
   Alert,
-  ActionSheetIOS,
-  Platform,
   ActivityIndicator,
-  StyleSheet
-} from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
-import SectionHeader from '@/components/SectionHeader';
-import AntCard from '@/components/AntCard';
-import PrimaryButton from '@/components/PrimaryButton';
-import { useSpecies } from '@/hooks/useSpecies';
+  StyleSheet,
+} from "react-native";
+import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  quickDiscoveryCategories,
-  featuredAntOfTheDay as staticAntOfTheDay,
-  featuredSpeciesList as staticFeaturedList
-} from '@/constants/AntData';
+  Ionicons,
+  MaterialIcons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import * as Location from "expo-location";
+import SectionHeader from "@/components/molecule/SectionHeader";
+import CardItem from "@/components/molecule/CardItem";
+import PrimaryButton from "@/components/atom/button/PrimaryButton";
+import { useSpecies } from "@/hooks/useSpecies";
+import { quickDiscoveryCategories } from "@/constants/Filters";
+import { ScreenHeader } from "@/components/molecule/ScreenHeader";
+import { openIdentifySheet } from "@/utils/identifyHelper";
+import { useTranslation } from "react-i18next";
+import AntTopicsSection from "@/components/organism/AntTopicsSection";
+
+function getDailyIndex(listLength: number): number {
+  const today = new Date();
+  const seed =
+    today.getFullYear() * 10000 +
+    (today.getMonth() + 1) * 100 +
+    today.getDate();
+  const randomValue = Math.sin(seed) * 10000;
+  return Math.floor((randomValue - Math.floor(randomValue)) * listLength);
+}
+
+function toSpeciesCard(s: {
+  id: string;
+  name: string;
+  scientific_name: string;
+  image?: string;
+}) {
+  return {
+    id: s.id,
+    name: s.name,
+    scientificName: s.scientific_name,
+    image: s.image || "",
+  };
+}
+
+function getAntProvinces(s: {
+  distribution_v2?: { provinces?: string[] };
+}): string[] {
+  return s.distribution_v2?.provinces?.map((p) => p.toLowerCase()) ?? [];
+}
+
+function antMatchesUserLocation(
+  antProvinces: string[],
+  userLocations: string[],
+): boolean {
+  return antProvinces.some((p) =>
+    userLocations.some((userLoc) => userLoc.includes(p) || p.includes(userLoc)),
+  );
+}
+
+function getLocalSpecies(
+  species: {
+    id: string;
+    name: string;
+    scientific_name: string;
+    image?: string;
+    distribution_v2?: { provinces?: string[] };
+  }[],
+  locationObj: Location.LocationGeocodedAddress,
+) {
+  const userLocations: string[] = [
+    locationObj.city,
+    locationObj.subregion,
+    locationObj.region,
+  ]
+    .filter((loc): loc is string => typeof loc === "string" && loc.length > 0)
+    .map((loc) => loc.toLowerCase());
+
+  return species
+    .filter((s) => antMatchesUserLocation(getAntProvinces(s), userLocations))
+    .slice(0, 10)
+    .map(toSpeciesCard);
+}
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState('Loading...');
+  const { t } = useTranslation();
+  const [location, setLocation] = useState(t("home.loading"));
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
-
-  // Fetch species from API with fallback to static data
-  const { species, loading: speciesLoading, isUsingFallback } = useSpecies({ 
-    filters: { limit: 10 } 
+  const [locationObj, setLocationObj] =
+    useState<Location.LocationGeocodedAddress | null>(null);
+  const { species, loading: speciesLoading } = useSpecies({
+    filters: { limit: 500 },
   });
 
-  // Derive featured species from API data or fallback
-  const { featuredAntOfTheDay, featuredSpeciesList } = useMemo(() => {
-    if (species.length > 0) {
-      // Use first species as "ant of the day"
-      const antOfTheDay = {
-        id: species[0].id,
-        name: species[0].name,
-        scientificName: species[0].scientific_name,
-        image: species[0].image || '',
-      };
-      
-      // Use remaining species as featured list
-      const featuredList = species.slice(1, 6).map(s => ({
-        id: s.id,
-        name: s.name,
-        scientificName: s.scientific_name,
-        image: s.image || '',
-      }));
-      
-      return { 
-        featuredAntOfTheDay: antOfTheDay, 
-        featuredSpeciesList: featuredList.length > 0 ? featuredList : staticFeaturedList 
-      };
-    }
-    
-    // Fallback to static data
-    return { 
-      featuredAntOfTheDay: staticAntOfTheDay, 
-      featuredSpeciesList: staticFeaturedList 
-    };
-  }, [species]);
-
-  // Get user's location on mount
-  useEffect(() => {
-    getLocation();
-  }, []);
-
-  const getLocation = async () => {
+  const getLocation = useCallback(async () => {
     try {
       setIsLoadingLocation(true);
-
-      // Request location permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== 'granted') {
-        setLocation('Location permission denied');
+      if (status !== "granted") {
+        setLocation(t("home.location_denied"));
         setIsLoadingLocation(false);
         return;
       }
-
-      // Get current position
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-
-      // Reverse geocode to get address
       const [address] = await Location.reverseGeocodeAsync({
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
       });
-
       if (address) {
-        // Format the address
-        const displayLocation = address.city || address.subregion || address.region;
+        const displayLocation =
+          address.city || address.subregion || address.region;
         const displayCountry = address.country;
-
+        setLocationObj(address);
         if (displayLocation && displayCountry) {
           setLocation(`${displayLocation}, ${displayCountry}`);
         } else if (displayLocation) {
@@ -110,141 +129,78 @@ export default function HomeScreen() {
         } else if (address.formattedAddress) {
           setLocation(address.formattedAddress);
         } else {
-          setLocation('Unknown location');
+          setLocation(t("home.unknown_location"));
         }
       } else {
-        setLocation('Unknown location');
+        setLocationObj(null);
+        setLocation(t("home.unknown_location"));
       }
     } catch (error) {
-      console.error('Error getting location:', error);
-      setLocation('Unable to get location');
+      console.error("Error getting location:", error);
+      setLocation(t("home.unable_to_get_location"));
     } finally {
       setIsLoadingLocation(false);
     }
-  };
+  }, [t]);
+
+  const { featuredAntOfTheDay, featuredSpeciesList, localSpeciesList } =
+    useMemo(() => {
+      if (species.length === 0) {
+        return {
+          featuredAntOfTheDay: null,
+          featuredSpeciesList: [],
+          localSpeciesList: [],
+        };
+      }
+
+      const antOfTheDay = toSpeciesCard(species[getDailyIndex(species.length)]);
+      const featuredList = species.slice(0, 5).map(toSpeciesCard);
+      const localList = locationObj
+        ? getLocalSpecies(species, locationObj)
+        : [];
+
+      return {
+        featuredAntOfTheDay: antOfTheDay,
+        featuredSpeciesList: featuredList,
+        localSpeciesList: localList,
+      };
+    }, [species, locationObj]);
+
+  useEffect(() => {
+    getLocation();
+  }, [getLocation]);
 
   const handleAntPress = (antId: string) => {
+    router.push({ pathname: `/detail/[id]`, params: { id: antId } });
+  };
+
+  const handleCategoryPress = (categoryName: string, tag?: string) => {
     router.push({
-      pathname: `/detail/[id]`,
-      params: { id: antId }
+      pathname: "/(tabs)/explore",
+      params: {
+        category: categoryName,
+        tag: tag || categoryName.toLowerCase(),
+        ts: Date.now().toString(),
+      },
     });
   };
 
-  // Handle camera photo
-  const handleTakePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-
-      if (status !== 'granted') {
-        Alert.alert(
-          "Permission Denied",
-          "You need to grant camera permission to use this feature."
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const capturedImage = result.assets[0];
-        router.push({
-          pathname: '/identification-results',
-          params: { imageUri: capturedImage.uri, source: 'camera' }
-        });
-      }
-    } catch (error) {
-      console.error("Error taking photo:", error);
-      Alert.alert("Error", "There was a problem taking the photo. Please try again.");
-    }
-  };
-
-  // Handle upload photo from gallery
-  const handleUploadPhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (status !== 'granted') {
-        Alert.alert(
-          "Permission Denied",
-          "You need to grant gallery access to use this feature."
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const selectedImage = result.assets[0];
-        router.push({
-          pathname: '/identification-results',
-          params: { imageUri: selectedImage.uri, source: 'gallery' }
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading photo:", error);
-      Alert.alert("Error", "There was a problem selecting the photo. Please try again.");
-    }
-  };
-
-  // Handle Identify Ant button - show action sheet to choose camera or gallery
-  const handleIdentifyAnt = () => {
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Cancel', 'Take Photo', 'Choose from Gallery'],
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            handleTakePhoto();
-          } else if (buttonIndex === 2) {
-            handleUploadPhoto();
-          }
-        }
-      );
-    } else {
-      Alert.alert(
-        'Identify Ant',
-        'Choose an option',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Take Photo', onPress: handleTakePhoto },
-          { text: 'Choose from Gallery', onPress: handleUploadPhoto },
-        ],
-        { cancelable: true }
-      );
-    }
-  };
-
-  const handleCategoryPress = (categoryName: string) => {
-    router.push({
-      pathname: '/(tabs)/explore',
-      params: { category: categoryName }
-    });
-  };
-
-  // Handle location press - refresh or open settings
   const handleLocationPress = () => {
-    if (location === 'Location permission denied') {
+    if (location === t("home.location_denied")) {
       Alert.alert(
-        'Location Permission',
-        'Please enable location permission in your device settings to see your current location.',
+        t("home.alert.location_title"),
+        t("home.alert.location_message"),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Retry', onPress: getLocation },
-        ]
+          { text: t("home.alert.cancel"), style: "cancel" },
+          {
+            text: t("home.alert.retry"),
+            onPress: () => {
+              getLocation();
+            },
+          },
+        ],
       );
     } else {
-      // Refresh location
       getLocation();
     }
   };
@@ -254,21 +210,19 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header with notification */}
-        <View className="flex-row items-center justify-end px-5 pt-2 pb-2">
-          <TouchableOpacity>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
+        <View className="pt-4 pb-5">
+          <ScreenHeader />
         </View>
 
-        {/* Your Location Section */}
         <Pressable
           className="flex-row items-start justify-between px-5 mb-6"
           onPress={handleLocationPress}
           style={({ pressed }) => pressed && styles.pressed}
         >
           <View>
-            <Text className="text-xl font-bold text-gray-800">Your Location</Text>
+            <Text className="text-xl font-bold text-gray-900">
+              {t("home.your_location")}
+            </Text>
             <View className="flex-row items-center mt-1">
               {isLoadingLocation ? (
                 <ActivityIndicator size="small" color="#328e6e" />
@@ -277,79 +231,114 @@ export default function HomeScreen() {
               )}
             </View>
           </View>
-          <MaterialIcons name="location-on" size={24} color="#328e6e" />
+          <MaterialIcons name="location-on" size={30} color="#328e6e" />
         </Pressable>
 
-        {/* Identify Ant Button */}
         <View className="px-5 mb-6">
           <PrimaryButton
-            title="Identify Ant"
+            title={t("home.identify_ant")}
             icon="camera"
-            onPress={handleIdentifyAnt}
+            onPress={openIdentifySheet}
             size="large"
           />
         </View>
 
-        {/* Quick Discovery Section */}
         <View className="mb-6">
-          <SectionHeader title="Quick Discovery" />
+          <SectionHeader title={t("home.quick_discovery")} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
           >
-            {quickDiscoveryCategories.map((tag) => (
-              <TouchableOpacity
-                key={tag.id}
-                className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
-                onPress={() => handleCategoryPress(tag.name)}
-              >
-                {tag.name === 'Venomous' ? (
-                  <MaterialCommunityIcons name="alert" size={16} color={tag.color} />
-                ) : tag.name === 'Forest' ? (
-                  <MaterialCommunityIcons name="tree" size={16} color={tag.color} />
-                ) : tag.name === 'Household' ? (
-                  <Ionicons name="home" size={16} color={tag.color} />
-                ) : (
-                  <Ionicons name="sparkles" size={16} color={tag.color} />
-                )}
-                <Text className="ml-2 text-gray-700 font-medium">{tag.name}</Text>
-              </TouchableOpacity>
-            ))}
+            {quickDiscoveryCategories.map((category) => {
+              let icon;
+
+              if (category.name === "Venomous") {
+                icon = (
+                  <MaterialCommunityIcons
+                    name="alert"
+                    size={16}
+                    color={category.color}
+                  />
+                );
+              } else if (category.name === "Predator") {
+                icon = (
+                  <MaterialCommunityIcons
+                    name="sword"
+                    size={16}
+                    color={category.color}
+                  />
+                );
+              } else if (category.name === "Invasive") {
+                icon = (
+                  <MaterialCommunityIcons
+                    name="bug"
+                    size={16}
+                    color={category.color}
+                  />
+                );
+              } else if (category.name === "Scavenger") {
+                icon = (
+                  <MaterialCommunityIcons
+                    name="magnify"
+                    size={16}
+                    color={category.color}
+                  />
+                );
+              } else {
+                icon = (
+                  <Ionicons name="sparkles" size={16} color={category.color} />
+                );
+              }
+
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  className="mr-3 flex-row items-center px-4 py-2 rounded-full border border-gray-200 bg-white"
+                  onPress={() =>
+                    handleCategoryPress(category.name, category.tag)
+                  }
+                >
+                  {icon}
+                  <Text className="ml-2 text-gray-700 font-medium">
+                    {t(`badge.${category.tag}`)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
 
-        {/* Ant of the Day Section */}
         <View className="mb-6">
-          <SectionHeader title="Ant of the Day" />
+          <SectionHeader title={t("home.ant_of_the_day")} />
           <View className="px-5">
-            {speciesLoading ? (
+            {speciesLoading || !featuredAntOfTheDay ? (
               <View className="h-48 items-center justify-center bg-gray-50 rounded-xl">
                 <ActivityIndicator size="small" color="#328e6e" />
-                <Text className="mt-2 text-gray-500">Loading...</Text>
+                <Text className="mt-2 text-gray-500">{t("home.loading")}</Text>
               </View>
             ) : (
-              <AntCard
-                id={featuredAntOfTheDay.id}
+              <CardItem
+                variant="species"
                 name={featuredAntOfTheDay.name}
-                description={featuredAntOfTheDay.scientificName}
-                image={featuredAntOfTheDay.image}
-                variant="vertical"
+                scientificName={featuredAntOfTheDay.scientificName}
+                imageUri={featuredAntOfTheDay.image}
+                accentColor="#328e6e"
                 onPress={() => handleAntPress(featuredAntOfTheDay.id)}
+                showMore={false}
+                backgroundColor="#e8f5e0"
               />
             )}
           </View>
         </View>
 
-        {/* Featured Species Section */}
         <View className="mb-8">
           <SectionHeader
-            title="Featured Species"
-            subtitle="Discover common Thai ants"
+            title={t("home.featured_species")}
+            subtitle={t("home.discover_thai_ants")}
             showSeeMore
-            onSeeMorePress={() => router.push('/(tabs)/explore')}
+            onSeeMorePress={() => router.push("/(tabs)/explore")}
           />
-
           {speciesLoading ? (
             <View className="h-32 items-center justify-center">
               <ActivityIndicator size="small" color="#328e6e" />
@@ -358,24 +347,69 @@ export default function HomeScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+              contentContainerStyle={{
+                paddingLeft: 20,
+                paddingRight: 10,
+                gap: 12,
+              }}
             >
-              {featuredSpeciesList.map((species) => (
-                <AntCard
-                  key={species.id}
-                  id={species.id}
-                  name={species.name}
-                  scientificName={species.scientificName}
-                  image={species.image}
-                  variant="compact"
-                  onPress={() => handleAntPress(species.id)}
-                />
+              {featuredSpeciesList.map((item) => (
+                <View key={item.id} style={{ width: 200 }}>
+                  <CardItem
+                    variant="species"
+                    name={item.name}
+                    scientificName={item.scientificName}
+                    imageUri={item.image}
+                    accentColor="#328e6e"
+                    onPress={() => handleAntPress(item.id)}
+                    showMore={false}
+                  />
+                </View>
               ))}
             </ScrollView>
           )}
         </View>
 
-        {/* Bottom padding for tab bar */}
+        {localSpeciesList.length > 0 && (
+          <View className="mb-8">
+            <SectionHeader
+              title={t("home.species_near", {
+                location:
+                  locationObj?.city ||
+                  locationObj?.subregion ||
+                  t("home.speciesNearYou"),
+              })}
+              subtitle={t("home.found_in_province")}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingLeft: 20,
+                paddingRight: 10,
+                gap: 12,
+              }}
+            >
+              {localSpeciesList.map((item) => (
+                <View key={item.id} style={{ width: 200 }}>
+                  <CardItem
+                    variant="species"
+                    name={item.name}
+                    scientificName={item.scientificName}
+                    imageUri={item.image}
+                    accentColor="#0A9D5C"
+                    onPress={() => handleAntPress(item.id)}
+                    showMore={false}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Ant Topics & Tips Section */}
+        <AntTopicsSection />
+
         <View className="h-24" />
       </ScrollView>
     </SafeAreaView>

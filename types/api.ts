@@ -1,34 +1,89 @@
-/**
- * API Response Types
- * TypeScript types matching backend schemas
- */
-
-// ============================================================================
 // Species Types
-// ============================================================================
-
 export interface SpeciesClassification {
   family: string;
   subfamily: string;
   genus: string;
 }
 
+export interface VenomInfo {
+  has_venom: boolean;
+  details?: string;
+  details_th?: string;
+  source?: string;
+}
+
+export interface RiskInfo {
+  sting_or_bite?: string;
+  medical_importance?: string;
+  allergy_risk_note?: string;
+  evidence_sources?: string[];
+  venom?: VenomInfo;
+}
+
+export interface DistributionV2 {
+  regions?: string[];
+  granularity?: string;
+  basis?: string;
+  notes?: string;
+  evidence_sources?: string[];
+  provinces?: string[];
+  provinces_source?: string;
+}
+
+export interface AcceptedTaxon {
+  scientific_name?: string;
+  rank?: string;
+  genus?: string;
+  synonyms?: string[];
+  taxonomy_conflict?: boolean;
+  evidence_sources?: string[];
+}
+
+export interface NormalizedInfo {
+  rank?: string;
+  species_epithet?: string | null;
+  is_sp?: boolean;
+}
+
+export interface ProvenanceReview {
+  status?: string;
+  notes?: string[];
+}
+
+export interface Provenance {
+  version?: number;
+  review?: ProvenanceReview;
+}
+
 export interface Species {
   id: string;
   name: string;
+  name_th?: string;
   scientific_name: string;
   classification: SpeciesClassification;
   tags: string[];
   about: string;
+  about_th?: string;
   characteristics: string;
+  characteristics_th?: string;
   colors: string[];
   habitat: string[];
   distribution: string[];
   behavior: string;
+  behavior_th?: string;
   ecological_role: string;
+  ecological_role_th?: string;
   image: string;
   created_at?: string;
   updated_at?: string;
+  slug?: string;
+  input_label?: string;
+  normalized?: NormalizedInfo;
+  accepted_taxon?: AcceptedTaxon;
+  lookalikes?: string[];
+  risk?: RiskInfo;
+  distribution_v2?: DistributionV2;
+  provenance?: Provenance;
 }
 
 export interface SpeciesListResponse {
@@ -44,35 +99,12 @@ export interface SpeciesFilters {
   colors?: string;
   habitat?: string;
   distribution?: string;
+  province?: string; // Filters by distribution_v2.provinces
   page?: number;
   limit?: number;
 }
 
-// ============================================================================
-// News Types
-// ============================================================================
-
-export interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  link: string;
-  image?: string;
-  source: string;
-  published_at?: string;
-  fetched_at?: string;
-}
-
-export interface NewsListResponse {
-  items: NewsItem[];
-  total: number;
-  last_updated?: string;
-}
-
-// ============================================================================
 // Identification Types
-// ============================================================================
-
 export interface Detection {
   class_id: number;
   class_name: string;
@@ -92,6 +124,7 @@ export interface ClassificationResult {
   rank: number;
   class_name: string;
   confidence: number;
+  species_id?: string;
 }
 
 export interface ClassificationResponse {
@@ -108,10 +141,18 @@ export interface IdentifyBase64Request {
   confidence_threshold?: number;
 }
 
-// ============================================================================
-// Collection & Favorites Types
-// ============================================================================
+// Species Details Response (combined AI prediction + Firestore data)
+export interface SpeciesDetailsResponse {
+  success: boolean;
+  message?: string;
+  top_prediction?: string;
+  top_confidence?: number;
+  predictions?: ClassificationResult[];
+  species_info?: Species;
+  model?: string;
+}
 
+// Collection Types
 export interface CollectionItem {
   id: string;
   species_id: string;
@@ -135,23 +176,7 @@ export interface AddToCollectionRequest {
   image_url?: string;
 }
 
-export interface FavoriteItem {
-  id: string;
-  species_id: string;
-  species_name: string;
-  scientific_name: string;
-  image_url?: string;
-  added_at: string;
-}
-
-export interface FavoritesListResponse {
-  favorites: FavoriteItem[];
-  total: number;
-}
-
-// ============================================================================
 // Feedback Types
-// ============================================================================
 
 export interface FeedbackRequest {
   rating: number;
@@ -167,24 +192,23 @@ export interface FeedbackResponse {
   message: string;
 }
 
-export interface AICorrectionRequest {
+export interface AIFeedbackRequest {
   original_prediction: string;
-  correct_species_id: string;
-  image_base64?: string;
-  notes?: string;
+  confidence_was?: number;
+  is_correct: boolean;
+  additional_notes?: string;
+  rating?: number;
 }
 
 export interface SpeciesCorrectionRequest {
-  field: string;
-  original_value: string;
+  field_name: string;
+  current_value: string;
   suggested_value: string;
-  notes?: string;
+  reason: string;
+  source?: string;
 }
 
-// ============================================================================
 // Auth Types
-// ============================================================================
-
 export interface LoginRequest {
   email: string;
   password: string;
@@ -214,10 +238,7 @@ export interface UserProfile {
   created_at?: string;
 }
 
-// ============================================================================
 // Common Types
-// ============================================================================
-
 export interface ApiErrorResponse {
   detail: string;
   status_code?: number;
@@ -226,4 +247,31 @@ export interface ApiErrorResponse {
 export interface HealthResponse {
   status: string;
   models_loaded?: string[];
+}
+
+// History Types
+export interface PredictionSnapshot {
+  rank: number;
+  speciesName: string;
+  confidence: number;
+  speciesId: string | null;
+}
+
+export interface HistoryRecord {
+  id: string;
+  imageBase64: string;
+  imageMimeType: string;
+  speciesName: string;
+  commonName: string | null;
+  confidence: number;
+  identifiedAt: string;
+  speciesInfo: Species | null;
+  topPredictions: PredictionSnapshot[];
+}
+
+export type NewHistoryRecord = Omit<HistoryRecord, "id" | "identifiedAt">;
+
+export interface HistoryFilter {
+  search?: string;
+  limit?: number;
 }

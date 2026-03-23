@@ -1,40 +1,13 @@
-import React, { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { useNotifications } from '@/hooks/useNotifications';
+import React from "react";
+import { Stack } from "expo-router";
+import { View, ActivityIndicator } from "react-native";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import "../global.css";
+import "@/public/i18n";
 
 function RootLayoutNav() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-  
-  // Initialize push notifications
-  useNotifications();
+  const { isLoading } = useAuth();
 
-  useEffect(() => {
-    if (isLoading) return; // Wait for auth to load
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const inWelcome = segments[0] === 'welcome';
-
-    if (!isAuthenticated) {
-      // User is not signed in
-      if (!inAuthGroup && !inWelcome) {
-        // Redirect to welcome page
-        router.replace('/welcome');
-      }
-    } else {
-      // User is signed in
-      if (inAuthGroup || inWelcome) {
-        // Redirect to main app
-        router.replace('/(tabs)');
-      }
-    }
-  }, [isAuthenticated, isLoading, segments]);
-
-  // Show loading screen while checking auth
   if (isLoading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
@@ -44,25 +17,21 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack 
-      screenOptions={{ 
-        headerShown: false 
-      }}
-    >
-      <Stack.Screen name="welcome" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="detail" options={{ headerShown: false }} />
-      <Stack.Screen name="chatbot" options={{ headerShown: false }} />
-      <Stack.Screen name="settings" options={{ headerShown: false }} />
-      <Stack.Screen 
-        name="feedback" 
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="landingpage" />
+      <Stack.Screen name="welcome" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="help-improve-ai" />
+      <Stack.Screen
+        name="chatbot"
         options={{
-          headerShown: false,
-          presentation: 'fullScreenModal',
-          animation: 'slide_from_bottom'
+          presentation: "modal",
+          animation: "slide_from_bottom",
         }}
       />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="feedback" />
     </Stack>
   );
 }

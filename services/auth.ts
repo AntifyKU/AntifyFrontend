@@ -3,7 +3,7 @@
  * Handles authentication API calls
  */
 
-import { apiClient, API_BASE_URL } from './api';
+import { apiClient, API_BASE_URL } from "./api";
 
 export interface SignupRequest {
   username: string;
@@ -12,7 +12,7 @@ export interface SignupRequest {
 }
 
 export interface LoginRequest {
-  username_or_email: string;  // Backend expects this field name
+  email: string; // Backend expects this field name
   password: string;
 }
 
@@ -24,6 +24,8 @@ export interface LoginResponse {
   message: string;
   user_id: string;
   id_token: string;
+  refresh_token: string;
+  expires_in: string;
 }
 
 export interface UserProfile {
@@ -62,15 +64,18 @@ export interface UploadProfilePictureResponse {
  * Sign up a new user
  */
 export async function signup(data: SignupRequest): Promise<SignupResponse> {
-  return apiClient.post<SignupResponse>('/api/auth/signup', data);
+  return apiClient.post<SignupResponse>("/api/auth/signup", data);
 }
 
 /**
  * Log in an existing user
  */
-export async function login(email: string, password: string): Promise<LoginResponse> {
-  return apiClient.post<LoginResponse>('/api/auth/login', {
-    username_or_email: email,
+export async function login(
+  email: string,
+  password: string,
+): Promise<LoginResponse> {
+  return apiClient.post<LoginResponse>("/api/auth/login", {
+    email: email,
     password,
   });
 }
@@ -79,21 +84,30 @@ export async function login(email: string, password: string): Promise<LoginRespo
  * Log out the current user
  */
 export async function logout(token: string): Promise<{ message: string }> {
-  return apiClient.post<{ message: string }>('/api/auth/logout', {}, { authToken: token });
+  return apiClient.post<{ message: string }>(
+    "/api/auth/logout",
+    {},
+    { authToken: token },
+  );
 }
 
 /**
  * Get current user profile
  */
 export async function getCurrentUser(token: string): Promise<UserProfile> {
-  return apiClient.get<UserProfile>('/api/users/me', { authToken: token });
+  return apiClient.get<UserProfile>("/api/users/me", { authToken: token });
 }
 
 /**
  * Update user profile
  */
-export async function updateProfile(token: string, data: UpdateProfileRequest): Promise<{ message: string }> {
-  return apiClient.put<{ message: string }>('/api/users/me/profile', data, { authToken: token });
+export async function updateProfile(
+  token: string,
+  data: UpdateProfileRequest,
+): Promise<{ message: string }> {
+  return apiClient.put<{ message: string }>("/api/users/me/profile", data, {
+    authToken: token,
+  });
 }
 
 /**
@@ -102,23 +116,23 @@ export async function updateProfile(token: string, data: UpdateProfileRequest): 
 export async function uploadProfilePicture(
   token: string,
   imageUri: string,
-  mimeType: string = 'image/jpeg'
+  mimeType: string = "image/jpeg",
 ): Promise<UploadProfilePictureResponse> {
   const formData = new FormData();
-  
+
   // Create file object from URI
-  const filename = imageUri.split('/').pop() || 'profile.jpg';
-  formData.append('file', {
+  const filename = imageUri.split("/").pop() || "profile.jpg";
+  formData.append("file", {
     uri: imageUri,
     type: mimeType,
     name: filename,
   } as any);
 
   const response = await fetch(`${API_BASE_URL}/api/users/me/profile-picture`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
     body: formData,
   });
@@ -134,22 +148,73 @@ export async function uploadProfilePicture(
 /**
  * Delete profile picture
  */
-export async function deleteProfilePicture(token: string): Promise<{ message: string }> {
-  return apiClient.delete<{ message: string }>('/api/users/me/profile-picture', { authToken: token });
+export async function deleteProfilePicture(
+  token: string,
+): Promise<{ message: string }> {
+  return apiClient.delete<{ message: string }>(
+    "/api/users/me/profile-picture",
+    { authToken: token },
+  );
 }
 
 /**
  * Change user email
  */
-export async function changeEmail(token: string, newEmail: string): Promise<{ message: string }> {
-  return apiClient.put<{ message: string }>('/api/users/me/email', { new_email: newEmail }, { authToken: token });
+export async function changeEmail(
+  token: string,
+  newEmail: string,
+): Promise<{ message: string }> {
+  return apiClient.put<{ message: string }>(
+    "/api/users/me/email",
+    { new_email: newEmail },
+    { authToken: token },
+  );
 }
 
 /**
  * Change user password
  */
-export async function changePassword(token: string, newPassword: string): Promise<{ message: string }> {
-  return apiClient.put<{ message: string }>('/api/users/me/password', { new_password: newPassword }, { authToken: token });
+export async function changePassword(
+  token: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  return apiClient.put<{ message: string }>(
+    "/api/users/me/password",
+    { new_password: newPassword },
+    { authToken: token },
+  );
+}
+
+/**
+ * Delete user account
+ */
+export async function deleteAccount(
+  token: string,
+): Promise<{ message: string }> {
+  return apiClient.delete<{ message: string }>("/api/users/me", {
+    authToken: token,
+  });
+}
+
+export async function refreshIdToken(refreshToken: string) {
+  const FIREBASE_API_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
+  const res = await fetch(
+    `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }).toString(),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to refresh token");
+  }
+
+  return res.json();
 }
 
 export const authService = {
@@ -162,6 +227,7 @@ export const authService = {
   deleteProfilePicture,
   changeEmail,
   changePassword,
+  deleteAccount,
 };
 
 export default authService;
