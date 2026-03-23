@@ -58,12 +58,16 @@
       "sting": "ต่อย",
       "bite": "กัด",
       "bite_only": "กัดเท่านั้น",
+      "sting_only": "ต่อยเท่านั้น",
+      "both": "ทั้งต่อยและกัด",
       "sting_and_bite": "ทั้งต่อยและกัด",
       "medically_significant": "มีความสำคัญทางการแพทย์",
       "can_cause_allergic_reaction": "อาจทำให้เกิดอาการแพ้",
       "no_medical_importance": "ไม่มีความสำคัญทางการแพทย์",
       "varies_by_species": "แตกต่างกันไปตามชนิด",
       "low": "ต่ำ",
+      "medium": "ปานกลาง",
+      "high": "สูง",
       "very_low": "ต่ำมาก",
       "nuisance_and_ecological_impact": "สร้างความรำคาญและมีผลกระทบต่อสิ่งแวดล้อม",
       "unknown": "ไม่ระบุ",
@@ -1423,6 +1427,8 @@
     "loginRequired": "ต้องเข้าสู่ระบบ",
     "loginCollection": "กรุณาเข้าสู่ระบบเพื่อเพิ่มในคอลเลกชัน",
     "loginSuggest": "กรุณาเข้าสู่ระบบเพื่อเสนอการปรับปรุงข้อมูลสายพันธุ์",
+    "adminTools": "เครื่องมือผู้ดูแล",
+    "editInformation": "แก้ไขข้อมูล",
     "regions": {
       "north": "ภาคเหนือ",
       "northeast": "ภาคตะวันออกเฉียงเหนือ",
@@ -1431,6 +1437,74 @@
       "west": "ภาคตะวันตก",
       "south": "ภาคใต้",
       "other": "อื่นๆ"
+    }
+  },
+  "editInfo": {
+    "title": "แก้ไขข้อมูลสายพันธุ์",
+    "loading": "กำลังโหลดข้อมูลสายพันธุ์...",
+    "notFoundDescription": "ไม่สามารถโหลดข้อมูลสายพันธุ์เพื่อแก้ไขได้",
+    "adminMode": "โหมดผู้ดูแล: การแก้ไขจะอัปเดตฐานข้อมูลโดยตรง",
+    "loginRequired": "ต้องเข้าสู่ระบบ",
+    "loginRequiredMessage": "กรุณาเข้าสู่ระบบเพื่อแก้ไขข้อมูลสายพันธุ์",
+    "adminAccessRequired": "ต้องมีสิทธิ์ผู้ดูแล",
+    "adminAccessRequiredMessage": "เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถแก้ไขข้อมูลสายพันธุ์ได้",
+    "validationError": "ข้อมูลไม่ถูกต้อง",
+    "unauthorized": "ไม่มีสิทธิ์",
+    "unauthorizedMessage": "กรุณาเข้าสู่ระบบอีกครั้งแล้วลองใหม่",
+    "savedTitle": "บันทึกสำเร็จ",
+    "savedMessage": "อัปเดตข้อมูลสายพันธุ์เรียบร้อยแล้ว",
+    "discardTitle": "ยกเลิกการเปลี่ยนแปลง",
+    "discardMessage": "ต้องการยกเลิกการเปลี่ยนแปลงที่ยังไม่ได้บันทึกทั้งหมดหรือไม่?",
+    "keepEditing": "แก้ไขต่อ",
+    "discard": "ยกเลิก",
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "sections": {
+      "basicInformation": "ข้อมูลพื้นฐาน",
+      "tagsAndAttributes": "แท็กและคุณลักษณะ",
+      "distribution": "การกระจายตัว",
+      "acceptedTaxon": "อนุกรมวิธานที่ยอมรับ"
+    },
+    "fields": {
+      "commonName": "ชื่อสามัญ",
+      "scientificName": "ชื่อวิทยาศาสตร์",
+      "imageUrl": "ลิงก์รูปภาพ",
+      "tags": "แท็ก",
+      "colors": "สี",
+      "lookalikes": "สายพันธุ์ที่คล้ายกัน",
+      "countriesRegions": "ประเทศ / ภูมิภาค",
+      "provinces": "จังหวัด",
+      "hasVenom": "มีพิษ",
+      "hasVenomDescription": "ระบุว่าสายพันธุ์นี้มีพิษหรือไม่",
+      "venomDetails": "รายละเอียดพิษ"
+    },
+    "hints": {
+      "commaSeparated": "คั่นด้วยเครื่องหมายจุลภาค",
+      "lookalikes": "คั่นรายชื่อสายพันธุ์ด้วยเครื่องหมายจุลภาค"
+    },
+    "errors": {
+      "nameRequired": "จำเป็นต้องกรอกชื่อสายพันธุ์",
+      "scientificNameRequired": "จำเป็นต้องกรอกชื่อวิทยาศาสตร์"
+    },
+    "placeholders": {
+      "commonName": "เช่น Acropyga sp",
+      "scientificName": "เช่น Acropyga Roger, 1862",
+      "imageUrl": "https://...",
+      "about": "คำอธิบายสายพันธุ์...",
+      "characteristics": "ลักษณะเฉพาะทางกายภาพ...",
+      "behavior": "เช่น ออกหากินแบบลับๆ ใต้ดิน",
+      "ecologicalRole": "เช่น อยู่ร่วมแบบพึ่งพากับเพลี้ยแป้ง",
+      "family": "เช่น Formicidae",
+      "subfamily": "เช่น Formicinae",
+      "genus": "เช่น Acropyga",
+      "tags": "แท็ก1, แท็ก2, แท็ก3",
+      "colors": "เหลือง, ส้ม",
+      "habitat": "ดิน, ซากใบไม้",
+      "lookalikes": "สายพันธุ์ A, สายพันธุ์ B",
+      "distribution": "ไทย",
+      "provinces": "กรุงเทพฯ, เชียงใหม่",
+      "venomDetails": "เช่น กัดแต่ไม่ฉีดพิษ",
+      "allergyRisk": "ข้อมูลความเสี่ยงการแพ้...",
+      "synonyms": "ชื่อพ้อง A, ชื่อพ้อง B"
     }
   }
 }

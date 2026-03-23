@@ -58,12 +58,16 @@
       "sting": "Sting",
       "bite": "Bite",
       "bite_only": "Bite only",
+      "sting_only": "Sting only",
+      "both": "Both",
       "sting_and_bite": "Sting and bite",
       "medically_significant": "Medically significant",
       "can_cause_allergic_reaction": "Can cause allergic reaction",
       "no_medical_importance": "No medical importance",
       "varies_by_species": "Varies by species",
       "low": "Low",
+      "medium": "Medium",
+      "high": "High",
       "very_low": "Very low",
       "nuisance_and_ecological_impact": "Nuisance and ecological impact",
       "unknown": "Unknown",
@@ -1502,6 +1506,8 @@
     "loginRequired": "Login Required",
     "loginCollection": "Please sign in to add to your collection",
     "loginSuggest": "Please sign in to suggest updates to species data",
+    "adminTools": "Admin tools",
+    "editInformation": "Edit information",
     "regions": {
       "north": "Northern",
       "northeast": "Northeastern",
@@ -1510,6 +1516,74 @@
       "west": "Western",
       "south": "Southern",
       "other": "Other"
+    }
+  },
+  "editInfo": {
+    "title": "Edit Species",
+    "loading": "Loading species data...",
+    "notFoundDescription": "Unable to load species data for editing.",
+    "adminMode": "Admin mode: edits update the database directly.",
+    "loginRequired": "Login required",
+    "loginRequiredMessage": "Please log in to edit species information.",
+    "adminAccessRequired": "Admin access required",
+    "adminAccessRequiredMessage": "Only administrators can edit species information.",
+    "validationError": "Validation Error",
+    "unauthorized": "Unauthorized",
+    "unauthorizedMessage": "Please log in again and try one more time.",
+    "savedTitle": "Saved",
+    "savedMessage": "Species information has been updated.",
+    "discardTitle": "Discard Changes",
+    "discardMessage": "Are you sure you want to discard all unsaved changes?",
+    "keepEditing": "Keep Editing",
+    "discard": "Discard",
+    "saveChanges": "Save Changes",
+    "sections": {
+      "basicInformation": "Basic Information",
+      "tagsAndAttributes": "Tags & Attributes",
+      "distribution": "Distribution",
+      "acceptedTaxon": "Accepted Taxon"
+    },
+    "fields": {
+      "commonName": "Common Name",
+      "scientificName": "Scientific Name",
+      "imageUrl": "Image URL",
+      "tags": "Tags",
+      "colors": "Colors",
+      "lookalikes": "Lookalikes",
+      "countriesRegions": "Countries / Regions",
+      "provinces": "Provinces",
+      "hasVenom": "Has Venom",
+      "hasVenomDescription": "Whether this species produces venom",
+      "venomDetails": "Venom Details"
+    },
+    "hints": {
+      "commaSeparated": "Comma-separated values",
+      "lookalikes": "Comma-separated species names"
+    },
+    "errors": {
+      "nameRequired": "Species name is required.",
+      "scientificNameRequired": "Scientific name is required."
+    },
+    "placeholders": {
+      "commonName": "e.g. Acropyga sp",
+      "scientificName": "e.g. Acropyga Roger, 1862",
+      "imageUrl": "https://...",
+      "about": "Description of the species...",
+      "characteristics": "Physical characteristics...",
+      "behavior": "e.g. Cryptic, subterranean",
+      "ecologicalRole": "e.g. Mutualistic with mealybugs",
+      "family": "e.g. Formicidae",
+      "subfamily": "e.g. Formicinae",
+      "genus": "e.g. Acropyga",
+      "tags": "tag1, tag2, tag3",
+      "colors": "Yellow, Orange",
+      "habitat": "Soil, Leaf Litter",
+      "lookalikes": "Species A, Species B",
+      "distribution": "Thailand",
+      "provinces": "Bangkok, Chiang Mai",
+      "venomDetails": "e.g. Bites only, no venom injection",
+      "allergyRisk": "Any known allergy risks...",
+      "synonyms": "Synonym A, Synonym B"
     }
   }
 }

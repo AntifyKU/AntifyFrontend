@@ -60,13 +60,6 @@ function navigateAfterIdentification(
   });
 }
 
-function promptLogin(title: string, message: string) {
-  Alert.alert(title, message, [
-    { text: "Cancel", style: "cancel" },
-    { text: "Log In", onPress: () => router.push("/(auth)/login") },
-  ]);
-}
-
 function FolderItem({
   folder,
   isSelected,
@@ -346,7 +339,8 @@ export default function DetailScreen() {
     source,
   } = params;
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const { isInCollection, addToCollection, removeFromCollection } =
     useCollection();
   const { folders } = useFolders();
@@ -398,7 +392,10 @@ export default function DetailScreen() {
 
   const handleCollectionPress = async () => {
     if (!isAuthenticated) {
-      promptLogin(t("auth.login.loginRequired"), t("detail.loginCollection"));
+      Alert.alert(t("auth.login.loginRequired"), t("detail.loginCollection"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("common.signIn"), onPress: () => router.push("/(auth)/login") },
+      ]);
       return;
     }
     if (isInCollection(id)) {
@@ -688,6 +685,25 @@ export default function DetailScreen() {
           )}
 
           {currentAnt.risk && <RiskSafetySection risk={currentAnt.risk} />}
+
+          {/* Admin Edit Button */}
+          {isAdmin && (
+            <View className="flex-row items-center justify-between">
+              <Text className="text-lg font-bold text-gray-800">
+                {t("detail.adminTools")}
+              </Text>
+              <PrimaryButton
+                title={t("detail.editInformation")}
+                onPress={() => router.push(`/editinfo?id=${id}`)}
+                icon="pencil"
+                fullWidth={false}
+                variant="outlined"
+                size="small"
+                style={{ shadowColor: "transparent" }}
+                textStyle={{ fontWeight: "600" }}
+              />
+            </View>
+          )}
         </View>
 
         <View className="h-32" />

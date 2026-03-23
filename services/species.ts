@@ -29,6 +29,16 @@ export async function getSpeciesById(id: string): Promise<Species> {
   return apiClient.get<Species>(API_ENDPOINTS.speciesById(id));
 }
 
+export async function updateSpeciesById(
+  id: string,
+  payload: Partial<Species> & Record<string, unknown>,
+  authToken: string,
+): Promise<Species> {
+  return apiClient.put<Species>(API_ENDPOINTS.speciesById(id), payload, {
+    authToken,
+  });
+}
+
 export async function searchSpecies(
   query: string,
   limit = 20,
@@ -39,6 +49,7 @@ export async function searchSpecies(
 export const speciesService = {
   getSpecies,
   getSpeciesById,
+  updateSpeciesById,
   searchSpecies,
 };
 
