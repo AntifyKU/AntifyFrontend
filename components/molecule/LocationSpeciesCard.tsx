@@ -322,7 +322,7 @@ export default function LocationSpeciesCard({
                   style={{ color: "#16a34a", fontSize: 12, fontWeight: "700" }}
                 >
                   {t("location_card.confirmed_in", {
-                    count: matchedPredictions.length,
+                    matched: matchedPredictions.length,
                     total: predictions.length,
                     province: translatedProvince,
                   })}
