@@ -296,7 +296,7 @@ export default function LocationSpeciesCard({
             {/* Summary chip */}
             <View
               style={{
-                paddingHorizontal: 16,
+                paddingHorizontal: 8,
                 paddingVertical: 10,
                 flexDirection: "row",
                 alignItems: "center",

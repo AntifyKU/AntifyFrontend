@@ -109,7 +109,7 @@ export default function FolderModal({
                     setColorError(false);
                   }}
                   className="mr-3 items-center"
-                  activeOpacity={0.8}
+                  activeOpacity={1}
                 >
                   <View
                     className="w-10 h-10 rounded-full items-center justify-center border-2"

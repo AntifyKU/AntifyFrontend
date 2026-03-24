@@ -230,6 +230,7 @@ export default function CollectionSection() {
               <TouchableOpacity
                 className="flex-row items-center py-3 border-b border-gray-100"
                 onPress={handleOpenAddToFolder}
+                activeOpacity={1}
               >
                 <View className="w-9 h-9 rounded-full bg-green-50 items-center justify-center mr-3">
                   <Ionicons name="folder-outline" size={18} color="#22A45D" />
@@ -243,6 +244,7 @@ export default function CollectionSection() {
             <TouchableOpacity
               className="flex-row items-center py-3"
               onPress={handleRemoveFromCollection}
+              activeOpacity={1}
             >
               <View className="w-9 h-9 rounded-full bg-red-50 items-center justify-center mr-3">
                 <Ionicons name="trash-outline" size={18} color="#EF4444" />
@@ -294,6 +296,7 @@ export default function CollectionSection() {
                   <TouchableOpacity
                     key={folder.id}
                     className={`flex-row items-center p-3 rounded-xl mb-2 ${isSelected ? "bg-green-50" : "bg-gray-50"}`}
+                    activeOpacity={1}
                     onPress={() => toggleFolderSelection(folder.id)}
                   >
                     <View

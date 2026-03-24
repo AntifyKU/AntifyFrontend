@@ -431,7 +431,7 @@
       },
       "team": {
         "title": "Developed By",
-        "content": "Antify is developed with passion for entomology and technology. Our team consists of developers, biologists, and ant enthusiasts working together to create the best ant identification experience."
+        "content": "Antify is developed with passion for entomology and technology. Our team consists of developers, biologists, and ant enthusiasts working together to create the best ant identification experience. The data used in this app is collected from reputable online ant databases including iNaturalist, AntWeb, and GBIF. We are grateful to these platforms for making their valuable data accessible."
       }
     },
     "howto": {
