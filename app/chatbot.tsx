@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 import { useChatbot } from "@/hooks/useChatbot";
@@ -34,7 +33,7 @@ export default function ChatbotScreen() {
     ? `User viewing ${params.initialAntName}`
     : undefined;
 
-  const { messages, isConnected, isTyping, sendMessage, sendMessageWithImage } =
+  const { messages, isConnected, isTyping, sendMessage } =
     useChatbot(initialMessage, initialContext);
 
   const [inputText, setInputText] = useState("");
@@ -89,22 +88,6 @@ export default function ChatbotScreen() {
     if (!inputText.trim()) return;
     sendMessage(inputText);
     setInputText("");
-  };
-
-  const handleImagePick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      base64: true,
-    });
-
-    if (!result.canceled && result.assets[0].base64) {
-      sendMessageWithImage(
-        inputText || "Analyze this image",
-        result.assets[0].base64!,
-        result.assets[0].mimeType || "image/jpeg"
-      );
-      setInputText("");
-    }
   };
 
   const formatTime = (date: Date) =>
@@ -226,6 +209,7 @@ export default function ChatbotScreen() {
               text={msg.text}
               isUser={msg.isUser}
               isStreaming={msg.isStreaming}
+              detectedSpecies={msg.detectedSpecies}
             />
 
             {msg.isUser && (
@@ -260,10 +244,6 @@ export default function ChatbotScreen() {
           backgroundColor: "white",
         }}
       >
-        <TouchableOpacity onPress={handleImagePick}>
-          <Ionicons name="add" size={30} color="#666" />
-        </TouchableOpacity>
-
         <TextInput
           style={{
             flex: 1,

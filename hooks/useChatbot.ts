@@ -11,6 +11,7 @@ export type ChatMessage = {
   timestamp: Date;
   isStreaming?: boolean;
   isHidden?: boolean;
+  detectedSpecies?: any[];
 };
 
 type UseChatbotReturn = {
@@ -95,17 +96,20 @@ export function useChatbot(
       });
     });
 
-    socket.on("response_complete", () => {
+    socket.on("response_complete", (data?: { detected_species?: any[] }) => {
       setIsTyping(false);
       streamingMessageRef.current = "";
 
-      // Mark streaming as complete
+      // Mark streaming as complete and attach detected species
       setMessages((prev) => {
         const newMessages = [...prev];
         const lastMessage = newMessages.at(-1);
 
         if (lastMessage && !lastMessage.isUser) {
           lastMessage.isStreaming = false;
+          if (data?.detected_species) {
+            lastMessage.detectedSpecies = data.detected_species;
+          }
         }
 
         return newMessages;
