@@ -19,7 +19,6 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="landingpage" />
-      <Stack.Screen name="welcome" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="help-improve-ai" />
@@ -31,7 +30,6 @@ function RootLayoutNav() {
         }}
       />
       <Stack.Screen name="settings" />
-      <Stack.Screen name="feedback" />
     </Stack>
   );
 }

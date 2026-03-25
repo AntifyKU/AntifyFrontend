@@ -60,7 +60,7 @@ export default function IdentificationResultsScreen() {
     }
   }, [imageUri, hasIdentified, identifyLoading, identifySpecies]);
 
-  const { bestMatch, otherMatches, totalMatches } = useMemo(() => {
+  const { bestMatch, otherMatches, totalMatches, isNotAnAnt } = useMemo(() => {
     const JUNK_LABELS = new Set(["life", "unknown", "animalia", "insecta"]);
     const isJunk = (name: string) =>
       JUNK_LABELS.has(name.toLowerCase().replaceAll("_", " ").trim());
@@ -132,10 +132,24 @@ export default function IdentificationResultsScreen() {
           bestMatch: bestMatchItem,
           otherMatches: otherMatchItems,
           totalMatches: predictions.length,
+          isNotAnAnt: false,
+        };
+      } else if (speciesResult.predictions && speciesResult.predictions.length > 0) {
+        // All predictions were junk
+        return {
+          bestMatch: null,
+          otherMatches: [],
+          totalMatches: 0,
+          isNotAnAnt: true,
         };
       }
     }
-    return { bestMatch: null, otherMatches: [], totalMatches: 0 };
+    return {
+      bestMatch: null,
+      otherMatches: [],
+      totalMatches: 0,
+      isNotAnAnt: false,
+    };
   }, [speciesResult, speciesInfo, allSpecies]);
 
   const handleBackPress = () => router.back();
@@ -168,7 +182,7 @@ export default function IdentificationResultsScreen() {
         t("identification.alert_not_found_desc"),
         [
           {
-            text: t("idResults.improveAI"),
+            text: t("identification.help_improve"),
             onPress: handleProvideFeedback,
           },
           { text: t("common.ok"), style: "cancel" },
@@ -216,7 +230,7 @@ export default function IdentificationResultsScreen() {
     );
   }
 
-  if (identifyError || !bestMatch) {
+  if (identifyError || (!bestMatch && !isNotAnAnt)) {
     return (
       <View className="flex-1 bg-white">
         <SafeAreaView>
@@ -236,14 +250,14 @@ export default function IdentificationResultsScreen() {
             color="#EF4444"
           />
           <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            {t("idResults.unableIdentify")}
+            {t("identification.unable_to_identify")}
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
-            {t("idResults.errorMessage")}
+            {t("identification.unable_desc")}
           </Text>
           <View className="mt-8 w-full">
             <PrimaryButton
-              title={t("idResults.tryAgain")}
+              title={t("identification.try_again")}
               icon="camera-outline"
               onPress={handleIdentifyAnother}
               size="large"
@@ -254,15 +268,15 @@ export default function IdentificationResultsScreen() {
     );
   }
 
-  // Show rejection state when safety gate rejects the image
-  if (speciesResult && !speciesResult.success) {
+  // Show rejection state when safety gate rejects the image or it's not an ant
+  if ((speciesResult && !speciesResult.success) || isNotAnAnt) {
     return (
       <View className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
         <SafeAreaView>
           <View className="pt-4 pb-5">
             <ScreenHeader
-              title={t("idResults.title")}
+              title={t("identification.title")}
               leftIcon="chevron-back"
               onLeftPress={handleBackPress}
             />
@@ -275,10 +289,12 @@ export default function IdentificationResultsScreen() {
             color="#F59E0B"
           />
           <Text className="mt-4 text-lg font-semibold text-gray-700 text-center">
-            {t("idResults.cantDetect")}
+            {t("identification.detect_reject_title")}
           </Text>
           <Text className="mt-2 text-gray-500 text-center">
-            {speciesResult.message || t("idResults.errorMessage")}
+            {isNotAnAnt
+              ? t("identification.detect_reject_desc")
+              : speciesResult?.message || t("identification.unable_desc")}
           </Text>
           {imageUri && (
             <View className="mt-6 w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
@@ -291,7 +307,7 @@ export default function IdentificationResultsScreen() {
           )}
           <View className="mt-8 w-full">
             <PrimaryButton
-              title={t("idResults.tryAgain")}
+              title={t("identification.try_again")}
               icon="camera-outline"
               onPress={handleIdentifyAnother}
               size="large"
@@ -301,6 +317,8 @@ export default function IdentificationResultsScreen() {
       </View>
     );
   }
+
+  if (!bestMatch) return null;
 
   return (
     <View className="flex-1 bg-white">

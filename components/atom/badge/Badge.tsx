@@ -81,7 +81,7 @@ export default function Badge({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`flex-row items-center rounded-full mr-2 ${sizeClasses[size]}`}
+      className={`flex-row items-center rounded-full mr-2 mb-2 ${sizeClasses[size]}`}
       style={{ backgroundColor, minHeight: icon ? 32 : 28 }}
       activeOpacity={1}
     >

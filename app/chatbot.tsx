@@ -1,16 +1,16 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Image,
   TextInput,
   Animated,
   Easing,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,45 +20,65 @@ import { useTranslation } from "react-i18next";
 import { useChatbot } from "@/hooks/useChatbot";
 import { ScreenHeader } from "@/components/molecule/ScreenHeader";
 import MessageBubble from "@/components/atom/MessageBubble";
-
 import { useLocalSearchParams } from "expo-router";
 
 export default function ChatbotScreen() {
   const params = useLocalSearchParams<{ initialAntName?: string }>();
   const { t } = useTranslation();
+
   const initialMessage = params.initialAntName
     ? t("chatbot.askAboutAnt", { antName: params.initialAntName })
     : t("chatbot.askAboutAnts");
 
   const initialContext = params.initialAntName
-    ? `The user is currently viewing the ant species: ${params.initialAntName}. Please answer questions with this specific ant in mind.`
+    ? `User viewing ${params.initialAntName}`
     : undefined;
+
   const { messages, isConnected, isTyping, sendMessage, sendMessageWithImage } =
     useChatbot(initialMessage, initialContext);
 
-  const [inputText, setInputText] = React.useState("");
+  const [inputText, setInputText] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const scrollViewRef = useRef<ScrollView>(null);
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
+  // auto scroll
   useEffect(() => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   }, [messages]);
 
+  // keyboard fix
   useEffect(() => {
-    const startAnimation = () => {
-      rotateAnim.setValue(0);
-      Animated.loop(
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 3000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ).start();
-    };
+    const show = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
 
-    startAnimation();
-  }, [rotateAnim]);
+    const hide = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardHeight(0)
+    );
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  // rotate animation
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 3000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
 
   const rotate = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -74,18 +94,14 @@ export default function ChatbotScreen() {
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      quality: 0.8,
       base64: true,
     });
 
     if (!result.canceled && result.assets[0].base64) {
-      const asset = result.assets[0];
-      const message = inputText.trim() || t("chatbot.defaultImageMessage");
-
       sendMessageWithImage(
-        message,
-        asset.base64!,
-        asset.mimeType || "image/jpeg",
+        inputText || "Analyze this image",
+        result.assets[0].base64!,
+        result.assets[0].mimeType || "image/jpeg"
       );
       setInputText("");
     }
@@ -96,11 +112,12 @@ export default function ChatbotScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <View className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3" />
+      {/* HEADER */}
       <View style={{ paddingTop: 24, paddingBottom: 16 }}>
         <ScreenHeader title={t("tabs.chatbot")} />
       </View>
 
+      {/* AGENT HEADER */}
       <View
         style={{
           flexDirection: "row",
@@ -111,6 +128,7 @@ export default function ChatbotScreen() {
           borderColor: "#E5E7EB",
         }}
       >
+        {/* ✅ FIXED AVATAR */}
         <View
           style={{
             width: 60,
@@ -139,8 +157,6 @@ export default function ChatbotScreen() {
             >
               <LinearGradient
                 colors={["#BEF264", "#22D3EE", "#8B5CF6", "#BEF264"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
                 style={{ flex: 1 }}
               />
             </Animated.View>
@@ -163,6 +179,7 @@ export default function ChatbotScreen() {
             </View>
           </View>
 
+          {/* ONLINE DOT */}
           <View
             style={{
               position: "absolute",
@@ -174,136 +191,114 @@ export default function ChatbotScreen() {
               backgroundColor: isConnected ? "#22C55E" : "#EF4444",
               borderWidth: 2,
               borderColor: "white",
-              zIndex: 20,
             }}
           />
         </View>
 
+        {/* TEXT */}
         <View style={{ marginLeft: 12 }}>
           <Text style={{ fontSize: 18, fontWeight: "600" }}>Antify</Text>
           <Text style={{ color: "#9CA3AF" }}>
-            {isConnected ? "Support Agent" : t("chatbot.statusConnecting")}
+            {isConnected ? "Support Agent" : "Connecting..."}
           </Text>
         </View>
       </View>
 
-      <KeyboardAvoidingView
+      {/* CHAT */}
+      <ScrollView
+        ref={scrollViewRef}
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 120,
+        }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          ref={scrollViewRef}
-          style={{ flex: 1, padding: 16 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {messages.map((msg, index) => (
-            <View key={msg.id} style={{ marginBottom: 12 }}>
-              {!msg.isUser && index === 0 && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 8,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 32,
-                      height: 32,
-                      backgroundColor: "#F3F4F6",
-                      borderRadius: 16,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 8,
-                    }}
-                  >
-                    <Ionicons
-                      name="chatbubble-ellipses"
-                      size={16}
-                      color="#666"
-                    />
-                  </View>
-                  <Text style={{ color: "#6B7280" }}>
-                    Live Chat {formatTime(msg.timestamp)}
-                  </Text>
-                </View>
-              )}
+        {messages.map((msg, index) => (
+          <View key={msg.id} style={{ marginBottom: 12 }}>
+            {!msg.isUser && index === 0 && (
+              <Text style={{ color: "#6B7280", marginBottom: 8 }}>
+                Live Chat {formatTime(msg.timestamp)}
+              </Text>
+            )}
 
-              <MessageBubble
-                text={msg.text}
-                isUser={msg.isUser}
-                isStreaming={msg.isStreaming}
-              />
+            <MessageBubble
+              text={msg.text}
+              isUser={msg.isUser}
+              isStreaming={msg.isStreaming}
+            />
 
-              {msg.isUser && (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: "#9CA3AF",
-                    alignSelf: "flex-end",
-                    marginTop: 4,
-                  }}
-                >
-                  {formatTime(msg.timestamp)}
-                </Text>
-              )}
-            </View>
-          ))}
-        </ScrollView>
+            {msg.isUser && (
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#9CA3AF",
+                  alignSelf: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                {formatTime(msg.timestamp)}
+              </Text>
+            )}
+          </View>
+        ))}
+      </ScrollView>
 
-        <View
+      {/* INPUT */}
+      <View
+        style={{
+          position: "absolute",
+          bottom: keyboardHeight,
+          left: 0,
+          right: 0,
+          flexDirection: "row",
+          alignItems: "center",
+          padding: 12,
+          gap: 12,
+          borderTopWidth: 1,
+          borderColor: "#F3F4F6",
+          backgroundColor: "white",
+        }}
+      >
+        <TouchableOpacity onPress={handleImagePick}>
+          <Ionicons name="add" size={30} color="#666" />
+        </TouchableOpacity>
+
+        <TextInput
           style={{
-            flexDirection: "row",
+            flex: 1,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            borderWidth: 1,
+            borderColor: "#E5E7EB",
+            borderRadius: 999,
+          }}
+          placeholder={t("chatbot.inputPlaceholder")}
+          value={inputText}
+          onChangeText={setInputText}
+          onSubmitEditing={handleSend}
+          returnKeyType="send"
+        />
+
+        <TouchableOpacity
+          onPress={handleSend}
+          disabled={!isConnected || isTyping}
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: isConnected ? "#0A9D5C" : "#D1D5DB",
             alignItems: "center",
-            padding: 12,
-            gap: 12,
-            borderTopWidth: 1,
-            borderColor: "#F3F4F6",
-            backgroundColor: "white",
+            justifyContent: "center",
           }}
         >
-          <TouchableOpacity onPress={handleImagePick}>
-            <Ionicons name="add" size={30} color="#666" />
-          </TouchableOpacity>
-
-          <TextInput
-            style={{
-              flex: 1,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              borderWidth: 1,
-              borderColor: "#E5E7EB",
-              borderRadius: 999,
-              fontSize: 16,
-              backgroundColor: "#FFFFFF",
-            }}
-            placeholder={t("chatbot.inputPlaceholder")}
-            value={inputText}
-            onChangeText={setInputText}
-            onSubmitEditing={handleSend}
-            returnKeyType="send"
-          />
-
-          <TouchableOpacity
-            onPress={handleSend}
-            disabled={!isConnected || isTyping}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: isConnected ? "#0A9D5C" : "#D1D5DB",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {isTyping ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Ionicons name="send" size={18} color="white" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          {isTyping ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Ionicons name="send" size={18} color="white" />
+          )}
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
