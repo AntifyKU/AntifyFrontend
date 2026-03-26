@@ -95,6 +95,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 async function parseErrorResponse(response: Response): Promise<ApiError> {
+  console.log(`[API] Parsing error response: ${response.status} ${response.statusText}`);
   const errorData = await response.json().catch(() => ({}));
   const detail = errorData.detail;
   let message: string;
@@ -137,14 +138,21 @@ async function retryWithRefreshedToken<T>(
   return parseResponse<T>(retryRes);
 }
 
-function wrapFetchError(error: unknown): never {
+function wrapFetchError(error: unknown, url?: string, method?: string): never {
   if (error instanceof ApiError) throw error;
+  
+  const context = url ? ` [${method || 'GET'} ${url}]` : "";
+  
   if (error instanceof Error) {
     if (error.name === "AbortError") {
+      console.warn(`[API] Request timeout: ${context}`);
       throw new ApiError(408, "Request Timeout", "Request timed out");
     }
+    console.error(`[API] Network error: ${error.message}${context}`);
     throw new ApiError(0, "Network Error", error.message);
   }
+  
+  console.error(`[API] Unknown error: ${context}`);
   throw new ApiError(0, "Unknown Error", "An unknown error occurred");
 }
 
@@ -190,7 +198,7 @@ async function request<T>(
     return parseResponse<T>(response);
   } catch (error) {
     clearTimeout(timeoutId);
-    wrapFetchError(error);
+    wrapFetchError(error, url, options.method || "GET");
   }
 }
 
@@ -227,17 +235,17 @@ async function requestFormData<T>(
         body: formData,
       });
       if (!retryRes.ok) throw await parseErrorResponse(retryRes);
-      return retryRes.json() as Promise<T>;
+      return parseResponse<T>(retryRes); // Use parseResponse to handle text/empty
     }
 
     if (!response.ok) {
       throw await parseErrorResponse(response);
     }
 
-    return response.json() as Promise<T>;
+    return parseResponse<T>(response);
   } catch (error) {
     clearTimeout(timeoutId);
-    wrapFetchError(error);
+    wrapFetchError(error, url, "POST (FormData)");
   }
 }
 

@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   identifyDetect: '/api/identify/detect',
   identifyHealth: '/api/identify/health',
   identifySpeciesDetails: '/api/identify/species/details',
+  identifySpeciesDetailsBase64: '/api/identify/species/details/base64',
 
   // User Collection
   collection: '/api/users/me/collection',
@@ -35,5 +36,5 @@ export const API_ENDPOINTS = {
   me: '/api/users/me',
 } as const;
 
-// Request timeout in milliseconds
-export const API_TIMEOUT = 30000;
+// Request timeout in milliseconds (increased to 60s for AI inference)
+export const API_TIMEOUT = 60000;

@@ -46,12 +46,20 @@ export async function identifyFromFile(
   fileName = "image.jpg",
   mimeType = "image/jpeg",
 ): Promise<ClassificationResponse> {
+  // Ensure URI is correctly formatted for React Native fetch
+  let formattedUri = imageUri;
+  if (!imageUri.startsWith("file://") && !imageUri.startsWith("http") && !imageUri.startsWith("data:")) {
+    formattedUri = `file://${imageUri}`;
+  }
+
+  console.log(`[identification] Preparing classification for ${formattedUri} (${mimeType})`);
+
   const formData = new FormData();
   formData.append("file", {
-    uri: imageUri,
+    uri: formattedUri,
     name: fileName,
     type: mimeType,
-  } as unknown as Blob);
+  } as any);
 
   return apiClient.postFormData<ClassificationResponse>(
     API_ENDPOINTS.identify,
@@ -64,12 +72,20 @@ export async function detectFromFile(
   fileName = "image.jpg",
   mimeType = "image/jpeg",
 ): Promise<DetectionResponse> {
+  // Ensure URI is correctly formatted for React Native fetch
+  let formattedUri = imageUri;
+  if (!imageUri.startsWith("file://") && !imageUri.startsWith("http") && !imageUri.startsWith("data:")) {
+    formattedUri = `file://${imageUri}`;
+  }
+
+  console.log(`[identification] Preparing detection for ${formattedUri} (${mimeType})`);
+
   const formData = new FormData();
   formData.append("file", {
-    uri: imageUri,
+    uri: formattedUri,
     name: fileName,
     type: mimeType,
-  } as unknown as Blob);
+  } as any);
 
   return apiClient.postFormData<DetectionResponse>(
     API_ENDPOINTS.identifyDetect,
@@ -82,12 +98,20 @@ export async function identifySpeciesFromFile(
   fileName = "image.jpg",
   mimeType = "image/jpeg",
 ): Promise<SpeciesDetailsResponse> {
+  // Ensure URI is correctly formatted for React Native fetch
+  let formattedUri = imageUri;
+  if (!imageUri.startsWith("file://") && !imageUri.startsWith("http") && !imageUri.startsWith("data:")) {
+    formattedUri = `file://${imageUri}`;
+  }
+
+  console.log(`[identification] Preparing upload for ${formattedUri} (${mimeType})`);
+
   const formData = new FormData();
   formData.append("file", {
-    uri: imageUri,
+    uri: formattedUri,
     name: fileName,
     type: mimeType,
-  } as unknown as Blob);
+  } as any);
 
   return apiClient.postFormData<SpeciesDetailsResponse>(
     API_ENDPOINTS.identifySpeciesDetails,
@@ -99,13 +123,12 @@ export async function identifySpeciesFromBase64(
   imageBase64: string,
   mimeType = "image/jpeg",
 ): Promise<SpeciesDetailsResponse> {
-  const data = {
-    image_base64: imageBase64,
-    mime_type: mimeType,
-  };
   return apiClient.post<SpeciesDetailsResponse>(
-    API_ENDPOINTS.identifySpeciesDetails,
-    data,
+    API_ENDPOINTS.identifySpeciesDetailsBase64,
+    {
+      image_base64: imageBase64,
+      mime_type: mimeType,
+    },
   );
 }
 

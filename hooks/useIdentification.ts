@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { File } from "expo-file-system";
 import { identificationService } from "@/services/identification";
 import { historyService } from "@/services/history";
 import { prependToHistoryCache } from "@/hooks/useHistory";
@@ -110,11 +111,14 @@ export function useIdentification(): UseIdentificationReturn {
       setLoading(true);
       setError(null);
       try {
-        return await fn();
+        console.log(`[useIdentification] Starting task...`);
+        const result = await fn();
+        console.log(`[useIdentification] Task completed successfully`);
+        return result;
       } catch (err) {
         const wrapped = err instanceof Error ? err : new Error(String(err));
         setError(wrapped);
-        console.error("[useIdentification]", wrapped.message);
+        console.error(`[useIdentification] FAILED:`, wrapped);
         return null;
       } finally {
         setLoading(false);
@@ -180,11 +184,40 @@ export function useIdentification(): UseIdentificationReturn {
   const identifySpecies = useCallback(
     (imageUri: string, mimeType = "image/jpeg", imageBase64?: string) =>
       _wrap(async () => {
-        const result = await identificationService.identifySpeciesFromFile(
-          imageUri,
-          "image.jpg",
-          mimeType,
-        );
+        let result: SpeciesDetailsResponse;
+        
+        try {
+          // Attempt 1: Multipart (Standard)
+          result = await identificationService.identifySpeciesFromFile(
+            imageUri,
+            "image.jpg",
+            mimeType,
+          );
+        } catch (err: any) {
+          // Attempt 2: Base64 Fallback (more robust in some environments)
+          console.warn(`[useIdentification] Multipart failed. Attempting Base64 fallback...`);
+          
+          let b64 = imageBase64;
+          if (!b64) {
+            try {
+              console.log(`[useIdentification] Reading file as Base64 using new File API: ${imageUri}`);
+              const file = new File(imageUri);
+              b64 = await file.base64();
+            } catch (fsErr) {
+              console.error("[useIdentification] Failed to read file as Base64:", fsErr);
+              throw err; // Re-throw the original network error if FS also fails
+            }
+          }
+
+          if (b64) {
+            result = await identificationService.identifySpeciesFromBase64(
+              b64,
+              mimeType,
+            );
+          } else {
+            throw err;
+          }
+        }
 
         setSpeciesResult(result);
         const info: Species | null = result.species_info ?? null;
