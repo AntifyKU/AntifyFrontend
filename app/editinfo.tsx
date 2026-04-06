@@ -161,7 +161,7 @@ function RadioGroup({
           return (
             <View key={opt} style={{ marginRight: 8, marginBottom: 8 }}>
               <Badge
-                label={getLabel ? getLabel(opt) : opt.replace(/_/g, " ")}
+                label={getLabel ? getLabel(opt) : opt.replaceAll("_", " ")}
                 isSelected={isSelected}
                 onPress={() => onSelect(opt)}
                 size="small"
