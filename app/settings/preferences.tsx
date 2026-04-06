@@ -229,12 +229,12 @@ export default function PreferencesScreen() {
           </View>
           <View className="flex-row gap-3">
             <OptionButton
-              label={t("preferences.language.english")}
+              label="English"
               selected={language === "english"}
               onPress={() => handleLanguageChange("english")}
             />
             <OptionButton
-              label={t("preferences.language.thai")}
+              label="Thai"
               selected={language === "thai"}
               onPress={() => handleLanguageChange("thai")}
             />
