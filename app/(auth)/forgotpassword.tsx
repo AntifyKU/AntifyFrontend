@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { useTranslation } from "react-i18next";
+import isEmail from "validator/lib/isEmail";
 import { auth } from "@/config/firebase";
 import TextInput from "@/components/atom/TextInput";
 import PrimaryButton from "@/components/atom/button/PrimaryButton";
@@ -32,7 +33,7 @@ export default function ForgotPasswordScreen() {
 
     if (!email.trim()) {
       newErrors.email = t("auth.forgotPassword.errorEmailRequired");
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!isEmail(email.trim())) {
       newErrors.email = t("auth.forgotPassword.errorEmailInvalid");
     }
 
